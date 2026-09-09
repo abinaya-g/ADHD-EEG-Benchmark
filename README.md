@@ -51,10 +51,27 @@ notebooks used.
 
 ## Setup
 
+**On Kaggle/Colab: do not run `pip install -r requirements.txt`.** Those
+platforms already ship numpy/scipy/pandas/scikit-learn/matplotlib/tensorflow
+preinstalled and mutually compatible. Installing a different
+`tensorflow`/`tensorflow-cpu` wheel on top of the existing one partially
+overwrites its compiled `.so` files and produces `ImportError: undefined
+symbol ...` (typically inside `tensorflow.lite`, even though nothing here
+uses TFLite) the moment anything imports `tensorflow`. If you hit that:
+restart the kernel (this resets `dist-packages` back to the clean base
+image) and just run the scripts as-is against Kaggle's own TensorFlow —
+skip installing requirements.txt entirely. Only set the data path:
+
+```bash
+export ADHD_EEG_DATA_ROOT=/kaggle/input/datasets/abinayajone/adhd-eeg-dataset
+```
+
+**On a bare environment** (fresh venv, no preinstalled ML stack):
+
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-export ADHD_EEG_DATA_ROOT=/path/to/adhd-eeg-dataset   # e.g. the Kaggle input mount
+export ADHD_EEG_DATA_ROOT=/path/to/adhd-eeg-dataset
 ```
 
 Random seeds: `config.RANDOM_SEEDS = [42, 43, 44, 45, 46]`, one per repeat.

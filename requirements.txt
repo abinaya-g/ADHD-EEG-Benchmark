@@ -1,7 +1,19 @@
+# DO NOT blindly `pip install -r requirements.txt` on Kaggle/Colab.
+# Those platforms already ship numpy/scipy/pandas/scikit-learn/matplotlib/
+# tensorflow preinstalled and mutually compatible. Installing a *different*
+# tensorflow/tensorflow-cpu wheel on top of an existing tensorflow install
+# overwrites some of its compiled .so files but not others, producing
+# ImportError: undefined symbol ... errors (tensorflow.lite in particular).
+# If you hit that on Kaggle: restart the kernel (resets dist-packages to the
+# clean base image) and do NOT reinstall tensorflow at all -- just run the
+# scripts against Kaggle's own preinstalled tensorflow.
+#
+# This file is for a genuinely bare environment (e.g. a fresh venv) that has
+# none of these packages yet.
 numpy
 scipy
 pandas
 scikit-learn
 matplotlib
-tensorflow-cpu==2.21.0  # or tensorflow==2.21.0 for GPU-enabled training; both expose the same API used here
+tensorflow==2.21.0  # if a working tensorflow is already present (Kaggle/Colab), skip this line entirely
 pyarrow  # optional, only needed if you switch CSV outputs to Parquet
