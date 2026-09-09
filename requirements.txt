@@ -1,0 +1,7 @@
+numpy
+scipy
+pandas
+scikit-learn
+matplotlib
+tensorflow-cpu==2.21.0  # or tensorflow==2.21.0 for GPU-enabled training; both expose the same API used here
+pyarrow  # optional, only needed if you switch CSV outputs to Parquet
