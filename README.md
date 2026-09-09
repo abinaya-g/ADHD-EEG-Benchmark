@@ -77,7 +77,19 @@ export ADHD_EEG_DATA_ROOT=/path/to/adhd-eeg-dataset
 Random seeds: `config.RANDOM_SEEDS = [42, 43, 44, 45, 46]`, one per repeat.
 Every `.fit()` call in `src/evaluation.py` is preceded by
 `models.set_all_seeds(fold_seed)` with a distinct, derived seed per outer
-fold × repeat, so runs are reproducible on CPU. **GPU nondeterminism**: even
+fold × repeat, so runs are reproducible on CPU. **Log noise**: importing `src` (any entry point does this) sets
+`TF_CPP_MIN_LOG_LEVEL=3` and raises TensorFlow's Python logger level,
+which removes the repeated `NodeDef mentions attribute
+use_unbounded_threadpool` lines and `tf.function retracing` warnings
+(expected here, since a fresh model is built per fold by design). Two
+one-time startup lines can still appear (`absl::InitializeLog` and a
+oneDNN info banner) — both harmless. To also silence the oneDNN line, set
+`TF_ENABLE_ONEDNN_OPTS=0` yourself before running; this is not set by
+default because it can shift floating-point results slightly (per
+TensorFlow's own message), and this codebase does not change numeric
+behavior as a side effect of a logging request.
+
+**GPU nondeterminism**: even
 with `TF_DETERMINISTIC_OPS=1` set (done automatically in
 `models.set_all_seeds`), some cuDNN convolution backward-pass kernels remain
 nondeterministic on GPU; the original manuscript's own Limitations section
