@@ -106,7 +106,18 @@ def build_cnn_ablation(n_channels=19, n_timesamples=3840, fs=128,
             x = layers.BatchNormalization(name="bn_spatial2")(x)
         if use_pool:
             x = layers.AveragePooling2D((2, 1), name="pool_spatial2")(x)
-        x = layers.Reshape((x.shape[2], x.shape[3]), name="reshape_to_temporal")(x)
+        # x is (batch, height, time, filters). The original build_cnn()
+        # hardcodes Reshape((time, filters)) because its fixed pooling
+        # schedule always collapses height to 1 for n_channels=19 -- valid
+        # only under that specific schedule. Here height is not guaranteed
+        # to reach 1 (e.g. use_pool=False leaves height=7, not 1), so
+        # instead permute time to the front and fold whatever height is
+        # left into the feature/filter axis. This reduces to exactly the
+        # same (time, filters) shape build_cnn() produces whenever height
+        # == 1, and degrades gracefully (extra feature channels, not a
+        # shape error) otherwise.
+        x = layers.Permute((2, 1, 3), name="permute_time_first_spatial")(x)
+        x = layers.Reshape((x.shape[1], x.shape[2] * x.shape[3]), name="reshape_to_temporal")(x)
     else:
         # No spatial mixing: treat raw channels as the Conv1D "feature" axis.
         x = layers.Permute((2, 1, 3), name="permute_time_first")(x)

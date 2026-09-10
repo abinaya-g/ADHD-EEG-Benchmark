@@ -154,10 +154,13 @@ def main():
     print("[OK] interpolation produces the expected doubled sample count "
           "(labelled everywhere as interpolation, never as true higher-fs acquisition)")
 
-    banner("Ablation study smoke test (Phase 12): full / no-spatial / no-temporal")
+    banner("Ablation study smoke test (Phase 12): all configs")
+    # Every entry in ABLATION_CONFIGS is exercised here -- a previous
+    # version of this test only covered 3 of 5 configs and missed a real
+    # shape bug in H_no_pooling (see src/models.py:build_cnn_ablation) that
+    # only surfaced on the real dataset on Kaggle. Don't narrow this list
+    # again without a specific reason.
     for ablation_name, cfg in models.ABLATION_CONFIGS.items():
-        if ablation_name not in ("A_full", "B_no_spatial", "C_no_temporal"):
-            continue
         build_fn = lambda n_channels, n_timesamples, fs, _cfg=cfg: models.build_cnn_ablation(
             n_channels=n_channels, n_timesamples=n_timesamples, fs=fs, **_cfg)
         preds, folds, _ = evaluation.run_nested_repeat(
