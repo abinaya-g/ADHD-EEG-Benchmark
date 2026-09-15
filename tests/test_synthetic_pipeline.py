@@ -25,7 +25,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src import config, data, evaluation, models, sanity_checks, statistics, coral, explainability
 
 SYN_N_CHANNELS = 19
-SYN_N_TIMESAMPLES = 768   # short synthetic epoch, same fs-scaling logic as real pipeline (fs=128)
+SYN_N_TIMESAMPLES = 1152   # short synthetic epoch, same fs-scaling logic as real pipeline (fs=128).
+# Must leave enough margin for the resolution experiment below, which
+# doubles fs (and n_timesamples) for build_cnn's fs-scaled temporal kernel
+# sizes: at 768 samples the doubled-fs temporal_conv2 pooling stage
+# computes a zero-length output (verified: ValueError "Computed output
+# size would be zero or negative"). 1152 leaves positive margin at 2x
+# fs/length. The real dataset (3840 samples, 128->512Hz = 4x) has enormous
+# margin by comparison and is unaffected by this.
 SYN_FS = 128
 OUTER_FOLDS = 3
 INNER_FOLDS = 3
@@ -147,10 +154,27 @@ def main():
           f"95% CI=[{summary['ci_low']:.3f},{summary['ci_high']:.3f}] "
           f"min={summary['min']:.3f} max={summary['max']:.3f}")
 
-    banner("128 -> 512-equivalent interpolation sensitivity experiment (Phase 3) -- shape check only")
-    X_interp = data.resample_pipeline_b(X_norm[:6], orig_fs=SYN_FS, target_fs=SYN_FS * 2)
-    print(f"Original shape: {X_norm[:6].shape} -> interpolated shape: {X_interp.shape}")
+    banner("128 -> 512-equivalent interpolation sensitivity experiment (Phase 3)")
+    # A REAL run_nested_repeat call, not just a shape check -- and
+    # deliberately reusing repeat_id=0 / seed=SEEDS[0], exactly like
+    # run_all_experiments.py's resolution experiment does against the
+    # primary nested-CV phase. This is what a real Kaggle run exposed as a
+    # cross-phase conflation bug (two experiments sharing repeat=0 were
+    # treated by sanity_checks as one CV design, and table-building pooled
+    # both preprocessing pipelines under the same model name) -- keep this
+    # as a real run_nested_repeat call, not a shortcut, so this class of
+    # bug stays caught.
+    X_interp = data.resample_pipeline_b(X_norm, orig_fs=SYN_FS, target_fs=SYN_FS * 2)
     assert X_interp.shape[2] == SYN_N_TIMESAMPLES * 2
+    preds, folds, _ = evaluation.run_nested_repeat(
+        "CNN", models.build_cnn, X_interp, y, groups,
+        outer_folds=OUTER_FOLDS, inner_folds=INNER_FOLDS, seed=SEEDS[0], repeat_id=0,
+        preprocessing_label="128to512_interp_synthetic", fs=SYN_FS * 2, n_timesamples=X_interp.shape[2],
+        max_epochs=MAX_EPOCHS, batch_size=BATCH_SIZE, patience=PATIENCE, learning_rate=LR,
+        run_classifiers=True, run_coral=False,
+    )
+    all_prediction_rows.extend(preds)
+    all_fold_records.extend(folds)
     print("[OK] interpolation produces the expected doubled sample count "
           "(labelled everywhere as interpolation, never as true higher-fs acquisition)")
 
@@ -170,6 +194,8 @@ def main():
             max_epochs=MAX_EPOCHS, batch_size=BATCH_SIZE, patience=PATIENCE, learning_rate=LR,
             run_classifiers=False, run_coral=False,
         )
+        all_prediction_rows.extend(preds)
+        all_fold_records.extend(folds)
         p_df = pd.DataFrame(preds)
         m = evaluation.compute_metrics(p_df["y_true"], p_df["y_pred"], p_df["y_proba"])
         print(f"{ablation_name:16s} acc={m['accuracy']:.3f} auc={m['auc']:.3f}")
@@ -185,6 +211,8 @@ def main():
             max_epochs=3, batch_size=BATCH_SIZE, patience=1, learning_rate=LR,
             run_classifiers=False, run_coral=False,
         )
+        all_prediction_rows.extend(preds)
+        all_fold_records.extend(folds)
         p_df = pd.DataFrame(preds)
         m = evaluation.compute_metrics(p_df["y_true"], p_df["y_pred"], p_df["y_proba"])
         print(f"{arch_name:16s} acc={m['accuracy']:.3f} auc={m['auc']:.3f}  (n_params={build_fn(19, SYN_N_TIMESAMPLES, SYN_FS)[0].count_params()})")
@@ -199,6 +227,32 @@ def main():
           f"(expected ({SYN_N_CHANNELS},))")
     print(f"temporal_importance_mean shape: {ig_result['temporal_importance_mean'].shape}")
     assert ig_result["channel_importance_mean"].shape == (SYN_N_CHANNELS,)
+
+    banner("Final combined sanity checks + table-conflation regression check (all phases together)")
+    # This is the check that would have caught the real bug: run sanity
+    # checks against EVERY phase's fold records combined -- nested CV,
+    # resolution (deliberately sharing repeat=0/seed with nested CV, per
+    # above), ablation, and architectures -- not just the first phase in
+    # isolation. A real Kaggle run showed check 1 false-failing here
+    # because it grouped only by repeat; and Table 3 pooling "CNN" rows
+    # from two different preprocessing pipelines into one misleading
+    # accuracy number.
+    final_predictions_df = pd.DataFrame(all_prediction_rows)
+    final_report = sanity_checks.run_sanity_checks(all_fold_records, final_predictions_df)
+    assert final_report["passed"].all(), "combined-phase sanity checks FAILED -- see report above"
+
+    cnn_128 = final_predictions_df[(final_predictions_df["model"] == "CNN") &
+                                    (final_predictions_df["preprocessing"] == "128Hz_synthetic")]
+    cnn_interp = final_predictions_df[(final_predictions_df["model"] == "CNN") &
+                                       (final_predictions_df["preprocessing"] == "128to512_interp_synthetic")]
+    assert len(cnn_128) > 0 and len(cnn_interp) > 0, "expected CNN rows under both preprocessing labels"
+    assert len(cnn_128) != len(cnn_128) + len(cnn_interp), "sanity: these must not already be equal by coincidence"
+    grouped_table = final_predictions_df.groupby(["model", "preprocessing"]).size()
+    assert grouped_table[("CNN", "128Hz_synthetic")] == len(cnn_128)
+    assert grouped_table[("CNN", "128to512_interp_synthetic")] == len(cnn_interp)
+    print(f"[OK] CNN rows correctly kept separate by preprocessing: "
+          f"128Hz_synthetic n={len(cnn_128)}, 128to512_interp_synthetic n={len(cnn_interp)} "
+          f"(a conflated table would silently report n={len(cnn_128)+len(cnn_interp)} for one blended 'CNN' row)")
 
     banner(f"ALL SYNTHETIC SELF-TESTS PASSED in {time.time()-t0:.1f}s "
            "-- reminder: every number above is from synthetic surrogate data, not real EEG")

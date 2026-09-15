@@ -24,10 +24,20 @@ def run_sanity_checks(fold_records, predictions_df):
     results = []
     fr = pd.DataFrame(fold_records)
 
-    # 1. Every subject occurs in exactly one outer test fold per repeat.
+    # 1. Every subject occurs in exactly one outer test fold per repeat,
+    # WITHIN one nested-CV design. "One design" = one (repeat, architecture,
+    # preprocessing) combination -- grouping by repeat alone is wrong: two
+    # different experiments (e.g. the primary 128Hz nested CV and the
+    # 128->512 resolution sensitivity experiment) legitimately reuse the
+    # same repeat_id/seed and therefore the same subject partition on
+    # purpose (see AUDIT_REPORT.md Phase 3 / run_all_experiments.py), which
+    # is not leakage -- they are independent CV runs, not one CV run a
+    # subject was double-assigned within. An earlier version of this check
+    # grouped by repeat only and produced a false FAIL here.
     ok = True
     detail_bits = []
-    for (repeat,), grp in fr.groupby(["repeat"]):
+    group_cols = [c for c in ("repeat", "architecture", "preprocessing") if c in fr.columns]
+    for key, grp in fr.groupby(group_cols):
         seen = {}
         for _, row in grp.iterrows():
             for s in row["test_subjects"]:
@@ -35,7 +45,8 @@ def run_sanity_checks(fold_records, predictions_df):
         dupes = {s: c for s, c in seen.items() if c != 1}
         if dupes:
             ok = False
-            detail_bits.append(f"repeat={repeat}: subjects in >1 outer test fold: {list(dupes)[:5]}")
+            key_str = dict(zip(group_cols, key if isinstance(key, tuple) else (key,)))
+            detail_bits.append(f"{key_str}: subjects in >1 outer test fold within this design: {sorted(dupes)}")
     results.append(_check("1_subject_in_exactly_one_outer_test_fold_per_repeat", ok, "; ".join(detail_bits)))
 
     # 2. No subject occurs in both outer train and outer test (same fold).

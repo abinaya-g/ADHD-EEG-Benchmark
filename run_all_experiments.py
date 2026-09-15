@@ -142,11 +142,17 @@ def main():
     # Data
     # -------------------------------------------------------------------
     if args.smoke_test:
+        # n_timesamples=1152, not 768: the resolution experiment below
+        # doubles fs (and n_timesamples) for build_cnn's fs-scaled temporal
+        # kernels, and 768 leaves too little margin -- verified to raise
+        # "Computed output size would be zero or negative" in
+        # AveragePooling1D at 2x. See tests/test_synthetic_pipeline.py for
+        # the same fix and margin calculation.
         X, y, groups, file_epoch_idx = data.make_synthetic_dataset(
             n_adhd_subjects=15, n_control_subjects=15, min_epochs=3, max_epochs=5,
-            n_channels=config.N_CHANNELS, n_timesamples=768, class_signal=0.9, seed=0,
+            n_channels=config.N_CHANNELS, n_timesamples=1152, class_signal=0.9, seed=0,
         )
-        fs_a, n_time_a = 128, 768
+        fs_a, n_time_a = 128, 1152
     else:
         X, y, groups, file_epoch_idx = data.load_dataset()
         fs_a, n_time_a = config.FS_ASSUMED_HZ, config.EPOCH_LEN_A
@@ -224,7 +230,10 @@ def main():
         print("    NOTE: pipeline B is FFT interpolation of the same 128Hz samples, "
               "NOT the original 512Hz acquisition. See AUDIT_REPORT.md Phase 3.")
         ckpt = PhaseCheckpoint("resolution", prefix, config.RESULTS_DIR)
-        target_fs = fs_a * 4 if args.smoke_test else config.FS_INTERP_HZ
+        # 2x for smoke-test (not the real 4x 128->512 ratio): the synthetic
+        # epoch is short, and this experiment only needs to prove the code
+        # path works, not replicate the real resolution ratio.
+        target_fs = fs_a * 2 if args.smoke_test else config.FS_INTERP_HZ
         X_interp = data.resample_pipeline_b(X, orig_fs=fs_a, target_fs=target_fs)
         X_interp_norm = data.normalize_all(X_interp)
         res_seed = seeds[0]
@@ -270,21 +279,34 @@ def main():
     # with narrative context per phase)
     # -------------------------------------------------------------------
     print("\n--- Building tables ---")
+    # Group by (model, preprocessing), NOT model alone: the same model name
+    # (e.g. "CNN", "CNN+LR") is reused across different preprocessing
+    # pipelines (128Hz primary vs 128->512 interpolation sensitivity
+    # experiment) and across ablation configs' shared preprocessing label.
+    # Grouping by model alone silently pools rows from unrelated
+    # experiments into one misleading averaged accuracy -- caught when a
+    # real run showed "CNN" at n=1016 (508 native-128Hz rows + 508
+    # interpolated-512Hz rows averaged together instead of compared).
+    table_group_cols = [c for c in ("model", "preprocessing") if c in predictions_df.columns]
+
     rows = []
-    for model_name, grp in predictions_df.groupby("model"):
+    for key, grp in predictions_df.groupby(table_group_cols):
+        key = key if isinstance(key, tuple) else (key,)
         m = evaluation.compute_metrics(grp["y_true"], grp["y_pred"], grp["y_proba"])
-        rows.append({"model": model_name, **m})
+        rows.append({**dict(zip(table_group_cols, key)), **m})
     epoch_level_table = pd.DataFrame(rows).sort_values("accuracy", ascending=False)
     epoch_level_table.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}table3_epoch_level_performance.csv"), index=False)
 
     subj_rows = []
-    for model_name, grp in predictions_df.groupby("model"):
+    for key, grp in predictions_df.groupby(table_group_cols):
+        key = key if isinstance(key, tuple) else (key,)
+        key_dict = dict(zip(table_group_cols, key))
         sdf = evaluation.aggregate_subject_level(grp["subject_id"], grp["y_true"], grp["y_proba"])
         m = evaluation.compute_metrics(sdf["y_true"], sdf["pred_mean_proba"], sdf["mean_proba"])
-        subj_rows.append({"model": model_name, "aggregation": "mean_probability", **m})
+        subj_rows.append({**key_dict, "aggregation": "mean_probability", **m})
         m2 = evaluation.compute_metrics(sdf["y_true"], sdf["pred_majority_vote"], sdf["vote_fraction"])
-        subj_rows.append({"model": model_name, "aggregation": "majority_vote", **m2})
-    subject_level_table = pd.DataFrame(subj_rows).sort_values(["model", "aggregation"])
+        subj_rows.append({**key_dict, "aggregation": "majority_vote", **m2})
+    subject_level_table = pd.DataFrame(subj_rows).sort_values(table_group_cols + ["aggregation"])
     subject_level_table.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}table4_subject_level_performance.csv"), index=False)
 
     print(epoch_level_table.to_string(index=False))
