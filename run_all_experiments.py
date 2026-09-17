@@ -48,7 +48,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src import config, coral as coral_mod, data, evaluation, explainability, models, sanity_checks, statistics, visualization
+from src import config, coral as coral_mod, data, evaluation, explainability, models, reporting, sanity_checks, statistics, visualization
 
 
 def parse_args():
@@ -288,6 +288,8 @@ def main():
     # real run showed "CNN" at n=1016 (508 native-128Hz rows + 508
     # interpolated-512Hz rows averaged together instead of compared).
     table_group_cols = [c for c in ("model", "preprocessing") if c in predictions_df.columns]
+    primary_preprocessing = f"{fs_a}Hz"
+    final_dir = os.path.join(config.RESULTS_DIR, "..", "results_final") if not args.smoke_test else None
 
     rows = []
     for key, grp in predictions_df.groupby(table_group_cols):
@@ -313,6 +315,93 @@ def main():
 
     if len(coral_df) > 0:
         coral_df.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}table9_coral_vs_no_coral.csv"), index=False)
+
+    # -------------------------------------------------------------------
+    # TABLE_1-7 (review-brief Phase 15 exact filenames), plus subject-level
+    # bootstrap CIs and paired statistical comparisons that the tables
+    # above don't compute. See src/reporting.py for how each is built.
+    # -------------------------------------------------------------------
+    print("\n--- Building TABLE_1-7 (manuscript deliverables) ---")
+    table1 = reporting.table1_dataset_summary(X, y, groups, config, outer_folds, inner_folds, repeats, seeds, max_epochs)
+    table1.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_1_DATASET_SUMMARY.csv"), index=False)
+
+    epoch_level_table.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_2_EPOCH_LEVEL_RESULTS.csv"), index=False)
+    subject_level_table.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_3_SUBJECT_LEVEL_RESULTS.csv"), index=False)
+
+    table4 = reporting.table4_confidence_intervals(predictions_df, table_group_cols, config)
+    table4.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_4_CONFIDENCE_INTERVALS.csv"), index=False)
+    print(f"  TABLE_4: {len(table4)} (group x metric) rows, subject-level bootstrap, n_boot={config.N_BOOTSTRAP}")
+
+    reference_key = ("CNN", primary_preprocessing)
+    table5 = reporting.table5_model_comparison(predictions_df, reference_key, table_group_cols)
+    table5.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_5_MODEL_COMPARISON_STATISTICS.csv"), index=False)
+    print(f"  TABLE_5: {len(table5)} paired comparisons vs {reference_key}, Holm-corrected")
+
+    if not args.skip_resolution:
+        table6_summary, table6_cmp = reporting.table6_resolution_comparison(predictions_df, table_group_cols)
+        table6_summary.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_6_128HZ_VS_128TO512.csv"), index=False)
+        table6_cmp.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_6_128HZ_VS_128TO512_paired_test.csv"), index=False)
+        print(f"  TABLE_6: {len(table6_summary)} summary rows, {len(table6_cmp)} paired-test rows")
+
+    if len(coral_df) > 0:
+        coral_df.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_7_CORAL_RESULTS.csv"), index=False)
+
+    # -------------------------------------------------------------------
+    # Explainability (Integrated Gradients) -- Phase 15/11. Trained on ALL
+    # epochs purely for attribution visualization, mirroring the ORIGINAL
+    # notebook's own precedent (adhd-coral.ipynb cell-7 trains on the full
+    # dataset "purely to extract filter weights for visualization... NOT a
+    # performance evaluation"). This is not a held-out evaluation and no
+    # accuracy from this model should ever be cited; see AUDIT_REPORT.md.
+    # -------------------------------------------------------------------
+    if not args.skip_explainability:
+        print("\n--- Explainability (Integrated Gradients, visualization-only model) ---")
+        import tensorflow as tf
+        models.set_all_seeds(seeds[0])
+        ig_model, _ = models.build_cnn(n_channels=X_norm.shape[1], n_timesamples=X_norm.shape[2], fs=fs_a)
+        ig_model.compile(optimizer=tf.keras.optimizers.Adam(config.LEARNING_RATE), loss="binary_crossentropy")
+        ig_model.fit(X_norm, y, epochs=min(max_epochs, 20), batch_size=config.BATCH_SIZE, verbose=0)
+        ig_result = explainability.batch_channel_temporal_importance(ig_model, X_norm, max_samples=30, steps=50, seed=0)
+        ig_channel_df = pd.DataFrame({
+            "channel_index": range(len(ig_result["channel_importance_mean"])),
+            "importance_mean": ig_result["channel_importance_mean"],
+            "importance_sd": ig_result["channel_importance_sd"],
+        })
+        ig_temporal_df = pd.DataFrame({
+            "time_bin": range(len(ig_result["temporal_importance_mean"])),
+            "importance_mean": ig_result["temporal_importance_mean"],
+            "importance_sd": ig_result["temporal_importance_sd"],
+        })
+        ig_channel_df.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}table_explainability_channel_importance.csv"), index=False)
+        ig_temporal_df.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}table_explainability_temporal_importance.csv"), index=False)
+        print(f"  saved channel/temporal importance ({len(ig_result['sample_indices'])} sampled epochs, "
+              f"NOT a performance claim -- see AUDIT_REPORT.md)")
+
+    # -------------------------------------------------------------------
+    # Mirror the polished deliverables into a NEW results_final/ tree
+    # (review-brief Phase 14) without touching the working results/tables/
+    # figures/ checkpoint directories used for resuming. Real-data runs
+    # only -- smoke-test output never lands here.
+    # -------------------------------------------------------------------
+    if final_dir is not None:
+        import shutil
+        for sub in ("audit", "configs", "fold_assignments", "predictions", "subject_level",
+                    "epoch_level", "confidence_intervals", "statistics", "figures", "tables", "logs"):
+            os.makedirs(os.path.join(final_dir, sub), exist_ok=True)
+
+        predictions_df.to_csv(os.path.join(final_dir, "predictions", "all_predictions.csv"), index=False)
+        fold_records_df.to_csv(os.path.join(final_dir, "fold_assignments", "fold_assignments.csv"), index=False)
+        epoch_level_table.to_csv(os.path.join(final_dir, "epoch_level", "TABLE_2_EPOCH_LEVEL_RESULTS.csv"), index=False)
+        subject_level_table.to_csv(os.path.join(final_dir, "subject_level", "TABLE_3_SUBJECT_LEVEL_RESULTS.csv"), index=False)
+        table4.to_csv(os.path.join(final_dir, "confidence_intervals", "TABLE_4_CONFIDENCE_INTERVALS.csv"), index=False)
+        table5.to_csv(os.path.join(final_dir, "statistics", "TABLE_5_MODEL_COMPARISON_STATISTICS.csv"), index=False)
+        table1.to_csv(os.path.join(final_dir, "tables", "TABLE_1_DATASET_SUMMARY.csv"), index=False)
+        report.to_csv(os.path.join(final_dir, "audit", "leakage_sanity_checks.csv"), index=False)
+        with open(os.path.join(final_dir, "configs", "run_config.txt"), "w") as fh:
+            fh.write(f"outer_folds={outer_folds}\ninner_folds={inner_folds}\nrepeats={repeats}\n"
+                     f"seeds={seeds}\nmax_epochs={max_epochs}\nbatch_size={config.BATCH_SIZE}\n"
+                     f"learning_rate={config.LEARNING_RATE}\npatience={config.EARLY_STOPPING_PATIENCE}\n")
+        print(f"\nMirrored final deliverables -> {os.path.normpath(final_dir)}/")
 
     print(f"\nDone in {time.time()-t0:.1f}s. Tables -> {config.TABLES_DIR}/, "
           f"raw results -> {config.RESULTS_DIR}/, figures -> {config.FIGURES_DIR}/")
