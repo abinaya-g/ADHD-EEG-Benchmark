@@ -55,6 +55,13 @@ def _per_fold_subject_metric(predictions_df, group_cols, metric_name="balanced_a
     return out
 
 
+def per_fold_subject_metric(predictions_df, group_cols, metric_name="balanced_accuracy"):
+    """Public wrapper around _per_fold_subject_metric, for callers (e.g.
+    run_all_experiments.py's figure-generation code) that need the same
+    per-(repeat, outer_fold) subject-level metric used by table5/6."""
+    return _per_fold_subject_metric(predictions_df, group_cols, metric_name)
+
+
 def table4_confidence_intervals(predictions_df, group_cols, config, metrics=None):
     """Subject-level bootstrap 95% CI per (model, preprocessing) group,
     pooling that group's own predictions across whatever repeats/outer
