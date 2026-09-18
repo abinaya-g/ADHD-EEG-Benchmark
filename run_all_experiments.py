@@ -378,6 +378,69 @@ def main():
               f"NOT a performance claim -- see AUDIT_REPORT.md)")
 
     # -------------------------------------------------------------------
+    # Figures (Phase 19). visualization.py was implemented and imported
+    # here but never actually called -- a real gap found the same way as
+    # the --skip-explainability dead flag: importing a module is not
+    # evidence it runs. Figures 1/2 (workflow/architecture diagrams) are
+    # not generated here by design (see src/visualization.py docstring);
+    # everything else is built from data already computed above, filtered
+    # to a readable "core" model set rather than all ~50 model x
+    # preprocessing x ablation combinations.
+    # -------------------------------------------------------------------
+    print("\n--- Figures ---")
+    core_models = [m for m in ("CNN", "CNN+LR", "CNN+NLSVM", "CNN+RF", "CNN+GNB", "CNN+KNN",
+                                "CNN+LinearSVM", "EEGNet", "ShallowConvNet", "DeepConvNet")
+                   if m in set(predictions_df["model"])]
+    per_fold_bal_acc = reporting.per_fold_subject_metric(predictions_df, table_group_cols, "balanced_accuracy")
+
+    visualization.fig3_nested_cv_schematic(outer_folds, inner_folds)
+
+    fig4_df = table4[(table4["preprocessing"] == primary_preprocessing)
+                      & (table4["metric"] == "balanced_accuracy")
+                      & (table4["model"].isin(core_models))].rename(columns={
+        "point_estimate": "balanced_accuracy_mean", "ci_low": "balanced_accuracy_ci_low",
+        "ci_high": "balanced_accuracy_ci_high"})
+    if len(fig4_df) > 0:
+        visualization.fig4_model_comparison_ci(fig4_df, metric="balanced_accuracy")
+
+    subject_dfs = {}
+    for m in core_models:
+        sub = predictions_df[(predictions_df["model"] == m) & (predictions_df["preprocessing"] == primary_preprocessing)]
+        if len(sub) > 0:
+            subject_dfs[m] = evaluation.aggregate_subject_level(sub["subject_id"], sub["y_true"], sub["y_proba"])
+    if len(subject_dfs) > 0:
+        visualization.fig5_subject_level_roc(subject_dfs)
+        visualization.fig6_subject_confusion_matrices(subject_dfs)
+
+    per_fold_fig7 = {m: list(per_fold_bal_acc.get((m, primary_preprocessing), {}).values()) for m in core_models}
+    per_fold_fig7 = {m: v for m, v in per_fold_fig7.items() if len(v) > 0}
+    if len(per_fold_fig7) > 0:
+        visualization.fig7_repeated_cv_distribution(per_fold_fig7, metric_name="balanced_accuracy")
+
+    if not args.skip_resolution:
+        vals_a = list(per_fold_bal_acc.get(("CNN", primary_preprocessing), {}).values())
+        vals_b = list(per_fold_bal_acc.get(("CNN", "128to512_interp"), {}).values())
+        if vals_a and vals_b:
+            visualization.fig8_resolution_comparison(
+                pd.DataFrame({"balanced_accuracy": vals_a}), pd.DataFrame({"balanced_accuracy": vals_b}),
+                metric="balanced_accuracy")
+
+    if not args.skip_ablation:
+        ablation_rows = []
+        for m in sorted(set(predictions_df["model"]) & set(m for m in predictions_df["model"] if m.startswith("CNN_"))):
+            vals = list(per_fold_bal_acc.get((m, primary_preprocessing), {}).values())
+            if vals:
+                ablation_rows.append({"ablation": m, "balanced_accuracy_mean": float(np.mean(vals)),
+                                       "balanced_accuracy_sd": float(np.std(vals, ddof=1)) if len(vals) > 1 else 0.0})
+        if ablation_rows:
+            visualization.fig9_ablation(pd.DataFrame(ablation_rows), metric="balanced_accuracy")
+
+    if len(coral_df) > 0:
+        visualization.fig10_coral_covariance(coral_df)
+
+    print(f"  figures written -> {config.FIGURES_DIR}/")
+
+    # -------------------------------------------------------------------
     # Mirror the polished deliverables into a NEW results_final/ tree
     # (review-brief Phase 14) without touching the working results/tables/
     # figures/ checkpoint directories used for resuming. Real-data runs
@@ -397,6 +460,10 @@ def main():
         table5.to_csv(os.path.join(final_dir, "statistics", "TABLE_5_MODEL_COMPARISON_STATISTICS.csv"), index=False)
         table1.to_csv(os.path.join(final_dir, "tables", "TABLE_1_DATASET_SUMMARY.csv"), index=False)
         report.to_csv(os.path.join(final_dir, "audit", "leakage_sanity_checks.csv"), index=False)
+        for fname in os.listdir(config.FIGURES_DIR):
+            src_path = os.path.join(config.FIGURES_DIR, fname)
+            if os.path.isfile(src_path):
+                shutil.copy2(src_path, os.path.join(final_dir, "figures", fname))
         with open(os.path.join(final_dir, "configs", "run_config.txt"), "w") as fh:
             fh.write(f"outer_folds={outer_folds}\ninner_folds={inner_folds}\nrepeats={repeats}\n"
                      f"seeds={seeds}\nmax_epochs={max_epochs}\nbatch_size={config.BATCH_SIZE}\n"

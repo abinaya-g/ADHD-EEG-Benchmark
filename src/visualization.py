@@ -29,6 +29,18 @@ def _savefig(fig, name):
     return path
 
 
+def _boxplot(ax, data, labels, **kwargs):
+    """matplotlib renamed Axes.boxplot's `labels` kwarg to `tick_labels` in
+    3.9 and removed the old name later -- this was never caught before
+    because these figure functions were implemented but never actually
+    invoked until run_all_experiments.py started calling them. Try the
+    current name first, fall back to the old one for older matplotlib."""
+    try:
+        return ax.boxplot(data, tick_labels=labels, **kwargs)
+    except TypeError:
+        return ax.boxplot(data, labels=labels, **kwargs)
+
+
 def fig3_nested_cv_schematic(outer_folds, inner_folds, name="fig3_nested_cv_schematic.png"):
     fig, ax = plt.subplots(figsize=(9, 3 + 0.4 * outer_folds))
     ax.set_xlim(0, 10)
@@ -106,7 +118,7 @@ def fig7_repeated_cv_distribution(per_fold_metric_by_model, metric_name="accurac
     fig, ax = plt.subplots(figsize=(8, 4))
     labels = list(per_fold_metric_by_model.keys())
     data = [np.asarray(v, dtype=float) for v in per_fold_metric_by_model.values()]
-    ax.boxplot(data, labels=labels, showmeans=True)
+    _boxplot(ax, data, labels, showmeans=True)
     ax.set_ylabel(metric_name)
     ax.set_title(f"Distribution across repeated outer folds ({metric_name})")
     plt.xticks(rotation=30, ha="right")
@@ -115,7 +127,7 @@ def fig7_repeated_cv_distribution(per_fold_metric_by_model, metric_name="accurac
 
 def fig8_resolution_comparison(df_a, df_b, metric="accuracy", labels=("128 Hz", "128->512 Hz interpolation"), name="fig8_resolution.png"):
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.boxplot([df_a[metric].values, df_b[metric].values], labels=labels, showmeans=True)
+    _boxplot(ax, [df_a[metric].values, df_b[metric].values], labels, showmeans=True)
     ax.set_ylabel(metric)
     ax.set_title("Temporal resolution sensitivity experiment")
     return _savefig(fig, name)
@@ -138,7 +150,7 @@ def fig10_coral_covariance(coral_df, name="fig10_coral_covariance.png"):
                 [coral_df["cov_distance_before"].mean(), coral_df["cov_distance_after"].mean()],
                 yerr=[coral_df["cov_distance_before"].std(), coral_df["cov_distance_after"].std()], capsize=4)
     axes[0].set_title("Covariance distance (train vs test features)")
-    axes[1].boxplot([coral_df["no_coral_accuracy"].values, coral_df["with_coral_accuracy"].values],
-                     labels=["No CORAL", "With CORAL"], showmeans=True)
+    _boxplot(axes[1], [coral_df["no_coral_accuracy"].values, coral_df["with_coral_accuracy"].values],
+             ["No CORAL", "With CORAL"], showmeans=True)
     axes[1].set_title("Accuracy: with vs without CORAL")
     return _savefig(fig, name)
