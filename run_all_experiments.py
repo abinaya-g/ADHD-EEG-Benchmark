@@ -66,6 +66,15 @@ def parse_args():
     p.add_argument("--inner-folds", type=int, default=None)
     p.add_argument("--repeats", type=int, default=None)
     p.add_argument("--max-epochs", type=int, default=None)
+    p.add_argument("--only-architecture", type=str, default=None,
+                    help="Restrict the architectures phase to one named architecture (e.g. DeepConvNet). "
+                         "For resuming a partially-completed phase (e.g. a crashed/interrupted run) without "
+                         "redoing architectures that already finished. Implies appending to the existing "
+                         "predictions_architectures.csv rather than truncating it.")
+    p.add_argument("--repeat-indices", type=str, default=None,
+                    help="Comma-separated 0-based repeat indices to run in the architectures phase "
+                         "(e.g. '4' to run only the 5th repeat). Default: all repeats. Combine with "
+                         "--only-architecture to resume exactly the missing (architecture, repeat) work.")
     return p.parse_args()
 
 
@@ -82,11 +91,15 @@ class PhaseCheckpoint:
     (repeats / architectures / ablation configs) complete -- see module
     docstring "Checkpointing / resuming after a crash"."""
 
-    def __init__(self, phase_name, prefix, results_dir):
+    def __init__(self, phase_name, prefix, results_dir, append_existing=False):
         self.pred_path = os.path.join(results_dir, f"{prefix}predictions_{phase_name}.csv")
         self.fold_path = os.path.join(results_dir, f"{prefix}fold_records_{phase_name}.csv")
         self.coral_path = os.path.join(results_dir, f"{prefix}coral_results_{phase_name}.csv")
-        self._started = False
+        # append_existing=True: resuming a narrowed subset of this phase
+        # (e.g. --only-architecture/--repeat-indices) -- append to whatever
+        # is already on disk instead of truncating it, since the untouched
+        # rest of the phase (other architectures/repeats) must survive.
+        self._started = append_existing and os.path.exists(self.pred_path)
 
     def append(self, preds=None, folds=None, coral_rows=None):
         mode = "w" if not self._started else "a"
@@ -185,11 +198,19 @@ def main():
     # -------------------------------------------------------------------
     if not args.skip_architectures:
         print("\n--- Alternative EEG architectures (same nested protocol) ---")
-        ckpt = PhaseCheckpoint("architectures", prefix, config.RESULTS_DIR)
+        resuming = args.only_architecture is not None or args.repeat_indices is not None
+        ckpt = PhaseCheckpoint("architectures", prefix, config.RESULTS_DIR, append_existing=resuming)
+        repeat_indices = [int(x) for x in args.repeat_indices.split(",")] if args.repeat_indices else list(range(repeats))
+        if resuming:
+            print(f"  RESUMING (appending to existing file): architecture={args.only_architecture or 'all'}, "
+                  f"repeat_indices={repeat_indices}")
         for arch_name, build_fn in models.ARCHITECTURE_BUILDERS.items():
             if arch_name == "CNN":
                 continue
-            for i, seed in enumerate(seeds):
+            if args.only_architecture and arch_name != args.only_architecture:
+                continue
+            for i in repeat_indices:
+                seed = seeds[i]
                 preds, folds, _ = evaluation.run_nested_repeat(
                     arch_name, build_fn, X_norm, y, groups,
                     outer_folds=outer_folds, inner_folds=inner_folds, seed=seed, repeat_id=i,
@@ -237,16 +258,24 @@ def main():
         X_interp = data.resample_pipeline_b(X, orig_fs=fs_a, target_fs=target_fs)
         X_interp_norm = data.normalize_all(X_interp)
         res_seed = seeds[0]
-        preds, folds, _ = evaluation.run_nested_repeat(
-            "CNN", models.build_cnn, X_interp_norm, y, groups,
-            outer_folds=outer_folds, inner_folds=inner_folds, seed=res_seed, repeat_id=0,
-            preprocessing_label="128to512_interp", fs=target_fs, n_timesamples=X_interp_norm.shape[2],
-            max_epochs=max_epochs, batch_size=config.BATCH_SIZE,
-            patience=config.EARLY_STOPPING_PATIENCE, learning_rate=config.LEARNING_RATE,
-            run_classifiers=True, run_coral=False,
-        )
-        ckpt.append(preds, folds)
-        print("  resolution experiment done and saved")
+        # CNN (+ its classical classifiers) is the primary comparison;
+        # EEGNet is added as the strongest deep-learning baseline, per the
+        # review brief's "if computationally feasible, also test EEGNet".
+        # Both reuse repeat_id=0/res_seed -- the SAME subject partition as
+        # the primary 128Hz run's first repeat -- so the two conditions
+        # are validly paired per outer fold (see reporting.table5/6).
+        for arch_name, build_fn, run_clf in (("CNN", models.build_cnn, True),
+                                              ("EEGNet", models.build_eegnet, False)):
+            preds, folds, _ = evaluation.run_nested_repeat(
+                arch_name, build_fn, X_interp_norm, y, groups,
+                outer_folds=outer_folds, inner_folds=inner_folds, seed=res_seed, repeat_id=0,
+                preprocessing_label="128to512_interp", fs=target_fs, n_timesamples=X_interp_norm.shape[2],
+                max_epochs=max_epochs, batch_size=config.BATCH_SIZE,
+                patience=config.EARLY_STOPPING_PATIENCE, learning_rate=config.LEARNING_RATE,
+                run_classifiers=run_clf, run_coral=False,
+            )
+            ckpt.append(preds, folds)
+            print(f"  {arch_name} resolution experiment done and saved")
 
     # -------------------------------------------------------------------
     # Combine every phase file present on disk (this run + any previous
@@ -337,11 +366,26 @@ def main():
     table5.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_5_MODEL_COMPARISON_STATISTICS.csv"), index=False)
     print(f"  TABLE_5: {len(table5)} paired comparisons vs {reference_key}, Holm-corrected")
 
-    if not args.skip_resolution:
-        table6_summary, table6_cmp = reporting.table6_resolution_comparison(predictions_df, table_group_cols)
+    # Built from whatever "128to512_interp" data actually exists on disk,
+    # not from whether THIS invocation ran the resolution phase -- a
+    # --skip-resolution combine-only rerun must still rebuild TABLE_6 from
+    # a previous run's saved data (same reasoning as TABLE_7/coral_df
+    # below, which checks len(coral_df) rather than args.skip_coral).
+    if "128to512_interp" in set(predictions_df.get("preprocessing", [])):
+        resolution_models = [m for m in ("CNN", "EEGNet") if
+                              ((predictions_df["model"] == m) & (predictions_df["preprocessing"] == "128to512_interp")).any()]
+        t6_summaries, t6_cmps = [], []
+        for m in resolution_models:
+            s, c = reporting.table6_resolution_comparison(predictions_df, table_group_cols, model_name=m)
+            t6_summaries.append(s)
+            t6_cmps.append(c)
+        table6_summary = pd.concat(t6_summaries, ignore_index=True) if t6_summaries else pd.DataFrame()
+        table6_cmp = pd.concat(t6_cmps, ignore_index=True) if t6_cmps else pd.DataFrame()
         table6_summary.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_6_128HZ_VS_128TO512.csv"), index=False)
         table6_cmp.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_6_128HZ_VS_128TO512_paired_test.csv"), index=False)
-        print(f"  TABLE_6: {len(table6_summary)} summary rows, {len(table6_cmp)} paired-test rows")
+        print(f"  TABLE_6: models={resolution_models}, {len(table6_summary)} summary rows, {len(table6_cmp)} paired-test rows")
+    else:
+        resolution_models = []
 
     if len(coral_df) > 0:
         coral_df.to_csv(os.path.join(config.TABLES_DIR, f"{prefix}TABLE_7_CORAL_RESULTS.csv"), index=False)
@@ -417,17 +461,22 @@ def main():
     if len(per_fold_fig7) > 0:
         visualization.fig7_repeated_cv_distribution(per_fold_fig7, metric_name="balanced_accuracy")
 
-    if not args.skip_resolution:
-        vals_a = list(per_fold_bal_acc.get(("CNN", primary_preprocessing), {}).values())
-        vals_b = list(per_fold_bal_acc.get(("CNN", "128to512_interp"), {}).values())
+    # Built from data presence, not args.skip_resolution/skip_ablation --
+    # same reasoning as TABLE_6/TABLE_7 above (a combine-only rerun must
+    # still regenerate figures from a previous run's saved data).
+    for m in resolution_models:
+        vals_a = list(per_fold_bal_acc.get((m, primary_preprocessing), {}).values())
+        vals_b = list(per_fold_bal_acc.get((m, "128to512_interp"), {}).values())
         if vals_a and vals_b:
+            fig_name = "fig8_resolution.png" if m == "CNN" else f"fig8_resolution_{m}.png"
             visualization.fig8_resolution_comparison(
                 pd.DataFrame({"balanced_accuracy": vals_a}), pd.DataFrame({"balanced_accuracy": vals_b}),
-                metric="balanced_accuracy")
+                metric="balanced_accuracy", labels=(f"{m} 128 Hz", f"{m} 128->512 Hz interpolation"), name=fig_name)
 
-    if not args.skip_ablation:
+    ablation_models_present = sorted(m for m in predictions_df["model"].unique() if m.startswith("CNN_"))
+    if ablation_models_present:
         ablation_rows = []
-        for m in sorted(set(predictions_df["model"]) & set(m for m in predictions_df["model"] if m.startswith("CNN_"))):
+        for m in ablation_models_present:
             vals = list(per_fold_bal_acc.get((m, primary_preprocessing), {}).values())
             if vals:
                 ablation_rows.append({"ablation": m, "balanced_accuracy_mean": float(np.mean(vals)),
