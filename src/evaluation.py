@@ -27,15 +27,43 @@ fitting, not for CORAL's *label* information (CORAL's covariance
 alignment is unsupervised and is called out explicitly as transductive --
 see coral.py and run_coral_experiment below).
 """
+import sys
+import time
+
 import numpy as np
 from sklearn.metrics import (accuracy_score, balanced_accuracy_score,
                               confusion_matrix, f1_score, matthews_corrcoef,
                               precision_score, roc_auc_score)
 from sklearn.model_selection import GroupKFold
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import Callback, EarlyStopping
 
 from . import coral as coral_mod
 from . import models as models_mod
+
+
+class _EpochProgressCallback(Callback):
+    """Prints one line per completed Keras epoch (flushed immediately so it
+    shows up right away in Colab/Kaggle/nohup logs). This is the fix for
+    long silent runs (e.g. the 512Hz-resolution experiment, whose 4x longer
+    sequences make a single `model.fit()` call take long enough that
+    verbose=0 gives no evidence the process hasn't hung) -- every real epoch
+    now produces visible, timestamped output instead of waiting for an
+    entire outer fold (or worse, an entire architecture) to finish."""
+
+    def __init__(self, label):
+        super().__init__()
+        self.label = label
+        self._t0 = None
+
+    def on_train_begin(self, logs=None):
+        self._t0 = time.time()
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        metrics_str = " ".join(f"{k}={v:.4f}" for k, v in logs.items())
+        elapsed = time.time() - self._t0
+        print(f"      {self.label} epoch {epoch + 1} {metrics_str} "
+              f"[{elapsed:.1f}s elapsed]", flush=True)
 
 
 # ---------------------------------------------------------------------------
@@ -149,7 +177,7 @@ def make_grouped_shuffled_folds(groups, y, n_splits, seed):
 # ---------------------------------------------------------------------------
 def select_n_epochs_via_inner_cv(build_fn, build_kwargs, X_tr, y_tr, groups_tr,
                                   inner_folds, seed, max_epochs, batch_size,
-                                  patience, learning_rate):
+                                  patience, learning_rate, progress_label=""):
     import tensorflow as tf
 
     n_unique = len(np.unique(groups_tr))
@@ -163,16 +191,22 @@ def select_n_epochs_via_inner_cv(build_fn, build_kwargs, X_tr, y_tr, groups_tr,
     gkf_inner = GroupKFold(n_splits=inner_folds_eff)
     best_epochs = []
     for inner_i, (in_tr, in_val) in enumerate(gkf_inner.split(X_tr, y_tr, groups_tr)):
+        inner_label = f"{progress_label} inner {inner_i + 1}/{inner_folds_eff}".strip()
+        print(f"    {inner_label} starting ({len(in_tr)} train / {len(in_val)} val epochs, "
+              f"max_epochs={max_epochs}, patience={patience})", flush=True)
         models_mod.set_all_seeds(seed * 100 + inner_i)
         model, _ = build_fn(**build_kwargs)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
                       loss="binary_crossentropy", metrics=["accuracy"])
         early_stop = EarlyStopping(monitor="val_loss", patience=patience, restore_best_weights=True)
+        progress_cb = _EpochProgressCallback(inner_label)
         hist = model.fit(X_tr[in_tr], y_tr[in_tr], epochs=max_epochs, batch_size=batch_size,
                           verbose=0, validation_data=(X_tr[in_val], y_tr[in_val]),
-                          callbacks=[early_stop])
+                          callbacks=[early_stop, progress_cb])
         val_losses = hist.history["val_loss"]
         best_epochs.append(int(np.argmin(val_losses)) + 1)
+        print(f"    {inner_label} done ({len(hist.history['val_loss'])} epochs ran, "
+              f"best epoch={best_epochs[-1]})", flush=True)
     return int(np.median(best_epochs))
 
 
@@ -206,12 +240,22 @@ def run_nested_repeat(architecture_name, build_fn, X, y, groups, *,
     fold_records = []
     coral_rows = []
 
+    run_label = f"{architecture_name}|{preprocessing_label}|repeat={repeat_id}"
+    print(f"  [{run_label}] starting {outer_folds} outer folds "
+          f"({len(y)} epochs, {len(set(groups))} subjects, n_timesamples={n_timesamples})", flush=True)
+    run_t0 = time.time()
+
     for outer_fold_idx, (outer_train_idx, outer_test_idx) in enumerate(outer_splits):
         outer_train_subjects = set(groups[outer_train_idx])
         outer_test_subjects = set(groups[outer_test_idx])
         assert outer_train_subjects.isdisjoint(outer_test_subjects), (
             "Leakage: a subject appears in both outer train and outer test"
         )
+
+        outer_label = f"{run_label} outer_fold={outer_fold_idx + 1}/{outer_folds}"
+        print(f"  [{outer_label}] starting (train={len(outer_train_subjects)} subjects, "
+              f"test={len(outer_test_subjects)} subjects)", flush=True)
+        fold_t0 = time.time()
 
         X_tr, y_tr, g_tr = X[outer_train_idx], y[outer_train_idx], groups[outer_train_idx]
         X_te, y_te = X[outer_test_idx], y[outer_test_idx]
@@ -222,7 +266,10 @@ def run_nested_repeat(architecture_name, build_fn, X, y, groups, *,
             build_fn, build_kwargs, X_tr, y_tr, g_tr,
             inner_folds=inner_folds, seed=fold_seed, max_epochs=max_epochs,
             batch_size=batch_size, patience=patience, learning_rate=learning_rate,
+            progress_label=outer_label,
         )
+        print(f"  [{outer_label}] inner CV selected {n_epochs_selected} epochs; "
+              f"starting final fit on all outer-train subjects", flush=True)
 
         # Final fit on ALL outer-train subjects, for the epoch count chosen
         # entirely from inner folds. No validation_data here at all --
@@ -231,10 +278,15 @@ def run_nested_repeat(architecture_name, build_fn, X, y, groups, *,
         model, feature_model = build_fn(**build_kwargs)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
                        loss="binary_crossentropy", metrics=["accuracy"])
-        model.fit(X_tr, y_tr, epochs=max(n_epochs_selected, 1), batch_size=batch_size, verbose=0)
+        final_progress_cb = _EpochProgressCallback(f"{outer_label} final-fit")
+        model.fit(X_tr, y_tr, epochs=max(n_epochs_selected, 1), batch_size=batch_size, verbose=0,
+                  callbacks=[final_progress_cb])
 
         proba_cnn = model.predict(X_te, verbose=0).ravel()
         pred_cnn = (proba_cnn >= 0.5).astype(int)
+        fold_acc = accuracy_score(y_te, pred_cnn)
+        print(f"  [{outer_label}] done: CNN test accuracy={fold_acc:.4f} "
+              f"[{time.time() - fold_t0:.1f}s this fold, {time.time() - run_t0:.1f}s total]", flush=True)
 
         fold_records.append({
             "architecture": architecture_name, "preprocessing": preprocessing_label,
@@ -309,4 +361,6 @@ def run_nested_repeat(architecture_name, build_fn, X, y, groups, *,
                     "subject_id": subj, "y_true": int(yt), "y_pred": int(yp), "y_proba": float(ypr),
                 })
 
+    print(f"  [{run_label}] all {outer_folds} outer folds done "
+          f"[{time.time() - run_t0:.1f}s total]", flush=True)
     return prediction_rows, fold_records, coral_rows
