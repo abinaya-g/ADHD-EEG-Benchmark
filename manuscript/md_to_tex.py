@@ -186,11 +186,9 @@ def convert():
     ethics_start = find(lambda l: l.strip().startswith("# 10. Ethics Statement"))
     refs_start = find(lambda l: l.strip() == "# References")
 
-    # --- Title ---
-    title_match = re.search(
-        r"\*\*Selected title:\*\* \*(.+?)\*", "\n".join(lines[:abstract_start])
-    )
-    title = title_match.group(1) if title_match else "Subject-Independent Detection of ADHD from Raw EEG"
+    # --- Title: the document's first-level heading, before the Abstract ---
+    title_match = re.search(r"^#\s+(.+)$", "\n".join(lines[:abstract_start]), re.MULTILINE)
+    title = title_match.group(1).strip() if title_match else "Subject-Independent Detection of ADHD from Raw EEG"
 
     # --- Abstract + Keywords ---
     abstract_block = lines[abstract_start + 1:intro_start]
