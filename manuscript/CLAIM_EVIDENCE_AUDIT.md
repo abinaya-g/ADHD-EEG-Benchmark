@@ -60,6 +60,13 @@ relevance, the 512 Hz interpolation, CORAL, and architecture comparisons.
 | "DeepConvNet's greater parameter count is a plausible, though not confirmed, contributor to its comparatively weak generalization" | DeepConvNet's known architecture (4 convolutional blocks, up to 200 filters) vs the dataset size (121 subjects) | No direct statistical test of a parameter-count-vs-performance relationship was run | Explicitly hedged ("plausible," "not confirmed") rather than asserted | Discussion 5.4, worded as a hypothesis for future work, not a finding |
 | "A plausible explanation, which this study's design cannot fully adjudicate, is that the CNN's small dataset makes its jointly trained classification head prone to ... overfitting" | Same dataset-size reasoning | No direct test | Explicitly hedged | Discussion 5.3, same hedging pattern |
 
+## Statistical significance claims (corrected during this audit pass)
+
+| Claim | Evidence | Statistical support | Final wording |
+|---|---|---|---|
+| "EEGNet and CNN+LR (both CORAL configurations) show a statistically significant subject-level balanced-accuracy advantage over the plain CNN" | Subject-level (n=121) paired bootstrap AND paired permutation test, both Holm-corrected within an 11-comparison family (`src/subject_level_paired_test.py`, `TABLE_5_MODEL_COMPARISON_STATISTICS.csv`) | Both tests agree; see `STATISTICAL_AUDIT.md` | Abstract, Results 4.6, Discussion 5.1 |
+| "CNN+KNN, CNN+NLSVM, CNN+RF, CNN+LinearSVM, DeepConvNet, and CNN+GNB show no statistically significant advantage over the plain CNN" | Same subject-level tests; three of these (KNN, NLSVM, RF) reached nominal significance under an earlier, now-superseded per-fold (n=25) Wilcoxon procedure that reused the same 121 subjects across repetitions | Both new tests agree these do not survive correction | Results 4.6, explicitly flagged as a change from the earlier procedure rather than silently corrected |
+
 ## Overall audit outcome
 
 No claim in the manuscript was found, on this pass, to assert statistical

@@ -64,8 +64,18 @@ Source: `manuscript/TABLES/TABLE_1_DATASET_SUMMARY.csv` and `run_config.txt` fro
 3. Confirm the recombine step reports `Combined 3 prediction file(s) -> 34544 rows` and `Sanity check report: 14/14 passed` before treating any downstream table as final — this exact signature was used in this project to confirm the correct, complete result set was being used (see `MANUSCRIPT_AUDIT.md` for the full account of two earlier, incomplete attempts that did **not** match this signature and were correctly identified and discarded before this manuscript was written).
 4. The resulting `tables/TABLE_1_DATASET_SUMMARY.csv` through `TABLE_6_128HZ_VS_128TO512_paired_test.csv`, and `figures/fig3_*.png` through `fig10_*.png`, are the files copied into `manuscript/TABLES/` and `manuscript/FIGURES/` and cited throughout `manuscript.md`.
 
+## Statistical testing (Table 5)
+
+Table 5's model comparisons are produced by `src/subject_level_paired_test.py`, run directly against `results_final/predictions/all_predictions.csv` (now committed to this repository at that path — previously only the pre-aggregated summary tables in `manuscript/TABLES/` were tracked, which was itself a reproducibility gap: `TABLE_5_MODEL_COMPARISON_STATISTICS.csv` could not previously be independently regenerated from anything in the repository, only re-typed from a chat transcript. This gap is now closed):
+
+```
+python src/subject_level_paired_test.py results_final/predictions/all_predictions.csv manuscript/TABLES/TABLE_5_MODEL_COMPARISON_STATISTICS.csv
+```
+
+20,000 bootstrap resamples, 20,000 permutations, seed 12345 (all fixed in the script). See `STATISTICAL_AUDIT.md` for the full methodological account of why this replaced an earlier per-fold Wilcoxon procedure.
+
 ## Known gaps in this reproducibility record
 
-- Exact package versions (see above) — open item.
+- Exact package versions for the *original training run* (see above) — open item. (The versions used to *verify* the tables and run the statistical tests in this audit pass are recorded in `manuscript.md` Section 8 and are a genuine, checkable environment, distinct from the original training run.)
 - The current state of `ADHD_new.ipynb` (the interactive notebook used to run these experiments) was not re-captured as part of this manuscript's audit trail; the canonical, checkable artifact for reproduction is `run_all_experiments.py` and its output files, not the notebook.
 - Ablation-study configurations exist in the codebase (`src/models.py:ABLATION_CONFIGS`) but were not part of the final combined result set this manuscript reports on; reproducing an ablation table is out of scope for reproducing the results in this manuscript as written.

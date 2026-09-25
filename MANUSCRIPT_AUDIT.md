@@ -299,3 +299,52 @@ Once these are in hand, the manuscript, tables, figures, and the
 remaining audit files (`NUMERICAL_CONSISTENCY_REPORT.md`,
 `CLAIM_EVIDENCE_AUDIT.md`, `REPRODUCIBILITY.md`) can be completed against
 real, complete, final-run data rather than partial figures.
+
+---
+
+## Addendum: full scientific re-audit (post-manuscript)
+
+This section records a later, separate audit pass performed after the
+manuscript above was written and the "READY FOR MANUSCRIPT WRITING" state
+referenced elsewhere in this repository's audit trail (`FINAL_EXPERIMENT_AUDIT_V2.md`)
+was reached. It does not replace the record above, which remains an accurate
+account of the pre-writing state.
+
+**What was found.** The raw prediction-level file this manuscript's tables
+were built from was not present in this git repository at the start of this
+pass (only the pre-aggregated `manuscript/TABLES/*.csv` summary tables were
+tracked) — the same gap flagged in the "Repository state" section above had
+not, in fact, been fully closed. The file was located, verified byte-for-byte
+against the manuscript's own stated row count (34,544 rows) and independently
+re-verified to reproduce `TABLE_2` and `TABLE_3` to within 1e-5, then
+committed to this repository at `results_final/predictions/all_predictions.csv`
+so this gap is now closed and every table in this manuscript is regenerable
+from a file actually present in version control.
+
+**What was wrong and fixed.** The model-comparison procedure behind Table 5
+used a Wilcoxon signed-rank test on 25 per-(repetition, outer-fold) values
+that reuse the same 121 subjects across repetitions — a pseudo-replicated
+test. Rebuilding the comparison as a genuine subject-level (n=121) paired
+bootstrap and permutation test changed the conclusion for three comparisons
+(CNN+KNN, CNN+NLSVM, CNN+RF: previously reported as statistically
+significant, no longer significant under the corrected test). Full detail,
+including the corrected Table 5 and every affected manuscript section, is in
+`manuscript/STATISTICAL_AUDIT.md`.
+
+**What was independently re-verified and found correct, requiring no
+change**: subject-level aggregation (Table 3/4's methodology), DeepConvNet's
+repetition completeness (5 repetitions × 5 outer folds, fully present, no
+subject-fold leakage, contrary to this audit's initial concern that an
+earlier archive might have had fewer DeepConvNet repetitions), Table 6's
+resolution-sensitivity paired test (not pseudo-replicated, since its 5 outer
+folds come from a single, non-reused repetition), and the CORAL section's
+transductive framing (already correct; restated explicitly as a Limitations
+item at this pass's request).
+
+**Current verdict: the manuscript is scientifically corrected but not yet
+verified compiled.** The `.tex` output has been checked structurally (brace
+balance, environment matching, no stray placeholders) but this environment
+has no LaTeX toolchain to compile it; the `.docx` has been checked to open
+correctly and embed all figures. See `manuscript/STATISTICAL_AUDIT.md` and
+`manuscript/NUMERICAL_CONSISTENCY_REPORT.md` for the full itemized record of
+this pass.
