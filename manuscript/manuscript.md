@@ -1,5 +1,11 @@
 # Subject-Independent Detection of ADHD from Raw EEG: A Nested Cross-Validation Reassessment of CNN and Hybrid Classifiers
 
+**Abinaya G**
+
+*Saveetha Engineering College, Chennai, Tamil Nadu, India*
+
+*Corresponding author: abinaya.g05@gmail.com*
+
 ---
 
 # Abstract

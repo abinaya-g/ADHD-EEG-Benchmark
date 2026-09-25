@@ -361,19 +361,18 @@ def build_preamble(title, abstract_tex, keywords_tex):
 \def\textpagefraction{.001}
 
 \shorttitle{%s}
-\shortauthors{Author(s) To Be Inserted}
+\shortauthors{Abinaya G}
 
 \title[mode=title]{%s}
 
-%% TODO: insert author names, emails and affiliations before submission.
-\author[1]{Author Name(s) To Be Inserted}
+\author[1]{Abinaya G}
 \cormark[1]
-\ead{email@to.be.inserted}
+\ead{abinaya.g05@gmail.com}
 
-\affiliation[1]{organization={Affiliation To Be Inserted},
-                city={City},
-                state={State},
-                country={Country}}
+\affiliation[1]{organization={Saveetha Engineering College},
+                city={Chennai},
+                state={Tamil Nadu},
+                country={India}}
 
 \cortext[cor1]{Corresponding author}
 
@@ -407,13 +406,15 @@ TaghiBeyglou et al.; see the Data Availability statement below.
 %s
 
 \section*{Competing Interests}
-The authors declare no competing interests.
+The author declares no competing interests.
 
 \section*{Funding}
-%% TODO: insert funding statement if applicable.
+The author received no specific funding for this work.
 
 \section*{CRediT authorship contribution statement}
-%% TODO: insert per-author CRediT contribution statement before submission.
+\textbf{Abinaya G:} Conceptualisation, Investigation, data curation,
+methodology, software, formal analysis, validation, writing -- original
+draft, writing -- review \& editing.
 
 \section*{Ethical statement}
 %s
