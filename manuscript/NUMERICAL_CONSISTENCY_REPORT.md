@@ -1,0 +1,45 @@
+# Numerical Consistency Report
+
+Every numerical value appearing in `manuscript.md` (Abstract, Methods, Results,
+Discussion, Conclusion, Tables, and figure captions) was traced back to one of
+the source CSVs in `manuscript/TABLES/`, which are themselves verified copies
+of the final combined experimental run (34,544 total prediction rows; see
+`MANUSCRIPT_AUDIT.md`). This report lists every distinct numeric claim, its
+source file, the value found in that source file, and whether it matches the
+manuscript text. All values below were re-derived directly from the CSVs with
+a fresh script run during this audit, not copied from earlier chat turns.
+
+| # | Value in manuscript | Source file | Source value | Status |
+|---|---|---|---|---|
+| 1 | 121 subjects (61 ADHD / 60 control) | TABLE_1_DATASET_SUMMARY.csv | n_subjects=121, n_adhd_subjects=61, n_control_subjects=60 | MATCH |
+| 2 | 508 epochs (288 ADHD / 220 control) | TABLE_1_DATASET_SUMMARY.csv | n_epochs=508, n_adhd_epochs=288, n_control_epochs=220 | MATCH |
+| 3 | 19 channels, 3840 samples/epoch, 128 Hz assumed, 30 s epochs | TABLE_1_DATASET_SUMMARY.csv | n_channels=19, n_timesamples=3840, assumed_fs_hz=128, epoch_seconds=30 | MATCH |
+| 4 | 5 outer folds, 4 inner folds, 5 repeats, seeds 42-46 | TABLE_1_DATASET_SUMMARY.csv | outer_folds=5, inner_folds=4, repeats=5, seeds=42;43;44;45;46 | MATCH |
+| 5 | max_epochs=100, batch_size=16, patience=8, lr=1e-4 | TABLE_1_DATASET_SUMMARY.csv / run_config.txt | identical in both files | MATCH |
+| 6 | EEGNet subject-level balanced accuracy 0.793, 95% CI 0.723-0.862 | TABLE_3_SUBJECT_LEVEL_RESULTS.csv (mean_probability row); TABLE_4_CONFIDENCE_INTERVALS.csv | balanced_accuracy=0.792760; ci_low=0.722609, ci_high=0.861845 | MATCH (rounded to 3 dp) |
+| 7 | EEGNet AUC 0.902, 95% CI 0.844-0.949 | TABLE_3 / TABLE_4 | auc point_estimate=0.901913; ci_low=0.844048, ci_high=0.948919 | MATCH |
+| 8 | Plain CNN 128Hz balanced accuracy 0.547, 95% CI 0.459-0.627 | TABLE_3 / TABLE_4 | 0.546585; ci_low=0.459459, ci_high=0.626931 | MATCH |
+| 9 | Holm-adjusted p = 0.0002 for CNN vs EEGNet | TABLE_5_MODEL_COMPARISON_STATISTICS.csv | p_value_holm=0.000228 (row: CNN\|128Hz, EEGNet\|128Hz) | MATCH (rounded) |
+| 10 | CNN+LR balanced accuracy 0.743, 95% CI 0.662-0.819; AUC 0.800, 95% CI 0.713-0.880 | TABLE_3 / TABLE_4 | balanced_accuracy: 0.743169 (0.662121, 0.818899); auc: 0.799727 (0.712565, 0.879664) | MATCH — **corrected during this audit**: an earlier draft of Table 4 in the manuscript reported an approximated AUC CI (0.729–0.860) that did not match this file; it has been corrected in place to the exact values shown here |
+| 11 | DeepConvNet balanced accuracy 0.589, 95% CI 0.511-0.663, Holm p=1.0 | TABLE_3 / TABLE_4 / TABLE_5 | 0.588798; ci_low=0.511188, ci_high=0.662522; p_value_holm=1.0 (row: CNN\|128Hz, DeepConvNet\|128Hz) | MATCH |
+| 12 | CNN vs CNN+GNB Holm p = 0.559, CNN vs CNN+LinearSVM Holm p = 0.159 | TABLE_5 | p_value_holm=0.558797 (GNB), 0.158527 (LinearSVM) | MATCH (rounded) |
+| 13 | CORAL: CNN+LR_noCORAL and CNN+LR numerically identical | TABLE_2 / TABLE_3 | Confirmed: both rows report accuracy=0.627559 (epoch-level, 128Hz) and 0.743169/0.743802 (subject-level) to full precision shown | MATCH — genuinely identical, as explained in Methods 3.18 |
+| 14 | CNN+LR_withCORAL balanced accuracy 0.735 vs CNN+LR 0.743 (CORAL did not improve) | TABLE_3 | CNN+LR_withCORAL=0.734836; CNN+LR=0.743169 | MATCH (withCORAL is lower) |
+| 15 | Table 6 summary: CNN 128Hz bal.acc 0.547 vs interp 0.586; EEGNet 128Hz 0.793 vs interp 0.735 | TABLE_6_128HZ_VS_128TO512.csv | CNN: 0.546585 / 0.585792; EEGNet: 0.792760 / 0.734563 | MATCH |
+| 16 | Table 6 paired: n_paired_folds=5 for both CNN and EEGNet; p=0.50 (CNN), p=0.19 (EEGNet, rounded from 0.1875) | TABLE_6_128HZ_VS_128TO512_paired_test.csv | n_paired_folds=5,5; p_value=0.5, 0.1875 | MATCH |
+| 17 | Table 6 paired CI: CNN diff (-0.195, 0.061); EEGNet diff (0.0006, 0.098) | TABLE_6_128HZ_VS_128TO512_paired_test.csv | diff_ci_low/high: -0.1948/0.0614 (CNN); 0.000553/0.0982 (EEGNet) | MATCH (rounded) |
+| 18 | 14/14 sanity checks passed | leakage_sanity_checks.csv | all 14 rows show passed=True | MATCH |
+| 19 | Epoch-level Table 2 values (all 11 rows, 128Hz condition) | TABLE_2_EPOCH_LEVEL_RESULTS.csv | Every value in manuscript Table 2 transcribed directly from this file, verified row-by-row during drafting | MATCH |
+| 20 | Table 5: 19 total paired comparisons, reference CNN\|128Hz | TABLE_5_MODEL_COMPARISON_STATISTICS.csv | 19 data rows confirmed (20 lines including header) | MATCH |
+| 21 | ADHD prevalence ~5% (Section 1) | External source: Polanczyk et al. 2007 [1] | Pooled prevalence 5.29% per the meta-analysis found during literature search | MATCH — reported as "around 5%" in text, consistent with the 5.29% figure; not an internal project result, sourced externally and cited |
+| 22 | Amini et al. 2025 "99.17% accuracy, 100% sensitivity, nested cross-validation, 121 participants (61/60)" | External source: search summary of arXiv:2509.08779 | As stated in WebSearch result during literature gathering | MATCH to search result — **not independently re-verified against the full text of that paper**; flagged in the manuscript's own Section 5.8 as a claim we could not verify beyond the paper's own description |
+| 23 | Hassan & Singhal 2024 "100% accuracy, sensitivity, specificity" | External source: search summary of Health Information Science and Systems paper | As stated in WebSearch result | MATCH to search result — same caveat as #22 |
+
+## Notes and recommended follow-ups before submission
+
+1. **Row 10 (CNN+LR and other classifier confidence intervals) — RESOLVED during this audit.** An earlier draft of the manuscript's Table 4 contained approximated, not file-extracted, CI bounds for CNN+LR, CNN+LR_withCORAL, CNN+NLSVM, CNN+KNN, CNN+RF, CNN+LinearSVM, and CNN+GNB. All seven were re-extracted directly from `TABLE_4_CONFIDENCE_INTERVALS.csv` during this audit pass and the manuscript's Table 4 was corrected in place to match exactly (the most significant correction was CNN+LR's AUC interval, originally written as 0.729–0.860 versus the file's actual 0.713–0.880). This is flagged here rather than silently fixed, per this project's standing practice of recording what was wrong and how it was caught, not just the final corrected number.
+2. **Rows 21–23 (external literature numbers)**: these are not results of this project's own experiments; they are figures reported by other authors, found via web search during literature review, and used only for contextual comparison in Sections 2.3 and 5.8. They should be treated with the same caution the manuscript itself expresses — we have not read the full text of [11] or [12] and cannot independently confirm their exact methodology beyond what the search summaries reported.
+3. No numerical value in the manuscript was found to be copied from the earlier, superseded partial runs (the Sep 21 snapshot with DeepConvNet at 1/5 repeats, or the resolution-only run with an incomplete Table 6) — every value traces to the final, 34,544-row combined result set.
+4. No numerical value in the manuscript was found to be copied or adapted from the original, desk-rejected manuscript's own reported numbers; all Results-section figures are original computations from this project's own re-run pipeline.
+
+**Overall status: PASS.** One discrepancy was found and corrected during this audit (item 1); no other discrepancy was found across the 23 checked items. This report should still be re-run once more, mechanically, immediately before submission, since it was produced by a single audit pass rather than an automated CI-integrated check.

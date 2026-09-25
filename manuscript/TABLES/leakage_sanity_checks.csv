@@ -1,0 +1,15 @@
+check,passed,detail
+1_subject_in_exactly_one_outer_test_fold_per_repeat,True,
+2_no_subject_in_both_outer_train_and_test,True,
+3_inner_val_disjoint_from_inner_train,True,STRUCTURAL: sklearn GroupKFold on outer-train subset only; see evaluation.select_n_epochs_via_inner_cv
+4_outer_test_never_used_for_early_stopping_or_selection,True,STRUCTURAL: final fit() call in evaluation.run_nested_repeat has no validation_data argument
+5_outer_test_labels_never_used_for_model_selection,True,STRUCTURAL: y[outer_test_idx] only ever appears after model.fit() has returned
+6_normalization_leakage_free,True,"data.normalize_epoch fits mean/std from that epoch's own samples only -- no cross-epoch statistic is ever estimated, so no train/test split can leak through it"
+7_features_from_correct_fold_model,True,"STRUCTURAL: feature_model returned by the same build_fn() call as model, used only within that fold's loop iteration"
+8_classifiers_fit_on_outer_train_features_only,True,"STRUCTURAL: clf.fit(train_feats, y_tr) precedes clf.predict(test_feats); test_feats never appear in a .fit() call"
+9_predictions_have_subject_ids,True,
+10_pooled_metrics_reconstructable_from_saved_predictions,True,
+11_subject_level_aggregation_validated,True,see evaluation.aggregate_subject_level (raises on label inconsistency) and tests/test_synthetic_pipeline.py::test_subject_aggregation
+12_bootstrap_ci_is_subject_level,True,"statistics.bootstrap_subject_level_ci resamples subject_df rows (one row per subject), never epoch rows"
+13_repeats_use_distinct_seeds,True,"seeds per repeat (fold-level, expected >1): {0: 5, 1: 5, 2: 5, 3: 5, 4: 5}"
+14_no_duplicate_subjects_from_epoching,True,STRUCTURAL: subject_id = source .mat filename (data.load_dataset); every epoch of a file shares one subject_id by construction

@@ -1,0 +1,3 @@
+model_a,model_b,n_pairs,mean_diff,sd_diff,effect_size_rank_biserial,diff_ci_low,diff_ci_high,wilcoxon_stat,p_value,n_paired_folds,metric,p_value_holm
+CNN|128Hz,CNN|128to512_interp,5,-0.06666666666666665,0.14613064930625153,-0.6666666666666666,-0.1947558283210913,0.06142249498775801,1.0,0.5,5,balanced_accuracy,0.5
+EEGNet|128Hz,EEGNet|128to512_interp,5,0.049358974358974385,0.055680743239048626,0.7333333333333333,0.0005526510062463658,0.0981652977117024,2.0,0.1875,5,balanced_accuracy,0.1875

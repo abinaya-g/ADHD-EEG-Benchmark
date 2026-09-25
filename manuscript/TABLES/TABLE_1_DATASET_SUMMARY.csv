@@ -1,0 +1,2 @@
+n_subjects,n_adhd_subjects,n_control_subjects,n_epochs,n_adhd_epochs,n_control_epochs,n_channels,n_timesamples,assumed_fs_hz,epoch_seconds,outer_folds,inner_folds,repeats,seeds,max_epochs,batch_size,early_stopping_patience,learning_rate
+121,61,60,508,288,220,19,3840,128,30,5,4,5,42;43;44;45;46,100,16,8,0.0001
