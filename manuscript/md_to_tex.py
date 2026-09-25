@@ -168,6 +168,67 @@ def table_to_latex(rows, caption=None):
     return "\n".join(out)
 
 
+_ALG_COUNTER = [0]
+
+
+def render_algorithm_block(lines):
+    """Convert a fenced ```algorithm ... ``` block's plain-text pseudocode
+    into an algpseudocode `algorithmic` environment. Expects: a first line
+    "Algorithm N. Caption text.", an optional "Require: ..." line, then
+    numbered steps ("1. ...", "2. ..."), with "for ... do" / "end for"
+    pairs mapped to \\For/\\EndFor, "return ..." mapped to \\Return, a
+    trailing "{comment text}" on any line mapped to a trailing \\Comment,
+    and everything else mapped to \\State. Not a general pseudocode
+    parser -- handles exactly this manuscript's plain, single-loop-nesting
+    style."""
+    content_lines = [l for l in lines if l.strip() != ""]
+    if not content_lines:
+        return ""
+
+    _ALG_COUNTER[0] += 1
+    alg_num = _ALG_COUNTER[0]
+
+    caption_line = content_lines[0].strip()
+    cap_m = re.match(r"^Algorithm\s+\d+\.\s*(.*)$", caption_line)
+    caption_body = cap_m.group(1) if cap_m else caption_line
+
+    out = [
+        "\\begin{algorithm}[!htbp]",
+        f"\\caption{{{escape_text(caption_body)}}}",
+        f"\\label{{alg:{alg_num}}}",
+        "\\begin{algorithmic}[1]",
+    ]
+
+    for raw in content_lines[1:]:
+        s = raw.strip()
+        s = re.sub(r"^\d+\.\s*", "", s)  # drop leading "N. " step numbering
+
+        comment = None
+        cm = re.search(r"\{([^{}]*)\}\s*$", s)
+        if cm:
+            comment = cm.group(1)
+            s = s[:cm.start()].rstrip()
+
+        comment_tex = f" \\Comment{{{escape_text(comment)}}}" if comment else ""
+
+        if s.lower().startswith("require:"):
+            out.append(f"\\Require {escape_text(s[len('require:'):].strip())}")
+        elif re.match(r"^for\s+.+\s+do$", s, re.IGNORECASE):
+            loop_text = re.sub(r"^for\s+", "", s, flags=re.IGNORECASE)
+            loop_text = re.sub(r"\s+do$", "", loop_text, flags=re.IGNORECASE)
+            out.append(f"\\For{{{escape_text(loop_text)}}}{comment_tex}")
+        elif s.lower() == "end for":
+            out.append("\\EndFor")
+        elif s.lower().startswith("return "):
+            out.append(f"\\Return {escape_text(s[len('return '):].strip())}{comment_tex}")
+        else:
+            out.append(f"\\State {escape_text(s)}{comment_tex}")
+
+    out.append("\\end{algorithmic}")
+    out.append("\\end{algorithm}")
+    return "\n".join(out)
+
+
 def convert():
     with open(SRC, encoding="utf-8") as f:
         lines = f.read().split("\n")
@@ -268,6 +329,16 @@ def render_block(body_lines):
             i += 1
             continue
 
+        if stripped == "```algorithm":
+            j = i + 1
+            alg_lines = []
+            while j < n and body_lines[j].strip() != "```":
+                alg_lines.append(body_lines[j])
+                j += 1
+            out.append(render_algorithm_block(alg_lines))
+            i = j + 1
+            continue
+
         img_m = re.match(r"^!\[(.*)\]\((.*)\)$", stripped)
         if img_m:
             caption, path = img_m.group(1), img_m.group(2)
@@ -278,7 +349,7 @@ def render_block(body_lines):
             label_m = re.match(r"^Figure\s+(\d+[a-z]?)\.\s*(.*)$", caption)
             fig_label = f"fig:{label_m.group(1)}" if label_m else None
             caption_body = label_m.group(2) if label_m else caption
-            out.append("\\begin{figure}[htbp]")
+            out.append("\\begin{figure}[!htbp]")
             out.append("\\centering")
             out.append(f"\\includegraphics[width=\\textwidth]{{{path}}}")
             out.append(f"\\caption{{{escape_text(caption_body)}}}")
@@ -329,7 +400,7 @@ def render_block(body_lines):
         # Plain paragraph: accumulate contiguous non-blank, non-structural lines
         para = [stripped]
         j = i + 1
-        while j < n and body_lines[j].strip() != "" and not body_lines[j].strip().startswith(("#", "|", "---", "**Table", "![")) \
+        while j < n and body_lines[j].strip() != "" and not body_lines[j].strip().startswith(("#", "|", "---", "**Table", "![", "```")) \
                 and not re.match(r"^\d+\.\s", body_lines[j].strip()) and not body_lines[j].strip().startswith("- "):
             para.append(body_lines[j].strip())
             j += 1
@@ -351,9 +422,28 @@ def build_preamble(title, abstract_tex, keywords_tex):
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath, amssymb}
+\usepackage{float}
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\floatstyle{plain}
+\restylefloat{figure}
+
+%% Float-placement tuning: with 8 figures relative to the amount of text,
+%% LaTeX's default float parameters defer nearly all of them to the end of
+%% the document (all landing on consecutive pages far from their in-text
+%% \ref, rather than near where each is discussed). These loosen the
+%% per-page float budget so figures place close to their reference point
+%% instead of queuing up.
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{6}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.9}
+\renewcommand{\textfraction}{0.1}
 
 \begin{document}
 \let\WriteBookmarks\relax

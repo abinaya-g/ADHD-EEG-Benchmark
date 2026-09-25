@@ -3,9 +3,28 @@
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath, amssymb}
+\usepackage{float}
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\floatstyle{plain}
+\restylefloat{figure}
+
+% Float-placement tuning: with 8 figures relative to the amount of text,
+% LaTeX's default float parameters defer nearly all of them to the end of
+% the document (all landing on consecutive pages far from their in-text
+% \ref, rather than near where each is discussed). These loosen the
+% per-page float budget so figures place close to their reference point
+% instead of queuing up.
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{6}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.9}
+\renewcommand{\textfraction}{0.1}
 
 \begin{document}
 \let\WriteBookmarks\relax
@@ -212,7 +231,7 @@ The central methodological change relative to the original study \cite{taghibeyg
 
 
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
 
 \centering
 
@@ -223,6 +242,34 @@ The central methodological change relative to the original study \cite{taghibeyg
 \label{fig:1}
 
 \end{figure}
+
+Algorithm 1 states this same procedure in pseudocode, for one repetition.
+
+
+
+\begin{algorithm}[!htbp]
+\caption{Nested, subject-grouped cross-validation (one repetition).}
+\label{alg:1}
+\begin{algorithmic}[1]
+\Require subject list S (|S| = 121), epoch set X, labels y, inner folds k = 4
+\State Shuffle the unique subject list in S under this repetition's seed
+\State Partition S into 5 outer folds by round-robin, class-balanced assignment
+\For{each outer fold f = 1 to 5}
+\State S\_train <- subjects in the other 4 folds
+\State S\_test <- subjects in fold f \Comment{held out entirely for this fold}
+\State Split S\_train into 4 inner folds (GroupKFold on S\_train only)
+\For{each inner fold i = 1 to 4}
+\State Fit a fresh model on that inner fold's inner-train subjects
+\State Monitor loss on that inner fold's inner-validation subjects
+\State Record the training epoch at minimum inner-validation loss
+\EndFor
+\State budget <- median of the 4 recorded epoch counts
+\State Fit one final model on all of S\_train for \texttt{budget} epochs \Comment{no validation split; no early-stopping signal available at this step}
+\State Predict once on every subject in S\_test; save each prediction with its subject id
+\EndFor
+\Return per-subject predictions for this repetition
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{Repeated evaluation and random seeds}
 
@@ -396,7 +443,7 @@ Figure 2 shows the subject-level ROC curves for every model, and Figure 3 shows 
 
 
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
 
 \centering
 
@@ -408,7 +455,7 @@ Figure 2 shows the subject-level ROC curves for every model, and Figure 3 shows 
 
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
 
 \centering
 
@@ -467,7 +514,7 @@ Figure 4 shows these balanced-accuracy point estimates and 95\% confidence inter
 
 
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
 
 \centering
 
@@ -520,7 +567,7 @@ Figure 5 shows the distribution of balanced accuracy across the 25 per-(repetiti
 
 
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
 
 \centering
 
@@ -538,7 +585,7 @@ CORAL-aligned features (CNN+LR\_withCORAL, balanced accuracy 0.735, 95\% CI 0.65
 
 
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
 
 \centering
 
@@ -601,7 +648,7 @@ Figure 7 shows the full distribution underlying these comparisons for CNN (panel
 
 
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
 
 \centering
 
@@ -613,7 +660,7 @@ Figure 7 shows the full distribution underlying these comparisons for CNN (panel
 
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
 
 \centering
 

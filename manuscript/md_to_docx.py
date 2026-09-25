@@ -82,6 +82,31 @@ def build_docx(md_path, out_path):
             i += 1
             continue
 
+        if stripped == "```algorithm":
+            j = i + 1
+            alg_lines = []
+            while j < n and lines[j].strip() != "```":
+                alg_lines.append(lines[j].strip())
+                j += 1
+            alg_lines = [l for l in alg_lines if l != ""]
+            if alg_lines:
+                cap_p = doc.add_paragraph()
+                cap_run = cap_p.add_run(alg_lines[0])
+                cap_run.bold = True
+                box = doc.add_table(rows=1, cols=1)
+                box.style = "Table Grid"
+                cell = box.cell(0, 0)
+                cell.paragraphs[0].text = ""
+                for k, code_line in enumerate(alg_lines[1:]):
+                    p = cell.paragraphs[0] if k == 0 else cell.add_paragraph()
+                    p.paragraph_format.space_after = Pt(0)
+                    run = p.add_run(code_line)
+                    run.font.name = "Courier New"
+                    run.font.size = Pt(9)
+                doc.add_paragraph("")
+            i = j + 1
+            continue
+
         img_m = re.match(r"^!\[(.*)\]\((.*)\)$", stripped)
         if img_m:
             caption, rel_path = img_m.group(1), img_m.group(2)
@@ -140,7 +165,7 @@ def build_docx(md_path, out_path):
         # plain paragraph (accumulate until blank line for nicer wrapping)
         para_lines = [stripped]
         j = i + 1
-        while j < n and lines[j].strip() != "" and not lines[j].strip().startswith(("#", "|", "---", "![")) \
+        while j < n and lines[j].strip() != "" and not lines[j].strip().startswith(("#", "|", "---", "![", "```")) \
                 and not re.match(r"^\d+\.\s", lines[j].strip()) and not lines[j].strip().startswith(("- ", "* ")):
             para_lines.append(lines[j].strip())
             j += 1

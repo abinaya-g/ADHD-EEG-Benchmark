@@ -137,6 +137,29 @@ The central methodological change relative to the original study [15] is the rep
 
 ![Figure 1. Schematic of the nested, subject-grouped cross-validation design for one repetition (5 outer folds). Each outer fold trains on that fold's outer-train subjects, with an inner 4-fold GroupKFold split (not shown at this resolution) selecting the training-epoch budget; the outer-test subjects (right, red) are evaluated exactly once and never contribute to any training or selection step.](FIGURES/fig3_nested_cv_schematic.png)
 
+Algorithm 1 states this same procedure in pseudocode, for one repetition.
+
+```algorithm
+Algorithm 1. Nested, subject-grouped cross-validation (one repetition).
+Require: subject list S (|S| = 121), epoch set X, labels y, inner folds k = 4
+1. Shuffle the unique subject list in S under this repetition's seed
+2. Partition S into 5 outer folds by round-robin, class-balanced assignment
+3. for each outer fold f = 1 to 5 do
+4.     S_train <- subjects in the other 4 folds
+5.     S_test <- subjects in fold f {held out entirely for this fold}
+6.     Split S_train into 4 inner folds (GroupKFold on S_train only)
+7.     for each inner fold i = 1 to 4 do
+8.         Fit a fresh model on that inner fold's inner-train subjects
+9.         Monitor loss on that inner fold's inner-validation subjects
+10.        Record the training epoch at minimum inner-validation loss
+11.    end for
+12.    budget <- median of the 4 recorded epoch counts
+13.    Fit one final model on all of S_train for `budget` epochs {no validation split; no early-stopping signal available at this step}
+14.    Predict once on every subject in S_test; save each prediction with its subject id
+15. end for
+16. return per-subject predictions for this repetition
+```
+
 ## 3.13 Repeated evaluation and random seeds
 
 The entire outer-fold procedure described in Section 3.12 is repeated five times with five independent seeds (42, 43, 44, 45, 46), each producing a different random shuffling of subjects into outer folds (and, within each outer fold, a different random shuffling into inner folds). Every model-fitting call is preceded by a call that seeds Python's own random-number generator, NumPy, and TensorFlow using a seed derived from the repetition and outer-fold index, so that a given fold's training is reproducible given the same code and the same hardware, with the documented exception that certain GPU convolution kernels retain a small amount of run-to-run nondeterminism even under a fixed seed; CPU execution is deterministic under these seeds. Five repetitions across five outer folds yield 25 outer-fold evaluations per model at the native 128 Hz condition — the correct way to describe this quantity, adopted throughout this paper, is 25 *paired outer-fold performance estimates drawn from five repeated five-fold partitions of the same 121 subjects*, not 25 independent subject cohorts, since the same subjects reappear, under a different partition, in every repetition.
