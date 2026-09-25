@@ -444,7 +444,7 @@ This study set out to determine how much of a previously reported raw-EEG CNN-an
 
 - **Repository**: `https://github.com/abinaya-g/ADHD-EEG-Benchmark`
 - **Branch**: `claude/adhd-eeg-manuscript-revision-boeb24`
-- **Commit**: `PENDING_FINAL_COMMIT_HASH` (the commit that froze this manuscript revision together with `results_final/predictions/all_predictions.csv` and `manuscript/TABLES/`)
+- **Commit**: `6f0c1e8` (the commit that froze this manuscript revision together with `results_final/predictions/all_predictions.csv` and `manuscript/TABLES/`)
 - **Dataset**: public Kaggle dataset associated with TaghiBeyglou et al. [15] (121 subjects, 61 ADHD / 60 control, 19-channel EEG); not redistributed by this repository.
 - **Cross-validation design**: 5 outer folds, 4 inner folds, 5 repetitions, seeds [42, 43, 44, 45, 46] (each repetition's 5 outer folds use a fold-level seed derived from its repetition seed, e.g. 42000–42004 for repetition 42; see Section 3.12–3.13 and `results_final/predictions/all_predictions.csv`'s `seed` column).
 - **Training configuration**: Adam optimizer, learning rate 1×10⁻⁴, batch size 16, maximum 100 training epochs, early-stopping patience 8 epochs (monitored on inner-validation loss); 2000 resamples for the subject-level bootstrap confidence intervals in Table 4.
