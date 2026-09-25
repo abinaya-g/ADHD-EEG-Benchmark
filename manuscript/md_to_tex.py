@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Markdown -> LaTeX (elsarticle) converter, purpose-built for manuscript.md.
+"""Markdown -> LaTeX (Elsevier cas-sc) converter, purpose-built for manuscript.md.
 Not a general converter: handles exactly this file's markdown subset
 (headers, pipe tables, bold/italic, numbered/bulleted lists, [N]/[N,M,...]
-citation brackets mapped to \\cite{bibkey}) and escapes LaTeX special
-characters in prose and table cells. No LaTeX toolchain is available in
-this environment to compile and verify the output; review in Overleaf
-(or any local TeX install) before submission.
+citation brackets mapped to \\cite{bibkey}, ![caption](path) images mapped to
+figure environments) and escapes LaTeX special characters in prose and table
+cells. Document-class/frontmatter/backmatter conventions (cas-sc, \\shorttitle,
+\\author[n]{}/\\affiliation[n]{}/\\ead/\\cormark, \\begin{abstract}/\\begin{keywords},
+CRediT/Ethical statement/\\printcredits backmatter, model1-num-names bib style)
+follow the structure of a cas-sc-class reference manuscript supplied by the user.
+No LaTeX toolchain is available in this environment to compile and verify the
+output; review in Overleaf (or any local TeX install) before submission.
 """
 import re
 
@@ -177,6 +181,9 @@ def convert():
 
     abstract_start = find(lambda l: l.strip() == "# Abstract")
     intro_start = find(lambda l: l.strip().startswith("# 1. Introduction"))
+    repro_start = find(lambda l: l.strip().startswith("# 8. Reproducibility Statement"))
+    data_start = find(lambda l: l.strip().startswith("# 9. Data and Code Availability"))
+    ethics_start = find(lambda l: l.strip().startswith("# 10. Ethics Statement"))
     refs_start = find(lambda l: l.strip() == "# References")
 
     # --- Title ---
@@ -198,9 +205,45 @@ def convert():
     abstract_tex = escape_text(abstract_text)
     keywords_tex = escape_text(keywords_line)
 
-    # --- Body: from Introduction to References (exclusive) ---
-    body_lines = lines[intro_start:refs_start]
+    # --- Body: Introduction through Conclusion (§1-7); §8-10 rendered
+    # separately below into cas-sc backmatter sections. ---
+    body_lines = lines[intro_start:repro_start]
+    repro_lines = lines[repro_start + 1:data_start]
+    data_lines = lines[data_start + 1:ethics_start]
+    ethics_lines = lines[ethics_start + 1:refs_start]
 
+    body_tex = render_block(body_lines)
+    repro_tex = render_block(repro_lines)
+    data_tex = render_block(data_lines)
+    ethics_tex = render_block(ethics_lines)
+
+    # The cas-sc backmatter moves the Reproducibility Statement out of the
+    # numbered body (§8 in manuscript.md) into an appendix, so in-prose
+    # references to "Section 8" would otherwise dangle; retarget them to
+    # the appendix label. Markdown/DOCX keep "Section 8" verbatim, since
+    # §8 remains a real numbered section in those formats.
+    body_tex = body_tex.replace(
+        "(Section 8, Reproducibility Statement)",
+        "(Appendix~\\ref{sec:appendix:repro}, Reproducibility Appendix)",
+    )
+    data_tex = data_tex.replace(
+        "stated in Section 8.",
+        "stated in Appendix~\\ref{sec:appendix:repro}.",
+    )
+
+    preamble = build_preamble(title, abstract_tex, keywords_tex)
+    backmatter = build_backmatter(repro_tex, data_tex, ethics_tex)
+
+    full_tex = preamble + body_tex + backmatter
+
+    with open(OUT, "w", encoding="utf-8") as f:
+        f.write(full_tex)
+    print(f"Wrote {OUT} ({len(full_tex.split())} words)")
+
+
+def render_block(body_lines):
+    """Convert a list of markdown lines (headers, paragraphs, lists, pipe
+    tables, images) into a joined LaTeX string."""
     out = []
     i = 0
     n = len(body_lines)
@@ -224,6 +267,26 @@ def convert():
                 out.append(f"\\section{{{text_tex}}}")
             else:
                 out.append(f"\\subsection{{{text_tex}}}")
+            i += 1
+            continue
+
+        img_m = re.match(r"^!\[(.*)\]\((.*)\)$", stripped)
+        if img_m:
+            caption, path = img_m.group(1), img_m.group(2)
+            # Manual "Figure N[a/b]. " prefixes are for the Markdown/Word
+            # drafts, where nothing auto-numbers; LaTeX's own \caption
+            # numbers figures automatically, so strip the prefix here to
+            # avoid a doubled "Fig. 2: Figure 2. ..." caption.
+            label_m = re.match(r"^Figure\s+(\d+[a-z]?)\.\s*(.*)$", caption)
+            fig_label = f"fig:{label_m.group(1)}" if label_m else None
+            caption_body = label_m.group(2) if label_m else caption
+            out.append("\\begin{figure}[htbp]")
+            out.append("\\centering")
+            out.append(f"\\includegraphics[width=\\textwidth]{{{path}}}")
+            out.append(f"\\caption{{{escape_text(caption_body)}}}")
+            if fig_label:
+                out.append(f"\\label{{{fig_label}}}")
+            out.append("\\end{figure}")
             i += 1
             continue
 
@@ -268,7 +331,7 @@ def convert():
         # Plain paragraph: accumulate contiguous non-blank, non-structural lines
         para = [stripped]
         j = i + 1
-        while j < n and body_lines[j].strip() != "" and not body_lines[j].strip().startswith(("#", "|", "---", "**Table")) \
+        while j < n and body_lines[j].strip() != "" and not body_lines[j].strip().startswith(("#", "|", "---", "**Table", "![")) \
                 and not re.match(r"^\d+\.\s", body_lines[j].strip()) and not body_lines[j].strip().startswith("- "):
             para.append(body_lines[j].strip())
             j += 1
@@ -276,57 +339,101 @@ def convert():
         out.append("")
         i = j
 
-    body_tex = "\n\n".join(out)
+    return "\n\n".join(out)
 
-    preamble = r"""\documentclass[preprint,12pt]{elsarticle}
-\usepackage[utf8]{inputenc}
+
+def build_preamble(title, abstract_tex, keywords_tex):
+    # cas-sc (Elsevier) document-class conventions, following the structure
+    # of a cas-sc-class reference manuscript supplied by the user: numeric
+    # natbib citations, \shorttitle/\shortauthors running heads, \title[mode=title],
+    # per-author \author[n]{}/\cormark/\ead blocks, a shared \affiliation[n]{},
+    # \begin{abstract}/\begin{keywords} (not elsarticle's \begin{keyword}), \maketitle.
+    return r"""\documentclass[a4paper,fleqn]{cas-sc}
+
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage[T1]{fontenc}
+\usepackage{amsmath, amssymb}
 \usepackage{booktabs}
-\usepackage{amsmath}
-\usepackage{amssymb}
+\usepackage{multirow}
 \usepackage{graphicx}
-\usepackage{hyperref}
-
-\journal{Biomedical Signal Processing and Control}
 
 \begin{document}
+\let\WriteBookmarks\relax
+\def\floatpagepagefraction{1}
+\def\textpagefraction{.001}
 
-\begin{frontmatter}
+\shorttitle{%s}
+\shortauthors{Author(s) To Be Inserted}
 
-\title{%s}
+\title[mode=title]{%s}
 
-%% TODO: insert author names and affiliations before submission.
-\author[label1]{Author Name(s) To Be Inserted}
-\address[label1]{Affiliation To Be Inserted}
+%% TODO: insert author names, emails and affiliations before submission.
+\author[1]{Author Name(s) To Be Inserted}
+\cormark[1]
+\ead{email@to.be.inserted}
+
+\affiliation[1]{organization={Affiliation To Be Inserted},
+                city={City},
+                state={State},
+                country={Country}}
+
+\cortext[cor1]{Corresponding author}
 
 \begin{abstract}
 %s
 \end{abstract}
 
-\begin{keyword}
+\begin{keywords}
 %s
-\end{keyword}
+\end{keywords}
 
-\end{frontmatter}
+\maketitle
 
-""" % (escape_text(title), abstract_tex, keywords_tex.replace(";", " \\sep "))
+""" % (escape_text(title), escape_text(title), abstract_tex, keywords_tex.replace(";", " \\sep "))
 
-    backmatter = r"""
+
+def build_backmatter(repro_tex, data_tex, ethics_tex):
+    # cas-sc backmatter convention: unnumbered \section*{} blocks for
+    # Acknowledgements/Data Availability/Competing Interests/Funding/CRediT/
+    # Ethical statement, \printcredits, then a \clearpage \appendix carrying
+    # the Reproducibility Statement (kept as an appendix, as in the cas-sc
+    # reference manuscript's own "Reproducibility Appendix"), and a
+    # model1-num-names/references.bib bibliography.
+    return r"""
 
 \section*{Acknowledgements}
-%% TODO: insert acknowledgements / funding statement if applicable.
+The EEG dataset analyzed in this study was collected and released by
+TaghiBeyglou et al.; see the Data Availability statement below.
 
-\bibliographystyle{elsarticle-num}
+\section*{Data Availability}
+%s
+
+\section*{Competing Interests}
+The authors declare no competing interests.
+
+\section*{Funding}
+%% TODO: insert funding statement if applicable.
+
+\section*{CRediT authorship contribution statement}
+%% TODO: insert per-author CRediT contribution statement before submission.
+
+\section*{Ethical statement}
+%s
+
+\printcredits
+
+\clearpage
+\appendix
+\section{Reproducibility Appendix}
+\label{sec:appendix:repro}
+
+%s
+
+\bibliographystyle{model1-num-names}
 \bibliography{references}
 
 \end{document}
-"""
-
-    full_tex = preamble + body_tex + backmatter
-
-    with open(OUT, "w", encoding="utf-8") as f:
-        f.write(full_tex)
-    print(f"Wrote {OUT} ({len(full_tex.split())} words)")
+""" % (data_tex, ethics_tex, repro_tex)
 
 
 if __name__ == "__main__":

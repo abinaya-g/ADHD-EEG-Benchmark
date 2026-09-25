@@ -1,33 +1,43 @@
-\documentclass[preprint,12pt]{elsarticle}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{booktabs}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{graphicx}
-\usepackage{hyperref}
+\documentclass[a4paper,fleqn]{cas-sc}
 
-\journal{Biomedical Signal Processing and Control}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
 
 \begin{document}
+\let\WriteBookmarks\relax
+\def\floatpagepagefraction{1}
+\def\textpagefraction{.001}
 
-\begin{frontmatter}
+\shorttitle{Subject-Independent Detection of ADHD from Raw EEG: A Nested Cross-Validation Reassessment of CNN and Hybrid Classifiers}
+\shortauthors{Author(s) To Be Inserted}
 
-\title{Subject-Independent Detection of ADHD from Raw EEG: A Nested Cross-Validation Reassessment of CNN and Hybrid Classifiers}
+\title[mode=title]{Subject-Independent Detection of ADHD from Raw EEG: A Nested Cross-Validation Reassessment of CNN and Hybrid Classifiers}
 
-% TODO: insert author names and affiliations before submission.
-\author[label1]{Author Name(s) To Be Inserted}
-\address[label1]{Affiliation To Be Inserted}
+% TODO: insert author names, emails and affiliations before submission.
+\author[1]{Author Name(s) To Be Inserted}
+\cormark[1]
+\ead{email@to.be.inserted}
+
+\affiliation[1]{organization={Affiliation To Be Inserted},
+                city={City},
+                state={State},
+                country={Country}}
+
+\cortext[cor1]{Corresponding author}
 
 \begin{abstract}
 \textbf{Background.} Electroencephalography (EEG) is increasingly explored as a low-cost, non-invasive complement to behavioural assessment in attention-deficit/hyperactivity disorder (ADHD), and several studies applying convolutional neural networks (CNNs) directly to raw EEG have reported classification accuracies well above 90\%, occasionally approaching 100\%. A substantial share of this literature evaluates models by pooling short EEG segments (epochs) across subjects rather than by holding out entire subjects, which risks an optimistic bias when segments from the same child appear in both the training and the evaluation partition. \textbf{Objective.} We re-evaluated a CNN and hybrid-classifier pipeline originally developed for raw-EEG ADHD detection under a nested, subject-independent cross-validation design, and compared it against three established EEG deep-learning architectures (EEGNet, ShallowConvNet, DeepConvNet), a covariance-alignment domain-adaptation step (CORAL), and a sensitivity analysis of the assumed EEG sampling rate. \textbf{Methods.} We used a public 19-channel EEG dataset of 121 children (61 with ADHD, 60 typically developing controls; 508 thirty-second epochs) recorded during a visual attention task. Models were evaluated with 5 outer folds $\times$ 4 inner folds $\times$ 5 repetitions of subject-grouped cross-validation, in which the inner loop alone controlled early stopping and the outer-test subjects never contributed to any training, validation, or model-selection step. Epoch-level predictions were aggregated to one prediction per child (primary aggregation: mean predicted probability) before computing accuracy, balanced accuracy, sensitivity, specificity, precision, F1, Matthews correlation coefficient (MCC), and the area under the receiver operating characteristic curve (AUC). Ninety-five percent confidence intervals were obtained by subject-level bootstrap (2000 resamples), and pairwise model comparisons used the Wilcoxon signed-rank test on paired per-outer-fold subject-level estimates with Holm--Bonferroni correction. \textbf{Results.} At the subject level, EEGNet obtained the highest balanced accuracy (0.793, 95\% CI 0.723--0.862; AUC 0.902, 95\% CI 0.844--0.949), significantly exceeding the plain CNN (balanced accuracy 0.547, 95\% CI 0.459--0.627; Holm-adjusted p = 0.0002). Six of seven CNN-derived hybrid classifiers (logistic regression, radial-basis-function support vector machine, random forest, linear support vector machine, k-nearest neighbours, and both CORAL variants of logistic regression) also outperformed the plain CNN significantly after correction, with the CNN+LR configuration reaching a balanced accuracy of 0.743 (95\% CI 0.667--0.816). DeepConvNet did not differ significantly from the plain CNN (balanced accuracy 0.589, 95\% CI 0.511--0.663; Holm-adjusted p = 1.0). Covariance alignment (CORAL) applied to the logistic-regression classifier did not improve balanced accuracy relative to the uncorrected classifier (0.735 versus 0.743). A sensitivity analysis comparing the native, assumed 128 Hz representation against a 128-to-512 Hz FFT-interpolated representation found no statistically significant difference for either CNN or EEGNet (both p > 0.18; 5 paired outer folds each), indicating that resampling artefacts alone are unlikely to explain the performance range observed here. \textbf{Conclusion.} Under subject-independent evaluation, this raw-EEG CNN/hybrid pipeline generalizes across held-out children in the 0.55--0.79 balanced-accuracy range depending on the classifier used, well below the near-ceiling figures reported by several recent segment-evaluated studies on related or identical data. The results support hybrid CNN-plus-classical-classifier and standard deep architectures (EEGNet in particular) as more promising directions than the plain CNN evaluated in the original study, while underscoring that subject-level, uncertainty-quantified evaluation is necessary before EEG-based ADHD classifiers can be meaningfully compared across studies or considered for any downstream clinical use.
 \end{abstract}
 
-\begin{keyword}
+\begin{keywords}
 ADHD \sep  electroencephalography \sep  convolutional neural network \sep  subject-independent cross-validation \sep  nested cross-validation \sep  EEGNet \sep  domain adaptation \sep  CORAL
-\end{keyword}
+\end{keywords}
 
-\end{frontmatter}
+\maketitle
 
 \section{Introduction}
 
@@ -199,9 +209,21 @@ DeepConvNet was reimplemented following the same source \cite{schirrmeister2017d
 
 \subsection{Nested subject-independent cross-validation}
 
-The central methodological change relative to the original study \cite{taghibeyglou2022detection} is the replacement of a single grouped k-fold split with a nested, repeated design. For each of 5 repetitions (independently seeded, Section 3.13), the 121 subjects are partitioned into 5 outer folds using a class-balanced, seed-shuffled adaptation of group k-fold splitting: the unique subject list is shuffled under that repetition's seed, subjects are then distributed round-robin by diagnostic label across the 5 folds to keep each fold's ADHD/control ratio close to the overall dataset ratio, and the resulting fold assignment guarantees --- by construction --- that no subject is split across folds. For each outer fold, the remaining four folds' subjects form the outer-training set. Within that outer-training set only, a 4-fold group k-fold split (scikit-learn's \texttt{GroupKFold}) forms the inner loop: for each of the 4 inner folds, a fresh model is trained on the inner-training subjects with early stopping monitored on the inner-validation subjects' loss, and the training epoch at which that inner fold's monitored loss was minimized is recorded. The median of these four recorded epoch counts, across the four inner folds, is then used as a fixed training budget to fit one final model on \textit{all} of that outer fold's training subjects, without any validation split at all in this final fit --- meaning no early-stopping signal of any kind is available during this final fit, because the number of training epochs was already fixed by the inner loop before this fit began. This final model is then evaluated exactly once, on the outer-test subjects, who have not contributed an epoch to any step of the process described above --- not the inner splits, not the early-stopping decision, not the final fit, and, for the classifiers in Section 3.8, not the feature-extractor training either.
+The central methodological change relative to the original study \cite{taghibeyglou2022detection} is the replacement of a single grouped k-fold split with a nested, repeated design. For each of 5 repetitions (independently seeded, Section 3.13), the 121 subjects are partitioned into 5 outer folds using a class-balanced, seed-shuffled adaptation of group k-fold splitting: the unique subject list is shuffled under that repetition's seed, subjects are then distributed round-robin by diagnostic label across the 5 folds to keep each fold's ADHD/control ratio close to the overall dataset ratio, and the resulting fold assignment guarantees --- by construction --- that no subject is split across folds. For each outer fold, the remaining four folds' subjects form the outer-training set. Within that outer-training set only, a 4-fold group k-fold split (scikit-learn's \texttt{GroupKFold}) forms the inner loop: for each of the 4 inner folds, a fresh model is trained on the inner-training subjects with early stopping monitored on the inner-validation subjects' loss, and the training epoch at which that inner fold's monitored loss was minimized is recorded. The median of these four recorded epoch counts, across the four inner folds, is then used as a fixed training budget to fit one final model on \textit{all} of that outer fold's training subjects, without any validation split at all in this final fit --- meaning no early-stopping signal of any kind is available during this final fit, because the number of training epochs was already fixed by the inner loop before this fit began. This final model is then evaluated exactly once, on the outer-test subjects, who have not contributed an epoch to any step of the process described above --- not the inner splits, not the early-stopping decision, not the final fit, and, for the classifiers in Section 3.8, not the feature-extractor training either. Figure 1 shows this design schematically for one repetition's 5 outer folds.
 
 
+
+\begin{figure}[htbp]
+
+\centering
+
+\includegraphics[width=\textwidth]{FIGURES/fig3_nested_cv_schematic.png}
+
+\caption{Schematic of the nested, subject-grouped cross-validation design for one repetition (5 outer folds). Each outer fold trains on that fold's outer-train subjects, with an inner 4-fold GroupKFold split (not shown at this resolution) selecting the training-epoch budget; the outer-test subjects (right, red) are evaluated exactly once and never contribute to any training or selection step.}
+
+\label{fig:1}
+
+\end{figure}
 
 \subsection{Repeated evaluation and random seeds}
 
@@ -247,7 +269,7 @@ Because the dataset's true sampling rate is not verifiable from the released fil
 
 \subsection{Implementation and computational environment}
 
-All models were implemented in TensorFlow/Keras \cite{abadi2016tensorflow} (build\_cnn, build\_eegnet, build\_shallow\_convnet, and build\_deep\_convnet functions), and classical classifiers used scikit-learn \cite{pedregosa2011scikitlearn}. Training used the Adam optimizer \cite{kingma2015adam} with a learning rate of $1\times10^{-4}$, a batch size of 16, a maximum of 100 training epochs, and an early-stopping patience of 8 epochs (monitored on inner-validation loss, as described in Section 3.12). The 95\% confidence intervals reported in Section 4 used 2000 bootstrap resamples. Experiments were run on a cloud GPU instance (NVIDIA Tesla T4). We record here, rather than infer, the exact package versions actually used for the run that produced the results in Section 4: \textbf{this information was not captured at the time the run was executed and is marked here as an item to be confirmed before submission} (Section 8, Reproducibility Statement) --- we recommend recording \texttt{tf.\_\_version\_\_}, \texttt{sklearn.\_\_version\_\_}, \texttt{numpy.\_\_version\_\_}, and \texttt{scipy.\_\_version\_\_} at the start of any future run intended to reproduce these figures, since the notebook environment (Google Colab) uses whichever versions are preinstalled on its base image at run time rather than versions pinned by this project's own dependency file.
+All models were implemented in TensorFlow/Keras \cite{abadi2016tensorflow} (build\_cnn, build\_eegnet, build\_shallow\_convnet, and build\_deep\_convnet functions), and classical classifiers used scikit-learn \cite{pedregosa2011scikitlearn}. Training used the Adam optimizer \cite{kingma2015adam} with a learning rate of $1\times10^{-4}$, a batch size of 16, a maximum of 100 training epochs, and an early-stopping patience of 8 epochs (monitored on inner-validation loss, as described in Section 3.12). The 95\% confidence intervals reported in Section 4 used 2000 bootstrap resamples. Experiments were run on a cloud GPU instance (NVIDIA Tesla T4). We record here, rather than infer, the exact package versions actually used for the run that produced the results in Section 4: \textbf{this information was not captured at the time the run was executed and is marked here as an item to be confirmed before submission} (Appendix~\ref{sec:appendix:repro}, Reproducibility Appendix) --- we recommend recording \texttt{tf.\_\_version\_\_}, \texttt{sklearn.\_\_version\_\_}, \texttt{numpy.\_\_version\_\_}, and \texttt{scipy.\_\_version\_\_} at the start of any future run intended to reproduce these figures, since the notebook environment (Google Colab) uses whichever versions are preinstalled on its base image at run time rather than versions pinned by this project's own dependency file.
 
 
 
@@ -363,6 +385,34 @@ EEGNet obtained the highest subject-level balanced accuracy of any model in this
 
 
 
+Figure 2 shows the subject-level ROC curves for every model, and Figure 3 shows the corresponding subject-level confusion matrices.
+
+
+
+\begin{figure}[htbp]
+
+\centering
+
+\includegraphics[width=\textwidth]{FIGURES/fig5_subject_roc.png}
+
+\caption{Subject-level receiver operating characteristic (ROC) curves for all ten models, computed from the mean-predicted-probability aggregation described in Section 3.14 (n = 121 subjects each). Area-under-curve (AUC) values shown in the legend correspond to the AUC column of Table 3. EEGNet (AUC = 0.90) and ShallowConvNet (AUC = 0.86) dominate the other models across most of the false-positive-rate range; the plain CNN (AUC = 0.56) lies close to the chance diagonal.}
+
+\label{fig:2}
+
+\end{figure}
+
+\begin{figure}[htbp]
+
+\centering
+
+\includegraphics[width=\textwidth]{FIGURES/fig6_confusion.png}
+
+\caption{Subject-level confusion matrices for all ten models (n = 121 subjects; Control = typically developing, ADHD = attention-deficit/hyperactivity disorder). Counts reproduce the sensitivity and specificity values reported in Table 3 -- for example, EEGNet's 43 true-negative and 53 true-positive counts correspond to its specificity of 0.717 and sensitivity of 0.869, and CNN+GNB's 59 true-positive versus 7 true-negative counts illustrate the strong bias toward the ADHD class discussed above.}
+
+\label{fig:3}
+
+\end{figure}
+
 \subsection{Comparison with EEGNet, ShallowConvNet and DeepConvNet}
 
 The three established EEG architectures diverge considerably from one another under this identical evaluation protocol. EEGNet outperforms the plain CNN by a wide margin (balanced accuracy 0.793 versus 0.547) and outperforms every CNN-derived hybrid classifier as well. ShallowConvNet reaches a balanced accuracy (0.737) comparable to the best-performing hybrid classifiers, but with a markedly different sensitivity/specificity balance (0.607/0.867) than EEGNet's (0.869/0.717) or the CNN-derived hybrids' (typically higher sensitivity than specificity), suggesting these architectures are not simply scaled versions of one another in terms of the decision boundary they learn, even though they are evaluated on identical folds. DeepConvNet, the deepest of the three architectures tested, performs no better than the plain CNN (Section 4.5), which is consistent with the possibility that its greater parameter count is not well matched to a dataset of this size (121 subjects, 508 epochs) without additional regularization or data beyond what was used here --- a possibility we return to in Section 5.4 without treating it as established, since parameter count is only one of several architectural differences between DeepConvNet and the better-performing models.
@@ -405,6 +455,22 @@ CNN+GNB & 0.542 (0.496--0.588) & 0.673 (0.574--0.765) \\
 The confidence intervals in Table 4 are wide relative to the point-estimate differences between several neighbouring models --- for example, ShallowConvNet's balanced-accuracy interval (0.660--0.811) and CNN+LR's (0.667--0.816) overlap substantially --- which is expected given the modest sample size (121 subjects) and is precisely the kind of uncertainty that a single point estimate, of the kind more commonly reported in the literature reviewed in Section 2, would obscure entirely.
 
 
+
+Figure 4 shows these balanced-accuracy point estimates and 95\% confidence intervals for all ten models side by side, visually confirming the overlap described above.
+
+
+
+\begin{figure}[htbp]
+
+\centering
+
+\includegraphics[width=\textwidth]{FIGURES/fig4_model_comparison_balanced_accuracy.png}
+
+\caption{Subject-level balanced accuracy with 95\% bootstrap confidence intervals (2000 resamples) for all ten models at the native 128 Hz condition, corresponding to Table 4. EEGNet and ShallowConvNet's intervals lie clearly above DeepConvNet's and the plain CNN's, while the CNN-derived hybrid classifiers (CNN+LR, CNN+NLSVM, CNN+KNN, CNN+RF, CNN+LinearSVM) occupy an intermediate range with substantial mutual interval overlap.}
+
+\label{fig:4}
+
+\end{figure}
 
 \subsection{Statistical comparison between models}
 
@@ -451,11 +517,39 @@ After Holm correction, EEGNet, ShallowConvNet, and five of six CNN-derived class
 
 
 
+Figure 5 shows the full distribution of balanced accuracy across the 25 paired outer-fold estimates (5 outer folds $\times$ 5 repetitions) underlying Table 5's comparisons, rather than only the summary point estimates.
+
+
+
+\begin{figure}[htbp]
+
+\centering
+
+\includegraphics[width=\textwidth]{FIGURES/fig7_repeated_cv_distribution_balanced_accuracy.png}
+
+\caption{Distribution of balanced accuracy across the 25 paired outer-fold estimates (5 outer folds x 5 repetitions; Section 3.13) for each model, at the native 128 Hz condition. Boxes show the interquartile range and median (orange line); green triangles mark the mean. The wide spread for every model, including the best-performing ones (EEGNet, ShallowConvNet), illustrates why the paired, repeated-fold statistical tests in Table 5 -- rather than a single held-out point estimate -- are necessary to distinguish genuine model differences from fold-to-fold variability.}
+
+\label{fig:5}
+
+\end{figure}
+
 \subsection{CORAL domain-adaptation analysis}
 
-CORAL-aligned features (CNN+LR\_withCORAL, balanced accuracy 0.735, 95\% CI 0.659--0.807) did not outperform the unaligned features (CNN+LR / CNN+LR\_noCORAL, balanced accuracy 0.743, 95\% CI 0.667--0.816); the point estimate is marginally lower with alignment applied, and the two intervals overlap almost completely. We did not run a dedicated paired significance test between these two specific configurations (Table 5's reference model is the plain CNN, not CNN+LR\_noCORAL), so this should be read as an observed, not a statistically confirmed, difference. The covariance-distance values recorded before and after alignment (available in the accompanying results but not reduced to a single summary figure in this draft) would need to be reported and interpreted alongside this null result before any conclusion about \textit{why} CORAL did not help in this setting could be drawn (Section 5.7).
+CORAL-aligned features (CNN+LR\_withCORAL, balanced accuracy 0.735, 95\% CI 0.651--0.816) did not outperform the unaligned features (CNN+LR / CNN+LR\_noCORAL, balanced accuracy 0.743, 95\% CI 0.662--0.819); the point estimate is marginally lower with alignment applied, and the two intervals overlap almost completely. We did not run a dedicated paired significance test between these two specific configurations (Table 5's reference model is the plain CNN, not CNN+LR\_noCORAL), so this should be read as an observed, not a statistically confirmed, difference. Figure 6 shows the covariance-distance reduction achieved by CORAL alignment (left panel) alongside the resulting per-outer-fold accuracy distributions with and without alignment (right panel): the covariance distance between outer-train and outer-test feature distributions drops sharply and consistently after alignment, confirming the alignment step itself worked as intended, while the downstream accuracy distributions remain essentially overlapping --- the mechanism did what it was designed to do without translating into a detectable classification benefit in this setting, a dissociation discussed further in Section 5.7.
 
 
+
+\begin{figure}[htbp]
+
+\centering
+
+\includegraphics[width=\textwidth]{FIGURES/fig10_coral_covariance.png}
+
+\caption{CORAL domain adaptation. Left: covariance distance (Frobenius norm) between outer-train and outer-test CNN feature distributions before and after CORAL alignment, pooled across all outer folds and repetitions -- alignment reduces this distance sharply and consistently. Right: per-outer-fold epoch-level accuracy of the downstream logistic-regression classifier without versus with CORAL alignment, showing near-identical distributions despite the large reduction in covariance distance on the left.}
+
+\label{fig:6}
+
+\end{figure}
 
 \subsection{Resolution sensitivity analysis}
 
@@ -508,6 +602,34 @@ EEGNet: 128 Hz vs. interp. & 5 & +0.049 & (0.0006, 0.098) & 0.19 \\
 Neither comparison reaches significance at $\alpha$ = 0.05. For CNN, the interpolated condition scores numerically higher (0.586 versus 0.547); for EEGNet, the native condition scores numerically higher (0.793 versus 0.735); neither direction is statistically supported given only 5 paired outer folds, and we do not interpret either numerical difference as evidence that interpolation helps or harms classification, nor as evidence about the original recording's true sampling rate (Section 5.6).
 
 
+
+Figure 7 shows the full distribution underlying these comparisons for CNN (panel a) and EEGNet (panel b) separately.
+
+
+
+\begin{figure}[htbp]
+
+\centering
+
+\includegraphics[width=\textwidth]{FIGURES/fig8_resolution.png}
+
+\caption{Distribution of balanced accuracy across the 5 paired outer folds for the CNN model, native 128 Hz versus 128-to-512 Hz FFT-interpolated condition. Open circles mark individual fold values (n = 5 per condition, too few to resolve as a conventional box in the 128 Hz condition); the green triangle marks the mean.}
+
+\label{fig:7a}
+
+\end{figure}
+
+\begin{figure}[htbp]
+
+\centering
+
+\includegraphics[width=\textwidth]{FIGURES/fig8_resolution_EEGNet.png}
+
+\caption{Distribution of balanced accuracy across the 5 paired outer folds for the EEGNet model, native 128 Hz versus 128-to-512 Hz FFT-interpolated condition, plotted on the same scale convention as panel a.}
+
+\label{fig:7b}
+
+\end{figure}
 
 \section{Discussion}
 
@@ -631,7 +753,35 @@ This study set out to determine how much of a previously reported raw-EEG CNN-an
 
 
 
-\section{Reproducibility Statement}
+\section*{Acknowledgements}
+The EEG dataset analyzed in this study was collected and released by
+TaghiBeyglou et al.; see the Data Availability statement below.
+
+\section*{Data Availability}
+The EEG dataset analyzed in this study is a publicly available dataset originally described by TaghiBeyglou et al. \cite{taghibeyglou2022detection}; it is not redistributed as part of this manuscript or its accompanying repository, consistent with the terms under which it is released. All analysis code, the leakage-audit implementation, the table- and figure-generation scripts, and the exact configuration used to produce the results in Section 4 are available at the repository and commit stated in Appendix~\ref{sec:appendix:repro}. The GitHub repository is cited here as the location of the code and generated artifacts underlying this manuscript; it is not cited as an independent source of scientific evidence, which rests on the dataset, the described methodology, and the result files it was used to produce.
+
+
+
+\section*{Competing Interests}
+The authors declare no competing interests.
+
+\section*{Funding}
+% TODO: insert funding statement if applicable.
+
+\section*{CRediT authorship contribution statement}
+% TODO: insert per-author CRediT contribution statement before submission.
+
+\section*{Ethical statement}
+This study is a secondary, retrospective analysis of a previously collected, publicly released, de-identified EEG dataset \cite{taghibeyglou2022detection}. No new human-subjects data collection was performed for this study, and no new institutional ethical approval was sought or is claimed for this secondary analysis. Any ethical approval, consent procedure, or institutional review governing the original data collection is a matter of record in the original dataset's own documentation and the original publication \cite{taghibeyglou2022detection}, not restated or independently verified here.
+
+
+
+\printcredits
+
+\clearpage
+\appendix
+\section{Reproducibility Appendix}
+\label{sec:appendix:repro}
 
 \begin{itemize}
 
@@ -653,22 +803,7 @@ This study set out to determine how much of a previously reported raw-EEG CNN-an
 
 \end{itemize}
 
-\section{Data and Code Availability}
-
-The EEG dataset analyzed in this study is a publicly available dataset originally described by TaghiBeyglou et al. \cite{taghibeyglou2022detection}; it is not redistributed as part of this manuscript or its accompanying repository, consistent with the terms under which it is released. All analysis code, the leakage-audit implementation, the table- and figure-generation scripts, and the exact configuration used to produce the results in Section 4 are available at the repository and commit stated in Section 8. The GitHub repository is cited here as the location of the code and generated artifacts underlying this manuscript; it is not cited as an independent source of scientific evidence, which rests on the dataset, the described methodology, and the result files it was used to produce.
-
-
-
-\section{Ethics Statement}
-
-This study is a secondary, retrospective analysis of a previously collected, publicly released, de-identified EEG dataset \cite{taghibeyglou2022detection}. No new human-subjects data collection was performed for this study, and no new institutional ethical approval was sought or is claimed for this secondary analysis. Any ethical approval, consent procedure, or institutional review governing the original data collection is a matter of record in the original dataset's own documentation and the original publication \cite{taghibeyglou2022detection}, not restated or independently verified here.
-
-
-
-\section*{Acknowledgements}
-%% TODO: insert acknowledgements / funding statement if applicable.
-
-\bibliographystyle{elsarticle-num}
+\bibliographystyle{model1-num-names}
 \bibliography{references}
 
 \end{document}
