@@ -1,0 +1,2 @@
+n_subjects,balanced_accuracy_a,balanced_accuracy_b,mean_diff,boot_mean_diff,boot_median_diff,diff_ci_low_95,diff_ci_high_95,effect_size_std_boot,p_value_permutation,p_value_bootstrap,comparison,model_a,model_b
+121,0.7431693989071038,0.7348360655737705,0.008333333333333304,0.008369597516292612,0.008333333333333304,-0.017857142857142905,0.037735849056603765,0.5856963947562112,1.0,0.7754,CNN+LR vs CNN+LR_withCORAL,CNN+LR,CNN+LR_withCORAL
