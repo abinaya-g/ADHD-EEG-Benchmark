@@ -1,0 +1,3 @@
+2026-09-28T10:14:48.123543+00:00 {"status": "ok", "path": "/home/user/ADHD-EEG-Benchmark/la-kaie/results/raw/pilot/CEC2022/LA-KAIE-NoInteraction/inst01/run01.json", "runtime": 4.961269578000156, "best": 1.7053025658242404e-13}
+2026-09-28T10:14:53.924497+00:00 {"status": "ok", "path": "/home/user/ADHD-EEG-Benchmark/la-kaie/results/raw/pilot/CEC2022/LA-KAIE-Full/inst01/run01.json", "runtime": 10.752981984000144, "best": 5.684341886080802e-14}
+2026-09-28T10:14:54.791747+00:00 {"status": "ok", "path": "/home/user/ADHD-EEG-Benchmark/la-kaie/results/raw/pilot/CEC2022/LA-KAIE-NoLandscape/inst01/run01.json", "runtime": 11.610879181999735, "best": 1.7053025658242404e-13}

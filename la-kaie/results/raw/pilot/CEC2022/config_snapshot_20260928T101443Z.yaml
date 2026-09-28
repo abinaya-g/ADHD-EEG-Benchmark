@@ -1,0 +1,464 @@
+benchmark_config:
+  benchmark: CEC2022
+  dimension: 20
+  population_size: 30
+  runs: 30
+  max_fes: 200000
+  bounds:
+  - -100
+  - 100
+  instances: &id001
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  objective: error = F_i(x) - F_i*  (official cec22_test_func; identical callable
+    for all methods)
+  methods:
+    HBA: {}
+    MPA: {}
+    MPHB: {}
+    MPHBS:
+      K: 7
+      Ni: 3
+      rho_sub: 0.25
+      w_best: 0.05
+      gamma: 0.3
+      fad_before_p2: true
+      fad_after_p2: false
+    LA-KAIE:
+      variant: Full
+reproducibility:
+  master_seeds:
+    main: 20260405
+    baseline_validation: 31000000
+    smoke: 41000000
+    pilot: 51000000
+    sensitivity: 61000000
+  benchmark_offset:
+    CEC2022: 0
+    FIR: 100000
+  rng: numpy.random.Generator(PCG64(seed))
+  n_workers: 4
+  convergence_checkpoints: 200
+instances: *id001
+runs: 5
+max_fes: 200000
+labels:
+- HBA
+- MPA
+- MPHB
+- MPHBS
+- LA-KAIE-Full
+- LA-KAIE-NoLandscape
+- LA-KAIE-NoInteraction
+- LA-KAIE-NoKnowledgeReward
+- LA-KAIE-DimensionOnly
+- LA-KAIE-RandomExchange
+- LA-KAIE-FixedPolicy
+- LA-KAIE-NoAdaptiveController
+overrides: {}
+git_commit: 0920ca54ad1bb35122b58e2cffea2c52c55da71c
+utc: 20260928T101443Z
+argv:
+- scripts/run_experiment.py
+- --benchmark
+- CEC2022
+- --campaign
+- pilot
+- --methods
+- HBA
+- MPA
+- MPHB
+- MPHBS
+- LA-KAIE-Full
+- LA-KAIE-NoLandscape
+- LA-KAIE-NoInteraction
+- LA-KAIE-NoKnowledgeReward
+- LA-KAIE-DimensionOnly
+- LA-KAIE-RandomExchange
+- LA-KAIE-FixedPolicy
+- LA-KAIE-NoAdaptiveController
+- --runs
+- '5'
+n_tasks: 720
+method_configs:
+  HBA: {}
+  MPA: {}
+  MPHB: {}
+  MPHBS:
+    K: 7
+    Ni: 3
+    rho_sub: 0.25
+    w_best: 0.05
+    gamma: 0.3
+    fad_before_p2: true
+    fad_after_p2: false
+  LA-KAIE-Full:
+    backbone:
+      fad_placement: before
+      progress: fe_based
+    exchange:
+      episodes_per_iteration: 24
+      transfer_prob: 0.2
+      tournament_size: 2
+      elite_fraction: 0.25
+      exploit_donor_top: 3
+      granularity_threshold: 0.2
+      force_dimension_level: false
+    interaction:
+      mode: estimated
+      update_every: 20
+      archive_size: 3000
+      sample_factor: 1.5
+      ridge: 0.001
+      t_crit: 3.0
+      ema: 0.5
+      threshold: 0.3
+      max_group_size: 5
+    state:
+      improvement_window: 10
+      stagnation_scale: 10
+      gap_window: 50
+      ema: 0.2
+    controller:
+      type: contextual_bandit
+      use_state: true
+      bins: 3
+      ridge_lambda: 1.0
+      forgetting: 0.99
+      epsilon0: 0.2
+      epsilon_min: 0.02
+      fixed_action: A4
+    reward:
+      mode: knowledge
+      w1_fitness: 1.0
+      w2_diversity: 0.2
+      w3_success: 0.3
+      w4_interaction: 0.2
+      w5_cost: 0.2
+      w6_stagnation: 0.2
+    variant: Full
+  LA-KAIE-NoLandscape:
+    backbone:
+      fad_placement: before
+      progress: fe_based
+    exchange:
+      episodes_per_iteration: 24
+      transfer_prob: 0.2
+      tournament_size: 2
+      elite_fraction: 0.25
+      exploit_donor_top: 3
+      granularity_threshold: 0.2
+      force_dimension_level: false
+    interaction:
+      mode: estimated
+      update_every: 20
+      archive_size: 3000
+      sample_factor: 1.5
+      ridge: 0.001
+      t_crit: 3.0
+      ema: 0.5
+      threshold: 0.3
+      max_group_size: 5
+    state:
+      improvement_window: 10
+      stagnation_scale: 10
+      gap_window: 50
+      ema: 0.2
+    controller:
+      type: contextual_bandit
+      use_state: false
+      bins: 3
+      ridge_lambda: 1.0
+      forgetting: 0.99
+      epsilon0: 0.2
+      epsilon_min: 0.02
+      fixed_action: A4
+    reward:
+      mode: knowledge
+      w1_fitness: 1.0
+      w2_diversity: 0.2
+      w3_success: 0.3
+      w4_interaction: 0.2
+      w5_cost: 0.2
+      w6_stagnation: 0.2
+    variant: NoLandscape
+  LA-KAIE-NoInteraction:
+    backbone:
+      fad_placement: before
+      progress: fe_based
+    exchange:
+      episodes_per_iteration: 24
+      transfer_prob: 0.2
+      tournament_size: 2
+      elite_fraction: 0.25
+      exploit_donor_top: 3
+      granularity_threshold: 0.2
+      force_dimension_level: false
+    interaction:
+      mode: random_placebo
+      update_every: 20
+      archive_size: 3000
+      sample_factor: 1.5
+      ridge: 0.001
+      t_crit: 3.0
+      ema: 0.5
+      threshold: 0.3
+      max_group_size: 5
+    state:
+      improvement_window: 10
+      stagnation_scale: 10
+      gap_window: 50
+      ema: 0.2
+    controller:
+      type: contextual_bandit
+      use_state: true
+      bins: 3
+      ridge_lambda: 1.0
+      forgetting: 0.99
+      epsilon0: 0.2
+      epsilon_min: 0.02
+      fixed_action: A4
+    reward:
+      mode: knowledge
+      w1_fitness: 1.0
+      w2_diversity: 0.2
+      w3_success: 0.3
+      w4_interaction: 0.2
+      w5_cost: 0.2
+      w6_stagnation: 0.2
+    variant: NoInteraction
+  LA-KAIE-NoKnowledgeReward:
+    backbone:
+      fad_placement: before
+      progress: fe_based
+    exchange:
+      episodes_per_iteration: 24
+      transfer_prob: 0.2
+      tournament_size: 2
+      elite_fraction: 0.25
+      exploit_donor_top: 3
+      granularity_threshold: 0.2
+      force_dimension_level: false
+    interaction:
+      mode: estimated
+      update_every: 20
+      archive_size: 3000
+      sample_factor: 1.5
+      ridge: 0.001
+      t_crit: 3.0
+      ema: 0.5
+      threshold: 0.3
+      max_group_size: 5
+    state:
+      improvement_window: 10
+      stagnation_scale: 10
+      gap_window: 50
+      ema: 0.2
+    controller:
+      type: contextual_bandit
+      use_state: true
+      bins: 3
+      ridge_lambda: 1.0
+      forgetting: 0.99
+      epsilon0: 0.2
+      epsilon_min: 0.02
+      fixed_action: A4
+    reward:
+      mode: fitness_only
+      w1_fitness: 1.0
+      w2_diversity: 0.2
+      w3_success: 0.3
+      w4_interaction: 0.2
+      w5_cost: 0.2
+      w6_stagnation: 0.2
+    variant: NoKnowledgeReward
+  LA-KAIE-DimensionOnly:
+    backbone:
+      fad_placement: before
+      progress: fe_based
+    exchange:
+      episodes_per_iteration: 24
+      transfer_prob: 0.2
+      tournament_size: 2
+      elite_fraction: 0.25
+      exploit_donor_top: 3
+      granularity_threshold: 0.2
+      force_dimension_level: true
+    interaction:
+      mode: estimated
+      update_every: 20
+      archive_size: 3000
+      sample_factor: 1.5
+      ridge: 0.001
+      t_crit: 3.0
+      ema: 0.5
+      threshold: 0.3
+      max_group_size: 5
+    state:
+      improvement_window: 10
+      stagnation_scale: 10
+      gap_window: 50
+      ema: 0.2
+    controller:
+      type: contextual_bandit
+      use_state: true
+      bins: 3
+      ridge_lambda: 1.0
+      forgetting: 0.99
+      epsilon0: 0.2
+      epsilon_min: 0.02
+      fixed_action: A4
+    reward:
+      mode: knowledge
+      w1_fitness: 1.0
+      w2_diversity: 0.2
+      w3_success: 0.3
+      w4_interaction: 0.2
+      w5_cost: 0.2
+      w6_stagnation: 0.2
+    variant: DimensionOnly
+  LA-KAIE-RandomExchange:
+    backbone:
+      fad_placement: before
+      progress: fe_based
+    exchange:
+      episodes_per_iteration: 24
+      transfer_prob: 0.2
+      tournament_size: 2
+      elite_fraction: 0.25
+      exploit_donor_top: 3
+      granularity_threshold: 0.2
+      force_dimension_level: false
+    interaction:
+      mode: estimated
+      update_every: 20
+      archive_size: 3000
+      sample_factor: 1.5
+      ridge: 0.001
+      t_crit: 3.0
+      ema: 0.5
+      threshold: 0.3
+      max_group_size: 5
+    state:
+      improvement_window: 10
+      stagnation_scale: 10
+      gap_window: 50
+      ema: 0.2
+    controller:
+      type: uniform_random
+      use_state: true
+      bins: 3
+      ridge_lambda: 1.0
+      forgetting: 0.99
+      epsilon0: 0.2
+      epsilon_min: 0.02
+      fixed_action: A4
+    reward:
+      mode: knowledge
+      w1_fitness: 1.0
+      w2_diversity: 0.2
+      w3_success: 0.3
+      w4_interaction: 0.2
+      w5_cost: 0.2
+      w6_stagnation: 0.2
+    variant: RandomExchange
+  LA-KAIE-FixedPolicy:
+    backbone:
+      fad_placement: before
+      progress: fe_based
+    exchange:
+      episodes_per_iteration: 24
+      transfer_prob: 0.2
+      tournament_size: 2
+      elite_fraction: 0.25
+      exploit_donor_top: 3
+      granularity_threshold: 0.2
+      force_dimension_level: false
+    interaction:
+      mode: estimated
+      update_every: 20
+      archive_size: 3000
+      sample_factor: 1.5
+      ridge: 0.001
+      t_crit: 3.0
+      ema: 0.5
+      threshold: 0.3
+      max_group_size: 5
+    state:
+      improvement_window: 10
+      stagnation_scale: 10
+      gap_window: 50
+      ema: 0.2
+    controller:
+      type: fixed_action
+      use_state: true
+      bins: 3
+      ridge_lambda: 1.0
+      forgetting: 0.99
+      epsilon0: 0.2
+      epsilon_min: 0.02
+      fixed_action: A4
+    reward:
+      mode: knowledge
+      w1_fitness: 1.0
+      w2_diversity: 0.2
+      w3_success: 0.3
+      w4_interaction: 0.2
+      w5_cost: 0.2
+      w6_stagnation: 0.2
+    variant: FixedPolicy
+  LA-KAIE-NoAdaptiveController:
+    backbone:
+      fad_placement: before
+      progress: fe_based
+    exchange:
+      episodes_per_iteration: 24
+      transfer_prob: 0.2
+      tournament_size: 2
+      elite_fraction: 0.25
+      exploit_donor_top: 3
+      granularity_threshold: 0.2
+      force_dimension_level: false
+    interaction:
+      mode: estimated
+      update_every: 20
+      archive_size: 3000
+      sample_factor: 1.5
+      ridge: 0.001
+      t_crit: 3.0
+      ema: 0.5
+      threshold: 0.3
+      max_group_size: 5
+    state:
+      improvement_window: 10
+      stagnation_scale: 10
+      gap_window: 50
+      ema: 0.2
+    controller:
+      type: rule_based
+      use_state: true
+      bins: 3
+      ridge_lambda: 1.0
+      forgetting: 0.99
+      epsilon0: 0.2
+      epsilon_min: 0.02
+      fixed_action: A4
+    reward:
+      mode: knowledge
+      w1_fitness: 1.0
+      w2_diversity: 0.2
+      w3_success: 0.3
+      w4_interaction: 0.2
+      w5_cost: 0.2
+      w6_stagnation: 0.2
+    variant: NoAdaptiveController
