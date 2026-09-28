@@ -13,9 +13,26 @@ logged in `logs/DEVELOPMENT_CHANGES.md` with:
 
 Changes made after full-test results have been seen are forbidden (see §15.6).
 
+Revision: **rev. 2** (corrections from the user's specification review;
+see `SPEC_REVIEW_REPORT.md`). Rev. 2 changes terminology, analysis
+priorities, benchmark roles and gates. The core algorithm of rev. 1 is
+preserved.
+
+**Implementation status: BLOCKED.**
+- Implementation may start only after both of the following:
+  1. the literature-verification gate (§16, Gate 0) is separately
+     resolved;
+  2. this revised specification has passed independent review.
+- No code, test run, smoke run or experiment is permitted before then.
+
 Scope statement (not a claim):
 - N1 is **not** claimed to be novel. The novelty classification remains
-  **B** (`N1_FINAL_NOVELTY_DECISION.md`).
+  **B — "promising, but important unresolved overlap/evidence gaps
+  remain"** (`N1_FINAL_NOVELTY_DECISION.md`).
+- It is not upgraded to "novel", "validated novelty", "publication-ready" or
+  any stronger status.
+- The absence of a direct duplicate in the currently accessible literature
+  is **not** evidence of novelty.
 - The following are standard building blocks and are **not** presented as
   contributions:
   - BIC
@@ -29,8 +46,18 @@ Scope statement (not a claim):
 - The object under study is narrower. It asks two things:
   1. **E3:** is the outcome of exchange informative, relative to a
      native-search control?
-  2. **E4:** does joint HBA+MPA structural evidence identify the structure
-     better than single-optimizer evidence?
+  2. **E4:** does joint HBA+MPA structural evidence provide information
+     beyond single-optimizer evidence **and beyond pooled evidence from the
+     same observations**?
+     - JOINT has about twice the observations of either single-optimizer
+       selector. JOINT > HBA-only / MPA-only is therefore **not
+       sufficient** for E4 (risk R-E4-SAMPLE).
+     - The intended evidence pattern is:
+       **JOINT > POOLED and JOINT > HBA-only and JOINT > MPA-only**.
+       Only this pattern supports "optimizer-specific heterogeneous
+       evidence contributes beyond sample size".
+     - **JOINT vs POOLED is the primary E4 control** (§14.6).
+     - E4 results are not converted into a novelty claim.
 
 Notation:
 
@@ -61,8 +88,11 @@ port: `lakaie.algorithms.hybrid_common.HybridState`, which provides
 Only the information-exchange stage (MPHBS "Phase 2") is replaced, by a
 two-stage decision:
 
-- **Stage 1 (E3, H0 test):** a sequential probability ratio test (SPRT)
-  decides whether exchange is currently informative.
+- **Stage 1 (E3, H0 test):** an **SPRT-style prequential sequential
+  likelihood-ratio decision rule** (short name: "SPRT-style rule") decides
+  whether exchange is currently informative.
+  - It borrows Wald's LLR accumulation and boundaries.
+  - Classical Wald error guarantees are **not** assumed to apply (§7.1).
   - "Informative" means that exchange candidates succeed more often than a
     native-search control predicts, at matched step length.
   - The state is **ACTIVE** or **SUPPRESSED**.
@@ -99,7 +129,7 @@ hierarchical:
                 build candidate x' by the mapping of the driving structure k*
                 predict p0 = p_nat(l_e, pop_r)  (logged BEFORE evaluation)
                 f' = obj(x')                                               # 1 FE each
-                y = 1[f' < f(x_r)]; greedy replacement; SPRT update (prequential)
+                y = 1[f' < f(x_r)]; greedy replacement; SPRT-style LLR update (prequential)
 7.           HybridState.sync_global_keep(); Recorder.iteration(...)
 ```
 
@@ -124,7 +154,7 @@ position.
 | `X_H, F_H` | N×D, N | uniform in box (`rng_init`) | phase1, exchange |
 | `X_M, F_M, X_M_old, fit_old` | as in HybridState | as in HybridState | phase1, FAD, exchange (memory sync) |
 | `Pg, Pbest` | global best | `global_from_bests` | steps 3, 7 |
-| `state` ∈ {ACTIVE, SUPPRESSED} | enum | ACTIVE | step 6 (SPRT decision) |
+| `state` ∈ {ACTIVE, SUPPRESSED} | enum | ACTIVE | step 6 (SPRT-style decision) |
 | `LLR, n_sprt` | float, int | 0, 0 | step 6; reset after each decision |
 | `k*` (driving structure) | {HI, HB, HR} | HI (default until evidence available, §6.4) | step 5, every U iterations |
 | `k*_s` (shadow structures) | per selector s ∈ {HBA, MPA, JOINT, POOLED, DECOUPLED} | HI | step 5 |
@@ -176,8 +206,14 @@ counter exists.
    - the predictive log-likelihood `PLL_k`;
    - the chosen k before and after hysteresis;
    - the margin (the gap between the best and second-best BIC);
-   - window sizes;
-   - the degeneracy flags.
+   - ΔBIC of every candidate relative to HR, and of HR relative to the
+     best (R-BIC-POWER diagnostics);
+   - window sizes (the number of samples used for structural fitting, per
+     population);
+   - the degeneracy flags;
+   - at each selection epoch, the OLD/CUR window contents (standardized
+     displacements, float32). These are needed for the offline JOINT-HALF
+     analysis (§4.4) and for the BIC-power diagnosis (§16, Gate 7).
 6. **Recorder.** The existing `lakaie.core.Recorder`, plus per-phase FE
    counts (`fe_phase1`, `fe_fad`, `fe_exchange`, `fe_probe`).
 
@@ -233,6 +269,20 @@ BIC_k = −2 ℓ_k + q_k log n
 - The floor applies only when the corresponding eigenvalue is below ε_Σ. The
   log records whether it was applied.
 
+**Pre-registered formulation: unchanged in rev. 2.**
+- The BIC above, with the parameter counts q_k in the table, is the
+  pre-registered formulation for the smoke test.
+- For D = 20, HR has q = 20 + 210 = 230 free parameters. With n = W = 100
+  per population, the penalty is 0.5·230·ln 100 ≈ 530 nats per population
+  (BIC units: 2 × 530).
+- This complexity penalty may systematically disfavour HR (risk
+  R-BIC-POWER). **S3 is therefore a hard diagnostic gate (§16, Gate 7).**
+- The penalty, parameter count, window size and model definitions are not
+  changed at this stage.
+- If Gate 7 fails, any change requires diagnosis, a documented proposal and
+  user approval. A change is never made after full benchmark results
+  exist.
+
 ### 4.3 Block partition (prequential; no leakage)
 
 - The partition used to **score** HB on CUR is estimated **only from OLD**.
@@ -269,20 +319,30 @@ candidate set, so that the same model is never counted twice.
 
 ### 4.4 Selectors (all computed in every run; zero FE; zero RNG from the native stream)
 
-| selector | data scored | partition source | score |
-|---|---|---|---|
-| HBA-only | `CUR_H` | `OLD_H` | `BIC_k(CUR_H)` |
-| MPA-only | `CUR_M` | `OLD_M` | `BIC_k(CUR_M)` |
-| JOINT | `CUR_H` and `CUR_M`, separate means and covariances | joint Stouffer on `OLD_H`, `OLD_M` | `BIC_k^J = BIC_k(CUR_H) + BIC_k(CUR_M)` (shared structure k and shared partition; population-specific parameters) |
-| POOLED (control) | `[CUR_H; CUR_M]` concatenated, a single mean and covariance | pooled `[OLD_H; OLD_M]` | `BIC_k` on the pooled window |
-| DECOUPLED (placebo, A11) | `CUR_H` and `C̃UR_M` (column-permuted) | joint Stouffer on `OLD_H`, `ÕLD_M` | as JOINT |
+| selector | observations | structure / parameters | partition source | score | role in E4 |
+|---|---|---|---|---|---|
+| HBA-only | `CUR_H` (n = W) | one model | `OLD_H` | `BIC_k(CUR_H)` | single-optimizer comparator |
+| MPA-only | `CUR_M` (n = W) | one model | `OLD_M` | `BIC_k(CUR_M)` | single-optimizer comparator |
+| JOINT | `CUR_H` and `CUR_M` (n = 2W) | **shared structural hypothesis k and shared partition; population-specific mean and covariance (population-specific likelihood)** | joint Stouffer on `OLD_H`, `OLD_M` | `BIC_k^J = BIC_k(CUR_H) + BIC_k(CUR_M)` | method under test |
+| POOLED | `[CUR_H; CUR_M]` concatenated (n = 2W, **exactly the same observations as JOINT**) | **one common pooled structural model**: a single mean and covariance; no optimizer-specific parameters or evidence | pooled `[OLD_H; OLD_M]` | `BIC_k` on the pooled window | **PRIMARY E4 sample-size control** |
+| DECOUPLED | `CUR_H` and `C̃UR_M` (column-permuted; n = 2W) | as JOINT | joint Stouffer on `OLD_H`, `ÕLD_M` | as JOINT | placebo: no shared cross-coordinate evidence from MPA |
+| JOINT-HALF (offline analysis only; never drives) | the newest W/2 rows of `CUR_H` and of `CUR_M` (n = W), with the matching newest W/2 of each OLD | as JOINT | as JOINT, on the halved OLD | as JOINT | sample-matched to the single-optimizer selectors (E4 Q5) |
 
-Notes on the JOINT selector:
-- The joint score is the BIC of the product likelihood. Its parameter count
+JOINT and POOLED:
+- The JOINT score is the BIC of the product likelihood. Its parameter count
   is the sum of the population-specific counts, and log n uses each
-  population's own n.
-- This is equivalent to summing the two BICs for a shared structure label
-  and partition.
+  population's own n. This is equivalent to summing the two BICs for a
+  shared structure label and partition.
+- POOLED sees exactly the same observations as JOINT. It differs only by
+  removing the optimizer-specific parameterisation.
+- Any JOINT advantage over POOLED therefore cannot be explained by the
+  number of observations. That is why JOINT vs POOLED is the primary E4
+  control.
+
+JOINT-HALF:
+- It is computed offline from the logged windows (§3.5) after the run.
+- It uses no FE and no RNG, and has no influence on the run.
+- It is an **analysis device**, not an algorithmic mechanism.
 
 ### 4.5 Selection rule and hysteresis
 
@@ -327,7 +387,13 @@ logit p_nat(y=1 | l, pop) = θ_0 + θ_1 · l + θ_2 · 1[pop = M]
   and including this iteration's native phase. These are all observed
   before any exchange of iteration t is predicted.
 
-### 4.8 SPRT (Stage 1; prequential)
+### 4.8 SPRT-style prequential sequential likelihood-ratio decision rule (Stage 1)
+
+Terminology:
+- "SPRT-style" means that the rule uses Wald's log-likelihood-ratio
+  accumulation and Wald's boundary formulas.
+- It does **not** mean that Wald's error guarantees hold; §7.1 explains
+  why.
 
 For an exchange (or probe) candidate with receiver population pop_r and
 standardized step length
@@ -365,9 +431,21 @@ After every decision: `LLR ← 0`, `n_sprt ← 0` (reset policy `reset_after_dec
 A change of state takes effect at the next iteration's plan step (step 0).
 Exchanges already planned in the current iteration are completed.
 
-H1 in this test means "the log-odds of exchange success exceed the
+H1 in this rule means "the log-odds of exchange success exceed the
 native-control log-odds by δ". H0 means "they equal it". Negative transfer
 (an offset below 0) is absorbed by H0: the LLR drifts toward B.
+
+Components of the rule (documented as required):
+
+| component | definition |
+|---|---|
+| p0 estimation | online, prequential: the logistic native-control model (§4.7), refitted each iteration on the last W_nat native attempts. p0 is therefore **estimated and time-varying**, not known |
+| dependence | outcomes within an iteration share the same populations, control fit and structure; receivers can repeat; outcomes are **not independent** |
+| evidence accumulation | additive LLR increments per outcome (formula above), accumulated across iterations until a decision |
+| decision boundaries | A = log((1−β)/α), B = log(β/(1−α)); these are Wald's formulas, used as **nominal thresholds** only |
+| minimum samples | n_min = 20 outcomes before any decision |
+| truncation | at n_max = 200 outcomes, decided by the midpoint rule; flagged |
+| reset | LLR and n reset to 0 after every decision (`reset_after_decision`) |
 
 ### 4.9 Greedy replacement after exchange
 
@@ -388,8 +466,8 @@ native-control log-odds by δ". H0 means "they equal it". Negative transfer
 | FAD candidates | N | new points |
 | exchange candidates (ACTIVE) | E_x | new points |
 | probe candidates (SUPPRESSED) | r_probe | new points |
-| native-control fit, covariance, partition, BIC, PLL, SPRT, shadow selectors, placebo, diagnostics | **0** | only already evaluated points and their stored fitness |
-| ground-truth labels, offline oracle (§12, §14) | **0**, computed offline after the run | stored positions only; never visible to the algorithm |
+| native-control fit, covariance, partition, BIC, PLL, SPRT-style rule, shadow selectors, placebo, diagnostics | **0** | only already evaluated points and their stored fitness |
+| structural labels (S1–S4), S6 position-based reference label, S7 offline reference label, JOINT-HALF (§4.4, §12, §14) | **0**, computed offline after the run | stored positions, outcomes and windows only; never visible to the algorithm |
 
 Rules:
 1. Every call to the objective goes through the single `CountedObjective`
@@ -430,7 +508,7 @@ Rules:
 
 The procedure is hierarchical and runs in a fixed order at each iteration.
 
-1. **H0 vs exchange** (§7): the SPRT state from previous outcomes determines
+1. **H0 vs exchange** (§7): the SPRT-style rule state from previous outcomes determines
    e_t.
 2. **Structure** (§4.3–4.5): the driving selector sets k* every U
    iterations. Shadow selectors are computed and logged at the same epochs.
@@ -444,6 +522,8 @@ The procedure is hierarchical and runs in a fixed order at each iteration.
 - A7: JOINT.
 - A8: JOINT.
 - A11: DECOUPLED.
+- P: POOLED.
+- A10: the success-rate control rule (§11).
 - A1, A2 and A3 have fixed k*. They use the JOINT selector's partition and
   eigenbasis when k* = HB or HR.
 
@@ -454,13 +534,26 @@ consume no FE and no native-stream randomness.
 
 **Primary E4 analysis:** the shadow selections in **A0** runs, which have no
 exchange. There, the choice of selector cannot feed back into the
-trajectory, so selector comparisons are paired and free of confounding. The
-active arms A5–A7 are secondary.
+trajectory, so selector comparisons are paired and free of confounding.
+
+Within this analysis, **JOINT vs POOLED is the primary comparison**
+(§14.6). The active arms A5, A6, A7 and P are secondary.
 
 ### 6.3 Change-point detector
 
-**Not implemented in v1.** It may be added only after the gate in §13.3 has
-passed.
+**Not part of N1 and not to be added.** It is not specified, not planned
+for this study, and not a pending feature.
+
+A change-point mechanism may be considered in the future only as a
+separately justified extension, with a new specification and review. That
+can happen only after all of the following have been validated:
+- E3;
+- E4;
+- structural selection;
+- BIC behaviour;
+- SPRT-style calibration;
+- FE accounting;
+- the leakage controls.
 
 ### 6.4 Warm-up and availability
 
@@ -477,18 +570,20 @@ such epochs is reported.
 
 ## 7. H0 test
 
-- Test: the Wald SPRT of §4.8, with the native-control model of §4.7.
+- Rule: the SPRT-style prequential sequential likelihood-ratio decision
+  rule of §4.8, with the native-control model of §4.7.
 - Data: the outcomes of exchange candidates (ACTIVE) and probe candidates
   (SUPPRESSED). There are no separate test evaluations.
 
-Justification for the thresholds:
-- α and β are the nominal error probabilities of the SPRT per decision
-  cycle, and the Wald bounds follow from them. Defaults are α = β = 0.05,
-  giving A = 2.944 and B = −2.944.
+Thresholds:
+- α and β are **nominal design parameters** that set the Wald-formula
+  boundaries. Defaults are α = β = 0.05, giving A = 2.944 and B = −2.944.
+- They are **not** claimed to be the realised error probabilities (§7.1).
 - These are conventional values. **They have no domain-specific
   justification.**
 - They are configurable, and are fixed before experiments.
-- Calibration is checked by simulation (§13.1, test T-SPRT) before any use.
+- Realised error behaviour is measured by **T-SPRT calibration** (§7.2)
+  before any H0/S7 result is interpreted.
 
 Effect margin δ = log 2:
 - The alternative is that exchange doubles the odds of success relative to
@@ -507,13 +602,83 @@ Other policies:
 | reset | after every decision (default); alternatives `none` and `sliding(n_max)` are configurable but not used in v1 |
 | initial state | ACTIVE |
 | probes when SUPPRESSED | r_probe per iteration, using the current k* mapping and the same receiver/donor rule |
-| A8 (no H0) | the SPRT is computed and logged as a shadow, but state is forced to ACTIVE |
+| A8 (no H0) | the SPRT-style rule is computed and logged as a shadow, but state is forced to ACTIVE |
 
-Validity limits, also listed in the risk register:
-- The SPRT assumes independent Bernoulli outcomes with known p0.
-- Here p0 is estimated, and outcomes are dependent within an iteration.
-- The nominal α and β are therefore approximate. Empirical calibration on
-  the synthetic suite is reported.
+### 7.1 Statistical assumptions (no formal guarantee claimed)
+
+Wald's bounds give approximate type I/II error control (≤ α, ≤ β) for
+i.i.d. observations with **known** simple hypotheses, no truncation and no
+reset. The N1 rule departs from these assumptions:
+1. p0 is **estimated online** and changes over time. The hypotheses are
+   therefore random and moving.
+2. Observations are **adaptive and dependent**:
+   - receivers are chosen from populations shaped by earlier outcomes;
+   - outcomes within an iteration share state.
+3. There is **truncation** at n_max.
+4. There is a **reset** after each decision, followed by repeated testing
+   over a run. The number of decisions per run is random, so per-run error
+   rates are not α or β.
+5. p0 is clipped, and the step-length covariate is clipped.
+
+Consequently:
+- **no formal type-I/type-II guarantee is claimed**;
+- α and β are nominal;
+- the realised behaviour is reported only as measured by T-SPRT calibration
+  (§7.2).
+
+Any statement about error rates must cite the calibration, not α and β.
+
+### 7.2 T-SPRT calibration (required before interpreting S7 or any H0 result)
+
+T-SPRT calibration runs in two levels. Both use **only** the pipeline code
+of §4.7–4.8, unchanged.
+
+**Level 1: semi-synthetic replay.** This uses zero FE and requires no
+optimisation run beyond the A0 smoke runs.
+- Take logged native-attempt buffers and exchange step lengths from A0
+  runs.
+- Generate exchange outcomes as Bernoulli draws with log-odds equal to:
+  - the estimated native-control log-odds + 0 (**controlled no-transfer**),
+    or
+  - the estimated native-control log-odds + δ (**controlled positive
+    transfer**).
+- Draw outcomes independently, and also with an induced within-iteration
+  correlation through a shared per-iteration latent offset
+  u_t ~ N(0, σ_u²), σ_u ∈ {0, 0.5}. These values are fixed a priori.
+- Run the rule exactly as specified: estimated p0, n_min, n_max,
+  truncation and reset.
+
+**Level 2: pipeline harness.** This runs on synthetic functions, inside the
+declared calibration budget of the harness runs. The harness is a test
+fixture and is **not** an N1 variant.
+- **Controlled no-transfer:** each exchange candidate is replaced by a
+  native-equivalent candidate. The HBA/MPA operator is applied to the
+  receiver, so by construction its success probability is that of a native
+  attempt. This is on S1 and S3.
+- **Controlled positive transfer:** the donor is replaced by the known
+  optimum o, on S1 and S3.
+
+Reported quantities, per condition:
+- **False activation rate**: under controlled no-transfer, the fraction of
+  decisions that are INFORMATIVE, and the fraction of runs whose state
+  ends ACTIVE.
+- **False suppression rate**: under controlled positive transfer, the
+  fraction of decisions that are UNINFORMATIVE, and the fraction of
+  iterations spent SUPPRESSED.
+- **Stopping-time distribution**: the number of outcomes per decision
+  (median, IQR, 95th percentile) and the truncation fraction.
+- Monte Carlo standard errors for all of the above.
+
+Handling of the results:
+- Calibration results are reported **as measured**.
+- α, β, δ, n_min and n_max are **not** retuned on them.
+- If the realised rates are grossly off, the rule is to STOP and report
+  (risk R-SPRT-CALIBRATION). "Grossly off" means the false activation or
+  false suppression rate exceeds 3× the nominal value in Level 1 with
+  σ_u = 0.
+
+The separate unit test **T-SPRT-UNIT** (§13.1) only checks the
+implementation under the idealised Wald assumptions.
 
 ---
 
@@ -627,21 +792,21 @@ on the synthetic suite, reported in full.
 
 ## 11. Baseline definitions
 
-| id | definition |
-|---|---|
-| A0 | backbone only; e_t = 0; all selectors run as shadows (**primary data for E4**) |
-| A1 | fixed HI exchange, always active (E_x per iteration) |
-| A2 | fixed HB (joint partition), always active |
-| A3 | fixed HR (joint receiver eigenbasis), always active |
-| A4 | **MPHBS**: validated port, unchanged; B-C1 for synthetic and CEC2022, A-C1 for FIR (the authors' domain configurations); results in `results/reproduction/MPHBS/` |
-| A5 | N1 with HBA-only evidence + H0 |
-| A6 | N1 with MPA-only evidence + H0 |
-| A7 | N1 with JOINT evidence + H0 (**full method**) |
-| A8 | N1 JOINT, H0 disabled (SPRT logged only) |
-| A9 | ≡ A7; the same configuration under a second label, kept for the requested ablation table and not run twice |
-| A10 | ACoS-like control: the driving structure is chosen by probability matching over {HI, HB, HR} on exchange success rates (floor 0.1 per arm, learning rate 0.1). It is always active, uses the same mapping and the joint partition/eigenbasis. **This is a reimplementation of the *idea*, not of the published ACoS algorithm.** |
-| A11 | DECOUPLED placebo driving selector + H0 |
-| P | POOLED driving selector + H0 (control for pooling vs product-likelihood) |
+| id | definition | purpose |
+|---|---|---|
+| A0 | no exchange (e_t = 0) + all selectors as passive shadows | **trajectory-neutral selector comparison**; primary data for E4 (JOINT vs POOLED vs HBA-only vs MPA-only) |
+| A1 | fixed HI exchange, always active (E_x per iteration) | fixed independent-coordinate representation |
+| A2 | fixed HB (joint partition), always active | fixed block representation |
+| A3 | fixed HR (joint receiver eigenbasis), always active | fixed rotated representation |
+| A4 | **MPHBS**: validated port, unchanged; B-C1 for synthetic and CEC2022, A-C1 for FIR (the authors' domain configurations); results in `results/reproduction/MPHBS/` | published reference method |
+| A5 | HBA-only driving selector + H0 | single-optimizer structural evidence (HBA) |
+| A6 | MPA-only driving selector + H0 | single-optimizer structural evidence (MPA) |
+| A7 | JOINT driving selector + H0 | **full proposed method** |
+| A8 | JOINT driving selector, H0 disabled (SPRT-style rule logged only) | isolates the contribution of suppression/activation (E3) |
+| A9 | ≡ A7; the same configuration under a second label, not run twice | kept only for table correspondence |
+| A10 | **neutral success-rate representation-selection control**: the driving structure is chosen by probability matching over {HI, HB, HR} on exchange success rates (floor 0.1 per structure, learning rate 0.1); always active; same mapping and joint partition/eigenbasis | compares statistical structural evidence against a success-based control. It is conceptually inspired by success-based coordinate-system selection (e.g. ACoS). **It is not ACoS and must not be called an ACoS baseline**: the published ACoS algorithm has not been reproduced from its paper or code |
+| A11 | DECOUPLED driving selector + H0 | no shared structural evidence (placebo) |
+| **P** | **POOLED driving selector + H0** | **PRIMARY E4 SAMPLE-SIZE CONTROL** (active-regime counterpart of the passive JOINT vs POOLED comparison in A0) |
 
 MPHBS rules:
 - MPHBS is **not modified**.
@@ -670,33 +835,71 @@ Conditioning weights:
 c_i = 10^{4(i−1)/(D−1)}
 ```
 
-| id | definition | ground-truth label |
-|---|---|---|
-| S1 | separable ellipsoid `f = Σ c_i z_i²`, z = x − o | HI |
-| S2 | block-rotated ellipsoid: fixed coordinate permutation π, blocks of 5 (D=10: 2 blocks; D=20: 4 blocks), each block with its own rotation Q_b; `f = Σ c_i (Q z_π)_i²` | HB, with the true partition = π-blocks |
-| S3 | dense rotated ellipsoid: `f = Σ c_i (Q z)_i²` | HR |
-| S4 | mixed: D=20 has 10 separable + two rotated 5-blocks; D=10 has 5 separable + one rotated 5-block (permuted) | HB (true partition known) |
-| S5 | rotated Rastrigin: `f = Σ (y_i² − 10 cos 2πy_i + 10)`, y = 0.0512·Q z | HR (weaker label; **secondary**, excluded from confirmatory structure tests) |
-| S6 | switching: `f = (1−w) f_S1(z) + w f_S3(z)`, `w = σ((r0 − ‖z‖)/κ_r)`, r0 = 10, κ_r = 1 | time-varying: HI far from o, HR near o |
-| S7 | two basins: `f = min(f_S3^{Q_A}(x − o_A), f_S3^{Q_B}(x − o_B) + Δ)`, with ‖o_A − o_B‖ ≥ 100 and Δ = 1. HBA is initialised uniformly in `o_A ± 20` and MPA in `o_B ± 20` (all arms, including A4) | expected H0 (exchange uninformative); **validated by offline oracle**, not assumed |
-| S8 | placebo: `f = Σ c_i (Q_e z)_i²`, where Q_e is a fresh rotation for **every evaluation**, drawn from a stream keyed by `(instance_seed, run_seed, FE index)` | no stable structure |
+**Roles of the conditions (rev. 2):**
 
-Ground-truth rules:
-- **S2 and S4:** the true partition is known. The metric for the partition
-  is the adjusted Rand index against the truth, in addition to label
-  accuracy.
-- **S6:** the per-epoch label is HR if more than 50% of the CUR samples of
-  the driving populations were recorded at points with w(x_old) ≥ 0.5, and
-  HI otherwise. It is computed offline from stored positions.
-- **S7:** the oracle is the offline log-odds offset of exchange vs the
-  native control in **A8** runs (hindsight, full-run batch fit, 95% CI):
-  - CI upper bound < δ → oracle "uninformative";
-  - CI lower bound > 0 → "informative";
-  - otherwise "undetermined".
-  The same oracle is applied to S1–S4 in A8 runs.
-- **S8:** the pre-declared prediction is that the fraction of epochs
-  selecting HB or HR on S8 is not greater than on S1. This is reported
-  descriptively plus test C8.
+| group | conditions | use |
+|---|---|---|
+| **PRIMARY structure-recovery tests** | S1, S2, S3 | deterministic functions with a fixed, known structural label; the **only** conditions in the confirmatory structure tests (C1–C4, E4 Q1–Q5) |
+| **SECONDARY / CONTROL conditions** | S4, S5, S6, S7, S8 | reported with pre-declared secondary analyses; never pooled with S1–S3 in confirmatory tests |
+
+| id | definition | label / role |
+|---|---|---|
+| S1 | separable ellipsoid `f = Σ c_i z_i²`, z = x − o | **primary**; structural label HI |
+| S2 | block-rotated ellipsoid: fixed coordinate permutation π, blocks of 5 (D=10: 2 blocks; D=20: 4 blocks), each block with its own rotation Q_b; `f = Σ c_i (Q z_π)_i²` | **primary**; structural label HB, known partition = π-blocks |
+| S3 | dense rotated ellipsoid: `f = Σ c_i (Q z)_i²` | **primary**; structural label HR; **hard diagnostic gate for HR detectability (§16, Gate 7)** |
+| S4 | mixed: D=20 has 10 separable + two rotated 5-blocks; D=10 has 5 separable + one rotated 5-block (permuted) | secondary; structural label HB, known partition |
+| S5 | rotated Rastrigin: `f = Σ (y_i² − 10 cos 2πy_i + 10)`, y = 0.0512·Q z | secondary robustness; weak label HR (multimodal) |
+| S6 | switching: `f = (1−w) f_S1(z) + w f_S3(z)`, `w = σ((r0 − ‖z‖)/κ_r)`, r0 = 10, κ_r = 1 | secondary; time-varying position-based reference label (HI far from o, HR near o) |
+| S7 | two basins: `f = min(f_S3^{Q_A}(x − o_A), f_S3^{Q_B}(x − o_B) + Δ)`, with ‖o_A − o_B‖ ≥ 100 and Δ = 1. HBA is initialised uniformly in `o_A ± 20` and MPA in `o_B ± 20` (all arms, including A4) | secondary; **controlled null-transfer scenario** (see below) |
+| S8 | `f = Σ c_i (Q_e z)_i²`, where Q_e is a fresh rotation for **every evaluation**, drawn from a stream keyed by `(instance_seed, run_seed, FE index)` | secondary; **stochastic placebo / robustness condition with no stable coordinate structure**; **no HI/HB/HR label exists** |
+
+Labels and reference labels:
+- **S1–S4:** the structural labels follow from the construction of the
+  function. For S2 and S4 the partition is known, and the adjusted Rand
+  index against it is reported in addition to label accuracy.
+- **S6:** this is a *position-based reference label*, not a structural
+  truth about the displacement distribution.
+  - The per-epoch label is HR if more than 50% of the CUR samples of the
+    relevant populations were recorded at points with w(x_old) ≥ 0.5, and
+    HI otherwise.
+  - It is computed offline from stored positions.
+- **S7 — controlled null-transfer scenario.**
+  - S7 is *constructed* so that exchange between the two populations is
+    expected to be weak or unhelpful. Each population searches a
+    different, differently rotated basin.
+  - Its purpose is limited to three things:
+    1. controlled evaluation of suppression behaviour;
+    2. comparison against an offline reference;
+    3. nothing more. In particular, it is **not** proof of a universally
+       correct H0 detector.
+  - The comparison uses an **offline reference label based on batch
+    exchange-vs-native evidence**: the hindsight full-run logistic
+    estimate of the log-odds offset of exchange vs the native control in
+    **A8** runs, with a 95% CI.
+    - CI upper bound < δ → reference "uninformative";
+    - CI lower bound > 0 → reference "informative";
+    - otherwise "undetermined".
+  - This reference label **is NOT an independent ground-truth oracle.**
+    It is built from the same kind of evidence (exchange vs native
+    success) and the same native-control model as the online rule.
+    Agreement between the online rule and the reference therefore measures
+    consistency between a sequential and a batch estimate of the same
+    quantity, not correctness against an external truth.
+  - The same reference label is applied to S1–S4 in A8 runs.
+- **S8 — stochastic placebo.**
+  - S8 has no stable coordinate structure, so it is **not** reported as
+    having a known HI/HB/HR label, and it is not a structure-recovery
+    benchmark.
+  - It tests whether the structural-selection mechanism **avoids
+    confidently exploiting a structure that is not stable across
+    evaluations**. Pre-declared measures, in A0 shadows and A7:
+    - the fraction of epochs selecting HB or HR;
+    - the fraction of epochs in which HB or HR wins with a BIC margin > 2κ
+      ("confident selection");
+    - the switch frequency;
+    - the predictive log-likelihood gap PLL(HR) − PLL(HI). A structure that
+      is not stable should not generalise from OLD to CUR.
+  - These are compared with S1 and S3 (test C8).
 
 Seeds for instance generation are separate from run seeds (§15).
 
@@ -712,7 +915,8 @@ Seeds for instance generation are separate from run seeds (§15).
 | T-SHADOW | A0 with and without shadow selectors gives bit-identical trajectories |
 | T-PREQ | the HB partition is a function of OLD only: permuting or altering CUR leaves P unchanged; p0 is logged before evaluation (log-order assertion) |
 | T-BIC | on Gaussian samples drawn from known diagonal, block and full covariances (n = W, D ∈ {10, 20}), BIC selects the true model at a rate reported (**not** asserted at a fixed value); the implementation is checked against `scipy.stats.multivariate_normal.logpdf` |
-| T-SPRT | Bernoulli simulation with known p0 (logistic offsets 0 and δ): empirical type I/II error and expected sample number reported; the test asserts they are ≤ nominal + 3 Monte Carlo SE under the independence assumptions |
+| T-SPRT-UNIT | implementation check only, under idealised Wald assumptions (i.i.d. Bernoulli, **known** p0, no truncation or reset): empirical type I/II error ≤ nominal + 3 Monte Carlo SE. It says nothing about the realised N1 behaviour, which is covered by T-SPRT calibration (§7.2) |
+| T-E4-OBS | JOINT and POOLED receive the identical multiset of observations at every epoch (row-count and checksum equality); JOINT-HALF uses exactly W total rows |
 | T-MAP | every mapping with the full mask gives x_d, and with an empty mask gives x_r; the HR mapping is exact at identity U |
 | T-DEGEN | singleton/single-block partitions are removed from candidates; zero-variance windows are handled |
 | T-MPHBS | the existing MPHBS and backbone tests still pass unchanged |
@@ -724,21 +928,21 @@ A0–A11 and P (§11). They answer:
 
 | question | comparison |
 |---|---|
-| E4 (primary, passive) | JOINT vs HBA-only vs MPA-only shadow accuracy in A0 |
-| E4 controls | JOINT vs POOLED; JOINT vs DECOUPLED |
-| E4 (active, secondary) | A7 vs A5, A6 |
-| E3 | A7 vs A8 (H0 on/off); H0 decisions vs oracle; SPRT calibration |
-| value of structure | A1/A2/A3 vs A7; A10 vs A7 |
+| **E4 primary control (passive)** | **JOINT vs POOLED** shadow accuracy in A0, on S1–S3 |
+| E4 single-optimizer comparisons (passive) | JOINT vs HBA-only, JOINT vs MPA-only in A0, on S1–S3 (necessary, **not sufficient**) |
+| E4 sample-matched check | JOINT-HALF vs HBA-only / MPA-only (offline, A0) |
+| E4 placebo | JOINT vs DECOUPLED |
+| E4 (active, secondary) | A7 vs P; A7 vs A5, A6 |
+| E3 | A7 vs A8 (H0 on/off); H0 decisions vs the offline reference label; T-SPRT calibration |
+| value of structure | A1/A2/A3 vs A7; A10 (success-rate control) vs A7 |
 | value of exchange | A0 vs A7/A8 |
 | reference | A4 (MPHBS) vs A7 |
 
-### 13.3 Gate for later features
+### 13.3 No additional mechanisms
 
-A change-point detector or any other addition is allowed only if **all** of
-the following hold:
-- MECHANISM_SMOKE_REPORT.md shows that T-* pass;
-- selection accuracy on S1–S3 has been reported;
-- the user gives explicit approval.
+- No mechanism beyond those in §1–§8 is added. This includes the
+  change-point detector (§6.3).
+- The gates in §16 govern progress. They do not unlock new features.
 
 ---
 
@@ -759,7 +963,15 @@ Per run:
 - BIC margins;
 - adjusted Rand index (S2 and S4);
 - H0 decisions: state trace, number of decisions, truncation fraction;
-- precision and recall of UNINFORMATIVE vs the oracle;
+- precision and recall of UNINFORMATIVE vs the offline reference label
+  (§12). This is **agreement with a batch estimate, not accuracy against a
+  ground truth**;
+- BIC-power diagnostics per epoch:
+  - samples used;
+  - BIC of HI, HB and HR;
+  - ΔBIC;
+  - selected-model frequencies;
+  - whether HR is ever selected on S3;
 - switch latency and number of switches (chattering) on S6;
 - FE share spent on exchange and on probes.
 
@@ -768,16 +980,30 @@ Per run:
 Significance level 0.05 throughout, with Holm correction within each
 family.
 
+Confirmatory structure tests use **only S1, S2 and S3** (§12).
+
 | id | hypothesis | data | test | family |
 |---|---|---|---|---|
-| C1 | JOINT selector accuracy > 1/3 (chance over 3 labels) | A0 shadows, S1–S4 × D | one-sided Wilcoxon signed-rank on (acc − 1/3) | 8 tests |
-| C2 (E4) | JOINT accuracy > HBA-only; JOINT > MPA-only | A0 shadows, S1–S4 × D | one-sided paired Wilcoxon | 16 tests |
-| C3 | JOINT > DECOUPLED on HB/HR-labelled functions (S2, S3, S4) | A0 shadows | one-sided paired Wilcoxon | 6 tests |
-| C4 | JOINT vs POOLED | A0 shadows, S1–S4 × D | two-sided paired Wilcoxon | 8 tests |
-| C5 (E3) | UNINFORMATIVE decisions agree with oracle | A7 vs oracle from A8, S1–S4, S7 | precision/recall with percentile bootstrap 95% CI (10,000 resamples over runs) | descriptive + CI |
+| C1 | JOINT selector accuracy > 1/3 (chance over 3 labels) | A0 shadows, S1–S3 × D | one-sided Wilcoxon signed-rank on (acc − 1/3) | 6 tests |
+| **C2 (E4 primary)** | **JOINT accuracy > POOLED accuracy** | A0 shadows, S1–S3 × D | one-sided paired Wilcoxon | 6 tests |
+| C3 (E4) | JOINT accuracy > HBA-only; JOINT accuracy > MPA-only | A0 shadows, S1–S3 × D | one-sided paired Wilcoxon | 12 tests |
+| C4 (E4 placebo) | JOINT accuracy > DECOUPLED accuracy on S2, S3 | A0 shadows | one-sided paired Wilcoxon | 4 tests |
+| C9 (E4 sample-matched) | JOINT-HALF accuracy > HBA-only; JOINT-HALF > MPA-only | A0 shadows (offline), S1–S3 × D | one-sided paired Wilcoxon | 12 tests |
+| C5 (E3) | UNINFORMATIVE decisions agree with the offline reference label | A7 vs reference from A8, S1–S3 and S7 | precision/recall with percentile bootstrap 95% CI (10,000 resamples over runs); **interpreted only after T-SPRT calibration (§7.2) and only as agreement with a batch estimate** | descriptive + CI |
 | C6 (E3) | A7 final error ≠ A8 final error | S1–S4, S7, S8 × D | two-sided paired Wilcoxon | 12 tests |
-| C7 | S6: switch HI→HR in ≥ 80% of runs, with latency ≤ 20 selection epochs after the oracle transition | A7 | one-sided exact binomial (H0: p ≤ 0.8) | 2 tests |
-| C8 | S8 selection distribution ≠ S1 selection distribution | A0 shadows | Jensen–Shannon divergence, permutation test (10,000 permutations of run labels) | 2 tests |
+| C7 | S6: switch HI→HR in ≥ 80% of runs, with latency ≤ 20 selection epochs after the position-based reference transition | A7 | one-sided exact binomial (H0: p ≤ 0.8) | 2 tests |
+| C8 (S8 placebo) | the fraction of *confident* HB/HR selections (margin > 2κ) on S8 < on S3 | JOINT shadows in A0 | one-sided Mann–Whitney over runs | 2 tests |
+
+Secondary analyses (not confirmatory):
+- S4: the C1–C4 analogues, as a separate family.
+- S5: descriptive accuracy against its weak label.
+- S8:
+  - Jensen–Shannon divergence of selection distributions vs S1, with a
+    permutation test (10,000 permutations);
+  - the PLL(HR) − PLL(HI) gap;
+  - switch frequency.
+- Active-regime E4: A7 vs P, A5 and A6, on selection accuracy and final
+  error (§14.6 Q3).
 
 ### 14.4 Performance comparisons (secondary)
 
@@ -803,6 +1029,49 @@ implementation, and the choice logged.
 - No superiority wording before §14.3–14.4 are complete.
 - Effect sizes are reported alongside p-values: the median paired
   difference and the matched-pairs rank-biserial correlation.
+- S7 results are described only as behaviour in a *controlled null-transfer
+  scenario*. S8 results are described only as *robustness under a
+  stochastic placebo*.
+- Neither is described as ground-truth H0 detection or structure recovery.
+
+### 14.6 E4 analysis (defined before any experiment)
+
+All primary E4 analyses use A0 shadow selectors on S1–S3, D ∈ {10, 20}, 30
+paired runs. Accuracy is computed per run over evidence-bearing epochs
+(§6.4).
+
+| question | analysis | status |
+|---|---|---|
+| **Q1** Does JOINT outperform HBA-only? | C3 (accuracy, passive); secondary: A7 vs A5 (active accuracy and final error) | necessary, not sufficient |
+| **Q2** Does JOINT outperform MPA-only? | C3 (accuracy, passive); secondary: A7 vs A6 | necessary, not sufficient |
+| **Q3** Does JOINT outperform POOLED? | active regime: A7 vs P (selection accuracy against S1–S3 labels; final error, paired Wilcoxon, two-sided, Holm over S1–S3 × D) | secondary (feedback-confounded) |
+| **Q4** Does JOINT provide more accurate structural selection than POOLED on S1–S3? | **C2** (passive, trajectory-neutral) | **PRIMARY E4 control** |
+| **Q5** Does the evidence persist after controlling for the number of observations? | (i) C2: JOINT vs POOLED have identical observations by construction (checked by T-E4-OBS); (ii) C9: JOINT-HALF (n = W) vs HBA-only / MPA-only (n = W) | required for the E4 pattern |
+
+**E4 decision rule** (intersection-union, fixed in advance). For a cell
+(function ∈ {S1, S2, S3}, D), the E4 evidence pattern holds only if **all**
+of the following are significant after Holm within their families:
+- C2: JOINT > POOLED;
+- C3: JOINT > HBA-only;
+- C3: JOINT > MPA-only;
+- C9: JOINT-HALF > HBA-only and JOINT-HALF > MPA-only.
+
+Reporting of the rule:
+- Results are reported per cell as the number of cells, out of 6, where
+  the pattern holds, and for which functions.
+- Cells in which all selectors are at ceiling (accuracy ≥ 0.95 for all)
+  are reported as "ceiling: pattern not assessable". They are **not**
+  counted as support.
+
+Interpretation:
+- JOINT > HBA-only / MPA-only **alone does not demonstrate E4**. It is
+  consistent with a pure sample-size effect.
+- **JOINT > POOLED is the critical additional evidence** that
+  optimizer-specific (heterogeneous) evidence contributes beyond sample
+  size.
+- JOINT ≤ POOLED on all cells means E4 is not supported, and it is reported
+  as such.
+- None of these outcomes is converted into a novelty claim.
 
 ---
 
@@ -872,10 +1141,12 @@ implementation, and the choice logged.
 
 | stage | command |
 |---|---|
+| — | **blocked until Gate 0 (§16) is resolved and this spec passes independent review** |
 | 0 | `python scripts/n1_reproduce_mphbs.py` |
 | 1 | `pytest tests/n1` |
-| 3 | `python scripts/n1_run.py --campaign n1_smoke` (5 runs, synthetic) → **STOP**, `MECHANISM_SMOKE_REPORT.md` |
-| 4 | `python scripts/n1_run.py --campaign n1_synthetic` (requires approval) |
+| 3a | `python scripts/n1_run.py --campaign n1_smoke` (5 runs, synthetic S1–S3 plus control conditions) |
+| 3b | `python scripts/n1_calibrate_sprt.py` (T-SPRT calibration, §7.2; Gate 8) → **STOP**, `MECHANISM_SMOKE_REPORT.md` (Gates 1–9) |
+| 4 | `python scripts/n1_run.py --campaign n1_synthetic` (requires Gates 1–9 and user approval) |
 | 5 | `python scripts/n1_run.py --campaign n1_pilot` |
 | 6 | `python scripts/n1_run.py --campaign n1_main` |
 | 7 | `python scripts/n1_stats.py` |
@@ -899,3 +1170,69 @@ implementation, and the choice logged.
   - logged;
   - justified by a failing unit test, not by performance;
   - followed by a complete re-run of the affected campaign.
+
+---
+
+## 16. Experimental gates
+
+Gates are evaluated in order.
+- A failed gate means **STOP and report**, with no silent patch.
+- Gate thresholds are fixed now, before any result. They are diagnostic
+  thresholds for validity, not performance targets.
+- Gates 1–9 must all pass before **any** full CEC2022, FIR or 30-run
+  synthetic experiment.
+
+| gate | requirement | operational criterion (fixed a priori) | evidence source |
+|---|---|---|---|
+| **Gate 0** (precondition to any implementation) | the literature-verification gate is resolved separately | every item in the outstanding list below is either verified from full text or code, or recorded as an unresolved evidence gap with explicit user acceptance to proceed despite it | literature report; user decision |
+| Gate 1 | all unit tests pass | every T-* test in §13.1 passes, including T-SPRT-UNIT, T-E4-OBS and T-INIT | `pytest tests/n1` |
+| Gate 2 | FE accounting is exact | FE audit (§5.5) holds in 100% of smoke runs; `fe_unused < 3N + E_x` | smoke logs |
+| Gate 3 | no hidden objective evaluations during shadow/model-selection operations | T-FE raising guard passes; the FE count of an A0 run is identical with shadow selectors on and off (T-SHADOW) | unit tests; smoke |
+| Gate 4 | prequential partitioning passes leakage tests | T-PREQ passes; the log-order assertion (p0 before f) holds for 100% of exchange records; no `op=EXCH` rows in structural windows | unit tests; smoke logs |
+| Gate 5 | S1 structural selection behaves consistently with HI | in A0 smoke runs (5 runs × D ∈ {10, 20}), HI is the modal JOINT selection over evidence-bearing epochs in ≥ 4 of 5 runs for each D | smoke |
+| Gate 6 | S2 structural selection behaves consistently with HB | as Gate 5, with HB modal; adjusted Rand index of the joint partition vs truth reported | smoke |
+| **Gate 7** | S3 provides meaningful opportunity for HR selection | (a) opportunity: ≥ W successful native displacements per population available in ≥ 50% of selection epochs; (b) detectability: JOINT selects HR in ≥ 5% of evidence-bearing epochs pooled over smoke runs, for each D | smoke; BIC-power diagnostics (§3.5) |
+| Gate 8 | T-SPRT calibration completed | Level 1 and Level 2 of §7.2 reported; no "grossly off" condition (§7.2) | calibration report |
+| Gate 9 | the JOINT vs POOLED E4 analysis is operationally valid | T-E4-OBS passes on smoke logs; JOINT and POOLED each produce a valid selection in ≥ 90% of evidence-bearing epochs; logged windows suffice to compute JOINT-HALF | smoke logs |
+| Gate 10 | no implementation changes after full benchmark results begin | git tags `n1-freeze-synthetic` and `n1-freeze-main` (§15.6); only failing-test bug fixes, logged, with a full re-run | git history; `logs/DEVELOPMENT_CHANGES.md` |
+
+**Gate 7 failure (hard diagnostic gate).**
+- Condition: HR selection on S3 is approximately absent (criterion (b)
+  fails) **despite** sufficient successful native-displacement samples
+  (criterion (a) holds).
+- Meaning: this is evidence that the BIC/model-complexity formulation lacks
+  adequate power for the intended HR detection task. The issue **must be
+  diagnosed before proceeding** to full experiments.
+- Diagnostics to report:
+  - the samples used for structural fitting;
+  - BIC of HI, HB and HR;
+  - ΔBIC;
+  - the selected-model frequencies;
+  - sample counts;
+  - whether HR was ever selected on S3.
+- Handling: any remedy requires a documented proposal and user approval.
+  BIC is never tuned after full experimental results. If criterion (a)
+  fails, report under-sampling as a separate finding.
+
+**Stage-3 stop.**
+- The smoke run ends with `MECHANISM_SMOKE_REPORT.md`, which reports
+  Gates 1–9.
+- Stage 4 requires explicit user approval, even when all gates pass.
+
+**Outstanding literature verification (Gate 0).** Full text or code is
+still needed for:
+- the ensemble knowledge-transfer framework with AIE + MAS
+  (S2210650223001670) and related multitasking transfer-selection methods;
+- LCC (arXiv 2504.17578) and LH-CC (doi 10.1145/3795095.3805054);
+- ACoS (doi 10.1109/tcyb.2018.2802912) and its ASOC follow-up;
+- GOMEA / FOS-related structural selection. The library code has been
+  checked; the papers, including *Predetermined versus learned linkage
+  models* (GECCO 2012), have not;
+- dd-CMA-ES. The code has been checked; the full paper has not;
+- statistical transfer-suppression methods: OKTPO-MFEA, MGAD, and Bayesian
+  competitive knowledge transfer;
+- island / multi-population EDA model-migration methods;
+- relevant KBS 2023–2026 literature (`N1_NOVELTY_EVIDENCE_LOG.md` S14).
+
+Anything that remains inaccessible is recorded as an **unresolved evidence
+gap**, not as absence of overlap.
