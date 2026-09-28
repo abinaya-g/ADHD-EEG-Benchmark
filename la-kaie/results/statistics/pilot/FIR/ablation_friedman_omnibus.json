@@ -1,0 +1,17 @@
+{
+  "n_blocks": 8,
+  "k_methods": 8,
+  "friedman_chi2": 42.875,
+  "friedman_p": 3.526223556211587e-07,
+  "kendall_w": 0.765625,
+  "avg_ranks": {
+    "LA-KAIE-Full": 3.0,
+    "LA-KAIE-NoLandscape": 2.625,
+    "LA-KAIE-NoInteraction": 5.375,
+    "LA-KAIE-NoKnowledgeReward": 2.375,
+    "LA-KAIE-DimensionOnly": 2.625,
+    "LA-KAIE-RandomExchange": 5.25,
+    "LA-KAIE-FixedPolicy": 7.875,
+    "LA-KAIE-NoAdaptiveController": 6.875
+  }
+}

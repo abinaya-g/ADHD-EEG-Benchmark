@@ -11,3 +11,4 @@
 - 2026-09-28T09:53:37Z Baseline-validation campaign started (10 runs/instance, seeds master 31000000). Development changes DC1-DC3 recorded in logs/DEVELOPMENT_CHANGES.md.
 - 2026-09-28T10:13:41Z Baseline validation complete (CEC 480 + FIR 320 runs, validator PASS, 0/80 distributional differences after Holm). experiments/baseline_validation.md written. Starting phase 2-3 smoke tests.
 - 2026-09-28T10:14:41Z Smoke tests (phases 2-3): CEC 60/60, FIR 65/65 ok; validator PASS except expected FE-granularity utilisation of MPHBS at 15k budget (14893/15000). Pilots started.
+- 2026-09-28T11:20:03Z Pilots complete (CEC 720, FIR 520 runs; validator PASS). results/PILOT_REPORT.md written. Full experiment NOT started: STOP conditions (novelty overlap; main mechanism inactive, no advantage over MPHBS). Awaiting user decision.

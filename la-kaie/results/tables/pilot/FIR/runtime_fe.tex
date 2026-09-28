@@ -1,0 +1,25 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{FIR: wall-clock runtime and objective evaluations per run.}
+\label{tab:fir_runtime}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+method & mean\_runtime\_s & std\_runtime\_s & mean\_FE & min\_FE & max\_FE & max\_fes\_budget & runs & failed\_runs \\
+\midrule
+HBA & 4.88 & 1.19 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+LA-KAIE-DimensionOnly & 18.7 & 2.04 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+LA-KAIE-FIRPrior & 19 & 2.42 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+LA-KAIE-FixedPolicy & 20.4 & 2.83 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+LA-KAIE-Full & 18.5 & 1.7 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+LA-KAIE-NoAdaptiveController & 21.6 & 2.92 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+LA-KAIE-NoInteraction & 10.1 & 1.19 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+LA-KAIE-NoKnowledgeReward & 19.2 & 2.41 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+LA-KAIE-NoLandscape & 22.1 & 2.62 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+LA-KAIE-RandomExchange & 13.6 & 2.02 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+MPA & 3.59 & 0.866 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+MPHB & 4.25 & 1.28 & 1.5e+05 & 150000 & 150000 & 150000 & 40 & 0 \\
+MPHBS & 23.2 & 3.01 & 1.5e+05 & 149857 & 149857 & 150000 & 40 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}

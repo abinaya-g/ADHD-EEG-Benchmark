@@ -1,0 +1,9 @@
+method,avg_rank
+LA-KAIE-NoKnowledgeReward,2.375
+LA-KAIE-NoLandscape,2.625
+LA-KAIE-DimensionOnly,2.625
+LA-KAIE-Full,3.0
+LA-KAIE-RandomExchange,5.25
+LA-KAIE-NoInteraction,5.375
+LA-KAIE-NoAdaptiveController,6.875
+LA-KAIE-FixedPolicy,7.875

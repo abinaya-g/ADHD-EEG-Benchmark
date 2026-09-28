@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{FIR ablation: instances as blocks. Friedman p = 3.526e-07, Kendall's W = 0.766; post hoc p Holm-adjusted across competitors; Wilcoxon instance tests Holm-adjusted over the whole stage.}
+\label{tab:fir_ablation_global}
+\begin{tabular}{lllrrrrll}
+\toprule
+method & role & W/T/L (instances, anchor view) & anchor avg rank & method avg rank & posthoc p (Holm) & reject & sig. instances anchor/method & run-level W/T/L (anchor view) \\
+\midrule
+LA-KAIE-NoLandscape & ablation & 4/0/4 & 3 & 2.62 & 1 & False & 0/0 & 16/0/24 \\
+LA-KAIE-NoInteraction & ablation & 7/0/1 & 3 & 5.38 & 0.262 & False & 0/0 & 29/0/11 \\
+LA-KAIE-NoKnowledgeReward & ablation & 2/0/6 & 3 & 2.38 & 1 & False & 0/0 & 15/0/25 \\
+LA-KAIE-DimensionOnly & ablation & 3/0/5 & 3 & 2.62 & 1 & False & 0/0 & 12/0/28 \\
+LA-KAIE-RandomExchange & ablation & 8/0/0 & 3 & 5.25 & 0.265 & False & 0/0 & 27/0/13 \\
+LA-KAIE-FixedPolicy & ablation & 8/0/0 & 3 & 7.88 & 0.000482 & True & 0/0 & 38/0/2 \\
+LA-KAIE-NoAdaptiveController & ablation & 8/0/0 & 3 & 6.88 & 0.00934 & True & 0/0 & 34/0/6 \\
+\bottomrule
+\end{tabular}
+\end{table}

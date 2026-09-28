@@ -1,0 +1,8 @@
+method,role,"W/T/L (instances, anchor view)",anchor avg rank,method avg rank,posthoc p (Holm),reject,sig. instances anchor/method,run-level W/T/L (anchor view)
+LA-KAIE-NoLandscape,ablation,4/0/4,3.0,2.625,1.0,False,0/0,16/0/24
+LA-KAIE-NoInteraction,ablation,7/0/1,3.0,5.375,0.26239749779623295,False,0/0,29/0/11
+LA-KAIE-NoKnowledgeReward,ablation,2/0/6,3.0,2.375,1.0,False,0/0,15/0/25
+LA-KAIE-DimensionOnly,ablation,3/0/5,3.0,2.625,1.0,False,0/0,12/0/28
+LA-KAIE-RandomExchange,ablation,8/0/0,3.0,5.25,0.2647703188887738,False,0/0,27/0/13
+LA-KAIE-FixedPolicy,ablation,8/0/0,3.0,7.875,0.0004815536123568162,True,0/0,38/0/2
+LA-KAIE-NoAdaptiveController,ablation,8/0/0,3.0,6.875,0.009339438149301663,True,0/0,34/0/6

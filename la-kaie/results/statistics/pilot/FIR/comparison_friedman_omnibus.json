@@ -1,0 +1,14 @@
+{
+  "n_blocks": 8,
+  "k_methods": 5,
+  "friedman_chi2": 21.80000000000001,
+  "friedman_p": 0.0002196529845497875,
+  "kendall_w": 0.68125,
+  "avg_ranks": {
+    "LA-KAIE-Full": 1.625,
+    "HBA": 4.0,
+    "MPA": 3.375,
+    "MPHB": 4.375,
+    "MPHBS": 1.625
+  }
+}

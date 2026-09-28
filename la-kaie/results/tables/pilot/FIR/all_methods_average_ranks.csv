@@ -1,0 +1,14 @@
+method,avg_rank
+LA-KAIE-NoKnowledgeReward,3.0
+LA-KAIE-DimensionOnly,3.375
+LA-KAIE-NoLandscape,3.5
+LA-KAIE-FIRPrior,3.625
+LA-KAIE-Full,4.375
+MPHBS,4.75
+LA-KAIE-RandomExchange,7.0
+LA-KAIE-NoInteraction,7.125
+LA-KAIE-NoAdaptiveController,9.25
+MPA,10.5
+LA-KAIE-FixedPolicy,11.0
+HBA,11.125
+MPHB,12.375

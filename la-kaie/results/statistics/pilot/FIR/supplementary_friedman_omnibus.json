@@ -1,0 +1,11 @@
+{
+  "n_blocks": 8,
+  "k_methods": 2,
+  "friedman_chi2": NaN,
+  "friedman_p": NaN,
+  "kendall_w": 0.25,
+  "avg_ranks": {
+    "LA-KAIE-Full": 1.75,
+    "LA-KAIE-FIRPrior": 1.25
+  }
+}

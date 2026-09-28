@@ -72,6 +72,76 @@
       "detail": null
     },
     {
+      "name": "FIR: no missing runs (13 methods x 8 instances x 5 runs)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: correct instance set",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: exactly 5 runs per method/instance",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: all runs status ok",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: FE budget never exceeded",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: identical declared budget across methods",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: FE utilisation >= 99.5% of budget",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: dimension and population size",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: no NaN/Inf results",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: seeds follow the common schedule",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: paired seeds (same seed for all methods per instance/run)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: seed uniqueness across (instance, run)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: raw result integrity (npz, curve, reported best == evaluated best)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: complete paired matrix for statistics",
+      "pass": true,
+      "detail": null
+    },
+    {
       "name": "configuration snapshots saved",
       "pass": true,
       "detail": null
@@ -81,6 +151,21 @@
   "CEC2022_methods": [
     "HBA",
     "LA-KAIE-DimensionOnly",
+    "LA-KAIE-FixedPolicy",
+    "LA-KAIE-Full",
+    "LA-KAIE-NoAdaptiveController",
+    "LA-KAIE-NoInteraction",
+    "LA-KAIE-NoKnowledgeReward",
+    "LA-KAIE-NoLandscape",
+    "LA-KAIE-RandomExchange",
+    "MPA",
+    "MPHB",
+    "MPHBS"
+  ],
+  "FIR_methods": [
+    "HBA",
+    "LA-KAIE-DimensionOnly",
+    "LA-KAIE-FIRPrior",
     "LA-KAIE-FixedPolicy",
     "LA-KAIE-Full",
     "LA-KAIE-NoAdaptiveController",
