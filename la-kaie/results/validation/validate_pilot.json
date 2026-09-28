@@ -1,0 +1,99 @@
+{
+  "campaign": "pilot",
+  "checks": [
+    {
+      "name": "CEC2022: no missing runs (12 methods x 12 instances x 5 runs)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: correct instance set",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: exactly 5 runs per method/instance",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: all runs status ok",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: FE budget never exceeded",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: identical declared budget across methods",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: FE utilisation >= 99.5% of budget",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: dimension and population size",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: no NaN/Inf results",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: seeds follow the common schedule",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: paired seeds (same seed for all methods per instance/run)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: seed uniqueness across (instance, run)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: raw result integrity (npz, curve, reported best == evaluated best)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: complete paired matrix for statistics",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "configuration snapshots saved",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "pass": true,
+  "CEC2022_methods": [
+    "HBA",
+    "LA-KAIE-DimensionOnly",
+    "LA-KAIE-FixedPolicy",
+    "LA-KAIE-Full",
+    "LA-KAIE-NoAdaptiveController",
+    "LA-KAIE-NoInteraction",
+    "LA-KAIE-NoKnowledgeReward",
+    "LA-KAIE-NoLandscape",
+    "LA-KAIE-RandomExchange",
+    "MPA",
+    "MPHB",
+    "MPHBS"
+  ],
+  "git_commits": [
+    "0920ca54ad1bb35122b58e2cffea2c52c55da71c",
+    "1ebd937d39f9d87bdf23da5c409aa4af32f30e17"
+  ]
+}

@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{CEC2022 ablation: instances as blocks. Friedman p = 6.983e-03, Kendall's W = 0.231; post hoc p Holm-adjusted across competitors; Wilcoxon instance tests Holm-adjusted over the whole stage.}
+\label{tab:cec2022_ablation_global}
+\begin{tabular}{lllrrrrll}
+\toprule
+method & role & W/T/L (instances, anchor view) & anchor avg rank & method avg rank & posthoc p (Holm) & reject & sig. instances anchor/method & run-level W/T/L (anchor view) \\
+\midrule
+LA-KAIE-NoLandscape & ablation & 4/2/6 & 4.58 & 5.42 & 1 & False & 0/0 & 22/16/22 \\
+LA-KAIE-NoInteraction & ablation & 6/2/4 & 4.58 & 5.79 & 1 & False & 0/0 & 25/13/22 \\
+LA-KAIE-NoKnowledgeReward & ablation & 5/3/4 & 4.58 & 5.46 & 1 & False & 0/0 & 22/13/25 \\
+LA-KAIE-DimensionOnly & ablation & 6/2/4 & 4.58 & 5.12 & 1 & False & 0/0 & 19/21/20 \\
+LA-KAIE-RandomExchange & ablation & 4/2/6 & 4.58 & 3.83 & 1 & False & 0/0 & 15/14/31 \\
+LA-KAIE-FixedPolicy & ablation & 2/1/9 & 4.58 & 2.58 & 0.319 & False & 0/0 & 8/9/43 \\
+LA-KAIE-NoAdaptiveController & ablation & 2/1/9 & 4.58 & 3.21 & 1 & False & 0/0 & 9/8/43 \\
+\bottomrule
+\end{tabular}
+\end{table}

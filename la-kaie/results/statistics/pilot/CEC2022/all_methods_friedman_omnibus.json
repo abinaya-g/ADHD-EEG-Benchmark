@@ -1,0 +1,21 @@
+{
+  "n_blocks": 12,
+  "k_methods": 12,
+  "friedman_chi2": 45.65225014611333,
+  "friedman_p": 3.72436388312273e-06,
+  "kendall_w": 0.3458503798947984,
+  "avg_ranks": {
+    "LA-KAIE-Full": 7.0,
+    "HBA": 10.833333333333334,
+    "MPA": 4.416666666666667,
+    "MPHB": 5.666666666666667,
+    "MPHBS": 4.833333333333333,
+    "LA-KAIE-NoLandscape": 7.916666666666667,
+    "LA-KAIE-NoInteraction": 8.291666666666666,
+    "LA-KAIE-NoKnowledgeReward": 7.791666666666667,
+    "LA-KAIE-DimensionOnly": 7.541666666666667,
+    "LA-KAIE-RandomExchange": 6.0,
+    "LA-KAIE-FixedPolicy": 3.5,
+    "LA-KAIE-NoAdaptiveController": 4.208333333333333
+  }
+}

@@ -1,0 +1,24 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{CEC2022: wall-clock runtime and objective evaluations per run.}
+\label{tab:cec2022_runtime}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+method & mean\_runtime\_s & std\_runtime\_s & mean\_FE & min\_FE & max\_FE & max\_fes\_budget & runs & failed\_runs \\
+\midrule
+HBA & 2.35 & 0.46 & 2e+05 & 199980 & 199980 & 200000 & 60 & 0 \\
+LA-KAIE-DimensionOnly & 12 & 2.42 & 2e+05 & 200000 & 200000 & 200000 & 60 & 0 \\
+LA-KAIE-FixedPolicy & 17.1 & 1.92 & 2e+05 & 200000 & 200000 & 200000 & 60 & 0 \\
+LA-KAIE-Full & 12.6 & 2.41 & 2e+05 & 200000 & 200000 & 200000 & 60 & 0 \\
+LA-KAIE-NoAdaptiveController & 17.5 & 1.72 & 2e+05 & 200000 & 200000 & 200000 & 60 & 0 \\
+LA-KAIE-NoInteraction & 5.98 & 0.701 & 2e+05 & 200000 & 200000 & 200000 & 60 & 0 \\
+LA-KAIE-NoKnowledgeReward & 9.93 & 2.53 & 2e+05 & 200000 & 200000 & 200000 & 60 & 0 \\
+LA-KAIE-NoLandscape & 11.4 & 2.3 & 2e+05 & 200000 & 200000 & 200000 & 60 & 0 \\
+LA-KAIE-RandomExchange & 8.81 & 1.09 & 2e+05 & 200000 & 200000 & 200000 & 60 & 0 \\
+MPA & 1.51 & 0.419 & 2e+05 & 199980 & 199980 & 200000 & 60 & 0 \\
+MPHB & 1.8 & 0.445 & 2e+05 & 199950 & 199950 & 200000 & 60 & 0 \\
+MPHBS & 20 & 1.92 & 2e+05 & 199930 & 199930 & 200000 & 60 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
