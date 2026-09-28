@@ -123,3 +123,68 @@ not as absence of overlap.
 
 In this step, no Python was executed and no tests were run. Only these
 three Markdown files were edited or created.
+
+---
+
+# Part II — rev. 2 → rev. 3 (research reframing)
+
+Date: 2026-09-28. The change was requested by the user after the Gate 0
+literature run.
+
+## 1. Status
+
+- **Implementation:** still blocked. Gate 0 is unresolved (see
+  `literature/GATE0_LITERATURE_VERIFICATION.md`), and independent review of
+  the spec is still pending.
+- **Novelty classification:** unchanged at **B**.
+- **What changed:** only the framing and the order of analyses. The
+  following are unchanged:
+  - algorithm and hyperparameters;
+  - baselines and benchmarks;
+  - unit tests;
+  - gates;
+  - the JOINT/POOLED design.
+
+## 2. Changes
+
+| # | change | section | reason | alg. behaviour? | interpretation? |
+|---|---|---|---|---|---|
+| 1 | New framing: **RQ1 (primary)** "Do heterogeneous optimizers provide complementary structural evidence for transferable information?"; **RQ2 (secondary)** "Can this structural evidence improve exchange decisions?". "Complementary" is defined operationally as JOINT > POOLED ∧ JOINT > HBA-only ∧ JOINT > MPA-only, plus C9 | spec header, "Research framing (rev. 3)" | user request. Gate 0 showed that the former E3 (activation relative to native search) is precedented in concept (AEMTO) | No | **Yes.** The structural-evidence question is primary; activation becomes a component analysis |
+| 2 | **JOINT vs POOLED kept as the central test** (C2 in the trajectory-neutral A0 design) | §14.3 grouping table; §14.6 (retitled "RQ1 analysis") | user request | No | No change to the test itself |
+| 3 | **T-REL** transfer-relevance check added, using the existing A1–A3 arms on S1–S3: the matched structure should have a higher exchange success rate. It includes a fallback rule. The qualifier "for transferable information" requires T-REL | §14.7 | RQ1's accuracy test shows structure *identification*, not *transferability*; without T-REL the primary question's wording would be unsupported | **No.** Analysis of existing arms only | **Yes.** It adds a condition on the RQ1 wording |
+| 4 | RQ2 split into RQ2a (representation decision: C10 A7 vs P; C11 A7 vs A5, A6, A11) and RQ2b (activation; the former C5 and C6) | §14.7; header | to make "exchange decisions" testable and to separate the precedented part (RQ2b) | No | **Yes.** RQ2 is interpreted conditionally on RQ1 (table in §14.7) |
+| 5 | Risk register: new cards R-RQ1-TRANSFER, R-RQ2-ATTRIBUTION and R-FRAME-TIMING; new rows R-TREL-FALLBACK and R-RQ2B-PRECEDENT | `IMPLEMENTATION_RISK_REGISTER.md` | consistency with the spec | No | — |
+
+Confirmatory families added:
+
+| family | tests | size |
+|---|---|---|
+| T-REL | one-sided | 12 |
+| C10 | two-sided | 12 |
+| C11 | two-sided | 18 |
+
+Existing families C1–C9 are unchanged.
+
+## 3. Points for the independent review
+
+1. **The T-REL prediction may not hold even when RQ1 does.** For
+   example, a coordinate-wise (HI) exchange could succeed well on a
+   rotated function. This is exactly why T-REL is a separate check. It is
+   not a flaw.
+2. **A2 on S1 is expected to fall back to HI**, because the partition
+   will be singletons. The S1 HI-vs-HB comparison of T-REL may therefore
+   be "not assessable". This is declared in advance.
+3. **RQ1 as a primary question is still exposed to the unresolved Gate 0
+   items**, because AIE + MAS, LCC and ACoS all select representations
+   adaptively. No accessible evidence shows likelihood/BIC-based
+   selection from heterogeneous-optimizer displacement evidence, or a
+   joint-vs-pooled comparison. That is absence of evidence under
+   restricted access.
+
+## 4. Statements
+
+**NO CODE IMPLEMENTATION HAS BEEN STARTED.**
+
+**NO EXPERIMENTS HAVE BEEN RUN.**
+
+**NO MANUSCRIPT TEXT HAS BEEN WRITTEN.**
