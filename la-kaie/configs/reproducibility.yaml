@@ -1,0 +1,15 @@
+# Seed schedule and execution settings (common random numbers across methods).
+# seed(campaign, instance_id, run) = master_seed[campaign] + benchmark_offset + 1000*instance_id + run
+# (run = 1..R). Same seed for every method on a given (instance, run) -> paired runs.
+master_seeds:
+  main: 20260405          # same master seed as the MPHBS authors' runners
+  baseline_validation: 31000000
+  smoke: 41000000
+  pilot: 51000000
+  sensitivity: 61000000   # tuning seeds are disjoint from main-experiment seeds
+benchmark_offset:
+  CEC2022: 0
+  FIR: 100000
+rng: "numpy.random.Generator(PCG64(seed))"
+n_workers: 4              # parallelism never changes results: every run is seeded independently
+convergence_checkpoints: 200   # linearly spaced FE checkpoints for convergence curves

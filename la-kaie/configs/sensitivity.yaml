@@ -1,0 +1,35 @@
+# Pre-registered sensitivity / parameter-selection protocol (written before any
+# LA-KAIE pilot result was seen).
+#
+# Tuning set (disjoint from the test benchmarks): CEC2022 at D = 10 (different
+# rotation/shift data dimension), all 12 functions, 5 runs, 100,000 FEs
+# (10000*D), seeds from master_seeds.sensitivity. FIR is NOT used for tuning.
+#
+# Design: one-factor-at-a-time around the default of controller.yaml.
+# Selection rule (fixed in advance):
+#   1. For each factor, compute the average rank (over the 12 tuning functions,
+#      ranks of mean error) of its levels, all other factors at default.
+#   2. A non-default level replaces the default only if its average rank is
+#      better by at least 0.5 (otherwise keep the default).
+#   3. The final configuration applies all replacements simultaneously; no
+#      further tuning. The same final configuration is used for CEC2022 D=20
+#      and FIR, for LA-KAIE-Full and every ablation.
+tuning:
+  benchmark: CEC2022
+  dimension: 10
+  instances: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  runs: 5
+  max_fes: 100000
+  rank_margin: 0.5
+factors:
+  epsilon0:            {path: [controller, epsilon0], levels: [0.1, 0.2, 0.3]}
+  reward_weights:
+    path: [reward]
+    levels:
+      default:        {w1_fitness: 1.0, w2_diversity: 0.2, w3_success: 0.3, w4_interaction: 0.2, w5_cost: 0.2, w6_stagnation: 0.2}
+      fitness_heavy:  {w1_fitness: 1.0, w2_diversity: 0.05, w3_success: 0.1, w4_interaction: 0.05, w5_cost: 0.1, w6_stagnation: 0.05}
+      knowledge_heavy: {w1_fitness: 1.0, w2_diversity: 0.4, w3_success: 0.5, w4_interaction: 0.4, w5_cost: 0.3, w6_stagnation: 0.4}
+  interaction_threshold: {path: [interaction, threshold], levels: [0.2, 0.3, 0.4]}
+  max_group_size:      {path: [interaction, max_group_size], levels: [3, 5, 8]}
+  transfer_prob:       {path: [exchange, transfer_prob], levels: [0.1, 0.2, 0.4]}
+  state_bins:          {path: [controller, bins], levels: [2, 3, 5]}

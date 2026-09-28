@@ -1,0 +1,47 @@
+# LA-KAIE default configuration (pre-registered before any LA-KAIE result was seen,
+# 2026-09-28). One configuration for BOTH benchmark domains (no per-function or
+# per-domain tuning). Final values are fixed by the sensitivity protocol in
+# configs/sensitivity.yaml, run on a disjoint tuning set (CEC2022 D=10).
+backbone:
+  fad_placement: before          # fixed a priori; not tuned (MPHBS tuned it per domain)
+  progress: fe_based             # HBA alpha / MPA CF & phases use FE_used/MaxFE
+exchange:
+  episodes_per_iteration: 24     # max exchange evaluations per iteration (= MPHBS B-C1 E)
+  transfer_prob: 0.2             # p_x: per-dimension (A3) / per-group (A4,A5,A7) transfer probability
+  tournament_size: 2
+  elite_fraction: 0.25           # elite set for A8 covariance
+  exploit_donor_top: 3           # A6 donor drawn from top-k of the other population
+  granularity_threshold: 0.2     # A5-A8 use group-level transfer iff S8 >= this
+  force_dimension_level: false
+interaction:
+  mode: estimated                # estimated | random_placebo | fir_prior_blend
+  update_every: 20               # iterations between interaction-model refits
+  archive_size: 3000             # ring buffer of evaluated points (no extra FEs)
+  sample_factor: 1.5             # nearest M = ceil(1.5*p) archive points, p = #quadratic terms
+  ridge: 1.0e-3                  # relative ridge penalty
+  t_crit: 3.0                    # keep coupling only if |t| of the cross coefficient >= t_crit
+  ema: 0.5                       # G <- (1-ema) G_old + ema G_new
+  threshold: 0.3                 # tau: strong-interaction threshold for grouping / consistency
+  max_group_size: 5
+state:
+  improvement_window: 10         # iterations for S2
+  stagnation_scale: 10           # S3 = s/(s+scale)
+  gap_window: 50                 # iterations for S5 normalisation
+  ema: 0.2                       # smoothing of S6, S7, S9
+controller:
+  type: contextual_bandit        # contextual_bandit | uniform_random | fixed_action | rule_based
+  use_state: true
+  bins: 3                        # discretisation of each S_i into equal-width bins (one-hot)
+  ridge_lambda: 1.0
+  forgetting: 0.99               # per-update discount of the chosen action's statistics
+  epsilon0: 0.2                  # epsilon(t) = max(epsilon_min, epsilon0*(1 - FE/MaxFE))
+  epsilon_min: 0.02
+  fixed_action: A4
+reward:
+  mode: knowledge                # knowledge | fitness_only
+  w1_fitness: 1.0
+  w2_diversity: 0.2
+  w3_success: 0.3
+  w4_interaction: 0.2
+  w5_cost: 0.2
+  w6_stagnation: 0.2

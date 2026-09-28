@@ -8,3 +8,4 @@
 - 2026-09-28T09:41:10Z scripts/validate_cec2022.py: OVERALL PASS (F(o)=F*, C vs official Python <=1.7e-16 rel.). Note: official Python port has two defects (shift-file indexing, always-true dimension message); cross-check used an in-memory one-line fix.
 - 2026-09-28T09:41:10Z scripts/validate_fir.py: OVERALL PASS.
 - 2026-09-28T09:41:10Z reference/MPHBS_NOTES.md written: 3 paper-vs-code discrepancies, 7 missing-from-paper items, all resolved by the authors' code; no STOP condition.
+- 2026-09-28T09:53:37Z Baseline-validation campaign started (10 runs/instance, seeds master 31000000). Development changes DC1-DC3 recorded in logs/DEVELOPMENT_CHANGES.md.

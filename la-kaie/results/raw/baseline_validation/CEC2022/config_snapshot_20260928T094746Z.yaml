@@ -1,0 +1,88 @@
+benchmark_config:
+  benchmark: CEC2022
+  dimension: 20
+  population_size: 30
+  runs: 30
+  max_fes: 200000
+  bounds:
+  - -100
+  - 100
+  instances: &id001
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  objective: error = F_i(x) - F_i*  (official cec22_test_func; identical callable
+    for all methods)
+  methods:
+    HBA: {}
+    MPA: {}
+    MPHB: {}
+    MPHBS:
+      K: 7
+      Ni: 3
+      rho_sub: 0.25
+      w_best: 0.05
+      gamma: 0.3
+      fad_before_p2: true
+      fad_after_p2: false
+    LA-KAIE:
+      variant: Full
+reproducibility:
+  master_seeds:
+    main: 20260405
+    baseline_validation: 31000000
+    smoke: 41000000
+    pilot: 51000000
+    sensitivity: 61000000
+  benchmark_offset:
+    CEC2022: 0
+    FIR: 100000
+  rng: numpy.random.Generator(PCG64(seed))
+  n_workers: 4
+  convergence_checkpoints: 200
+instances: *id001
+runs: 10
+max_fes: 200000
+labels:
+- HBA
+- MPA
+- MPHB
+- MPHBS
+overrides: {}
+git_commit: 245fbb6f419ad1836171e06b6f3c789ce524fcad
+utc: 20260928T094746Z
+argv:
+- scripts/run_experiment.py
+- --benchmark
+- CEC2022
+- --campaign
+- baseline_validation
+- --methods
+- HBA
+- MPA
+- MPHB
+- MPHBS
+- --runs
+- '10'
+n_tasks: 480
+method_configs:
+  HBA: {}
+  MPA: {}
+  MPHB: {}
+  MPHBS:
+    K: 7
+    Ni: 3
+    rho_sub: 0.25
+    w_best: 0.05
+    gamma: 0.3
+    fad_before_p2: true
+    fad_after_p2: false

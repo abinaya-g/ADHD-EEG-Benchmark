@@ -1,0 +1,31 @@
+# Each ablation removes exactly ONE LA-KAIE mechanism; everything else is the
+# Full configuration (configs/controller.yaml).
+variants:
+  Full: {}
+  # landscape state removed: controller sees only a bias feature (context-free bandit)
+  NoLandscape:
+    controller: {use_state: false}
+  # interaction model removed: G replaced by an uninformative random symmetric
+  # matrix (placebo) re-drawn at every update; grouping/S8/consistency pipeline unchanged
+  NoInteraction:
+    interaction: {mode: random_placebo}
+  # knowledge-aware reward removed: reward = normalised fitness improvement only
+  NoKnowledgeReward:
+    reward: {mode: fitness_only}
+  # group-preserving transfer removed: every transfer is dimension-level
+  # (interaction model still estimated and used in state S8 and reward)
+  DimensionOnly:
+    exchange: {force_dimension_level: true}
+  # controller removed: exchange action drawn uniformly at random each episode
+  RandomExchange:
+    controller: {type: uniform_random}
+  # controller removed: a single fixed exchange action (A4 interaction-group exchange) always
+  FixedPolicy:
+    controller: {type: fixed_action, fixed_action: A4}
+  # learning removed: static hand-written landscape rules choose the action (no adaptation)
+  NoAdaptiveController:
+    controller: {type: rule_based}
+  # SUPPLEMENTARY (FIR only, gray-box): interaction estimate blended 50/50 with the
+  # exact coupling of the stopband quadratic form (derived from the objective definition)
+  FIRPrior:
+    interaction: {mode: fir_prior_blend}

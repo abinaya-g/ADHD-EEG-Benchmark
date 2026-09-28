@@ -1,0 +1,3 @@
+*.so
+results/raw/**/*.tmp
+results/raw/**/*.tmp.npz

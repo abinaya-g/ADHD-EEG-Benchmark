@@ -1,0 +1,14 @@
+benchmark: CEC2022
+dimension: 20
+population_size: 30
+runs: 30
+max_fes: 200000           # 10000 * D
+bounds: [-100, 100]
+instances: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+objective: "error = F_i(x) - F_i*  (official cec22_test_func; identical callable for all methods)"
+methods:
+  HBA: {}
+  MPA: {}
+  MPHB: {}
+  MPHBS: {K: 7, Ni: 3, rho_sub: 0.25, w_best: 0.05, gamma: 0.30, fad_before_p2: true, fad_after_p2: false}  # B-C1 (paper Sec. 5.5)
+  LA-KAIE: {variant: Full}
