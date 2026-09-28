@@ -11,7 +11,7 @@ CEC2022 suite (D = 20) and eight FIR filter-design cases (D = 31).
 > The title *"Landscape-Aware Knowledge-Guided Information Exchange for
 > Adaptive Hybrid Metaheuristic Optimization"* is provisional.
 
-This directory is self-contained; it lives inside an unrelated repository.
+This repository is self-contained (it was developed inside an unrelated repository and split out with its history).
 All commands are run from this directory (`la-kaie/`).
 
 ## Layout
