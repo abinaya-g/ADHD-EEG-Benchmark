@@ -5,8 +5,6 @@ Per iteration: re-evaluate MPA (evaluates last iteration's FADs perturbation)
 without in-place evaluation. FE = 2N + 3N*T."""
 from __future__ import annotations
 
-import numpy as np
-
 from ..core import Recorder
 from .hybrid_common import HybridState
 from .mpa import fads_candidates

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..core import EPS, clip, levy
+from ..core import EPS, clip
 from .hba import hba_move
 from .mpa import FADS, fads_candidates, mpa_move
 

@@ -4,7 +4,7 @@ import pytest
 from lakaie.algorithms import lakaie
 from lakaie.benchmarks.fir import FIRProblem
 from lakaie.components import (ACTIONS, BanditController, LandscapeState, estimate_interaction,
-                               group_variables, interaction_consistency, interaction_strength)
+                               group_variables, interaction_consistency)
 from lakaie.core import CountedObjective, Recorder
 from lakaie.experiment import lakaie_config, load_yaml
 

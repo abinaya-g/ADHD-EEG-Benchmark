@@ -1,0 +1,8 @@
+name: lakaie
+channels: [conda-forge]
+dependencies:
+  - python=3.11
+  - gxx_linux-64      # to compile the official CEC2022 C++ code
+  - pip
+  - pip:
+      - -r requirements.txt

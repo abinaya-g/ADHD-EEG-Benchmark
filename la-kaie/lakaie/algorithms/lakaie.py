@@ -286,8 +286,6 @@ def run(obj, lb, ub, dim, N, rng, cfg, rec: Recorder | None, max_fe: int, proble
 
     while f.obj.remaining() >= backbone_cost:
         prog = f.fe / max_fe
-        gbest_before = s.Pg
-        div_before = state.diversity([s.X_H, s.X_M])
         CF = s.phase1(f, rng, prog * T_nom, T_nom)
         fad_rate = s.fads_greedy(f, rng, CF)
         refresh_bests()

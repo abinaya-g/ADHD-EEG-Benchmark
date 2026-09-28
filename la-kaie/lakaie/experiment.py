@@ -99,7 +99,7 @@ def run_single(task: dict) -> dict:
         out = run_method(task["family"], task["cfg"], obj, problem, task["N"], rng, rec, max_fe)
     except BudgetExceeded as e:     # hard guard - must never trigger
         status, err = "budget_exceeded", repr(e)
-    except Exception as e:          # noqa: BLE001 - recorded, never hidden
+    except Exception:               # noqa: BLE001 - recorded, never hidden
         status, err = "error", traceback.format_exc()
     runtime = time.perf_counter() - t0
     traces = rec.as_arrays()

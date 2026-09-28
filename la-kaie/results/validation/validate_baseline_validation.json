@@ -1,0 +1,164 @@
+{
+  "campaign": "baseline_validation",
+  "checks": [
+    {
+      "name": "CEC2022: no missing runs (4 methods x 12 instances x 10 runs)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: correct instance set",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: exactly 10 runs per method/instance",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: all runs status ok",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: FE budget never exceeded",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: identical declared budget across methods",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: FE utilisation >= 99.5% of budget",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: dimension and population size",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: no NaN/Inf results",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: seeds follow the common schedule",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: paired seeds (same seed for all methods per instance/run)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: seed uniqueness across (instance, run)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: raw result integrity (npz, curve, reported best == evaluated best)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "CEC2022: complete paired matrix for statistics",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: no missing runs (1 methods x 8 instances x 10 runs)",
+      "pass": false,
+      "detail": "[('MPHBS', 1, [9, 10]), ('MPHBS', 2, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), ('MPHBS', 3, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), ('MPHBS', 4, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), ('MPHBS', 5, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), ('MPHBS', 6, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), ('MPHBS', 7, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), ('MPHBS', 8, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])]"
+    },
+    {
+      "name": "FIR: correct instance set",
+      "pass": false,
+      "detail": "[1]"
+    },
+    {
+      "name": "FIR: exactly 10 runs per method/instance",
+      "pass": false,
+      "detail": "{('MPHBS', 1): 8}"
+    },
+    {
+      "name": "FIR: all runs status ok",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: FE budget never exceeded",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: identical declared budget across methods",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: FE utilisation >= 99.5% of budget",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: dimension and population size",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: no NaN/Inf results",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: seeds follow the common schedule",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: paired seeds (same seed for all methods per instance/run)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: seed uniqueness across (instance, run)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: raw result integrity (npz, curve, reported best == evaluated best)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "FIR: complete paired matrix for statistics",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "configuration snapshots saved",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "pass": false,
+  "CEC2022_methods": [
+    "HBA",
+    "MPA",
+    "MPHB",
+    "MPHBS"
+  ],
+  "FIR_methods": [
+    "MPHBS"
+  ],
+  "git_commits": [
+    "245fbb6f419ad1836171e06b6f3c789ce524fcad",
+    "df82852c250a29c2b77d7c72abf94935d843a762"
+  ]
+}

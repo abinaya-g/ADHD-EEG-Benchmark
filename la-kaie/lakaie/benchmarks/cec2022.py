@@ -10,7 +10,6 @@ files shipped in the MPHBS reproducibility package).
 from __future__ import annotations
 
 import ctypes
-import os
 import subprocess
 import threading
 from pathlib import Path
