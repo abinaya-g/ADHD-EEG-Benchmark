@@ -1,0 +1,33 @@
+# FIR filter-design benchmark reproduced from:
+#   E. Flores, R. Olivares, "MPHBS: A novel hybrid metaheuristic with
+#   SARSA-guided information exchange", Knowledge-Based Systems 352 (2026) 117070,
+#   Section 5.1.2, Eqs. (98)-(108), and the authors' runner
+#   run_FIR_external_AC1_common_seeds.m (build_fir_cases / make_case /
+#   fir_fitness_generic), which agrees with the paper on every value below.
+# No case has been added, removed or modified.
+common:
+  filter_order: 30          # paper Sec. 5.1.2
+  dimension: 31             # D = order + 1, Eq. (98)
+  lower_bound: -1.0         # Eq. (100)
+  upper_bound: 1.0
+  n_fft: 2048               # Eq. (101)
+  frequency_grid: "w_n = n / (N_fft/2), n = 0..N_fft/2 (normalized, 1 = Nyquist)"
+  Wp: 1.0                   # passband weight, all cases
+  population_size: 30
+  runs: 30
+  max_fes: 150000
+cases:
+  - {id: 1, name: LPF_Easy,   type: LPF, Fp: 0.18, Fs: 0.25, Ws: 100}
+  - {id: 2, name: LPF_Hard,   type: LPF, Fp: 0.22, Fs: 0.26, Ws: 120}
+  - {id: 3, name: HPF_Easy,   type: HPF, Fs: 0.75, Fp: 0.82, Ws: 100}
+  - {id: 4, name: HPF_Hard,   type: HPF, Fs: 0.74, Fp: 0.78, Ws: 120}
+  - {id: 5, name: BPF_Wide,   type: BPF, Fs1: 0.25, Fp1: 0.35, Fp2: 0.65, Fs2: 0.75, Ws: 100}
+  - {id: 6, name: BPF_Narrow, type: BPF, Fs1: 0.32, Fp1: 0.40, Fp2: 0.60, Fs2: 0.68, Ws: 120}
+  - {id: 7, name: BSF_Wide,   type: BSF, Fp1: 0.25, Fs1: 0.35, Fs2: 0.65, Fp2: 0.75, Ws: 100}
+  - {id: 8, name: BSF_Narrow, type: BSF, Fp1: 0.32, Fs1: 0.40, Fs2: 0.60, Fp2: 0.68, Ws: 120}
+band_sets:
+  LPF: "P = {n: w_n <= Fp}; S = {n: w_n >= Fs}  (Eq. 102)"
+  HPF: "P = {n: w_n >= Fp}; S = {n: w_n <= Fs}  (Eq. 103)"
+  BPF: "P = {n: Fp1 <= w_n <= Fp2}; S = {n: w_n <= Fs1 or w_n >= Fs2}  (Eq. 104)"
+  BSF: "P = {n: w_n <= Fp1 or w_n >= Fp2}; S = {n: Fs1 <= w_n <= Fs2}  (Eq. 105)"
+objective: "F(h) = Wp*MSEp + Ws*MSEs; MSEs = mean_{S} |H|^2 (Eq. 106); MSEp = mean_{P} (|H|-1)^2 (Eq. 107)"

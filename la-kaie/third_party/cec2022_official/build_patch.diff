@@ -1,0 +1,34 @@
+7c7
+< #include <WINDOWS.H>
+---
+> /* [LA-KAIE build patch] <WINDOWS.H> removed (not needed on POSIX) */
+10c10,11
+< #include <malloc.h>
+---
+> #include <stdlib.h>
+> #include <string.h>
+57,58c58,61
+< extern double *OShift,*M,*y,*z,*x_bound;
+< extern int ini_flag,n_flag,func_flag,*SS;
+---
+> /* [LA-KAIE build patch] globals defined here (originally in main.cpp) */
+> double *OShift=NULL,*M=NULL,*y=NULL,*z=NULL,*x_bound=NULL;
+> int ini_flag=0,n_flag,func_flag,*SS=NULL;
+> char g_data_dir[1024]="input_data";
+63c66,67
+< void cec22_test_func(double *x, double *f, int nx, int mx,int func_num)
+---
+> extern "C" void cec22_set_data_dir(const char *d){ strncpy(g_data_dir,d,1023); ini_flag=0; }
+> extern "C" void cec22_test_func(double *x, double *f, int nx, int mx,int func_num)
+104c108
+< 		sprintf(FileName, "input_data/M_%d_D%d.txt", func_num,nx);
+---
+> 		sprintf(FileName, "%s/M_%d_D%d.txt", g_data_dir, func_num,nx);
+133c137
+< 		sprintf(FileName, "input_data/shift_data_%d.txt", func_num);
+---
+> 		sprintf(FileName, "%s/shift_data_%d.txt", g_data_dir, func_num);
+179c183
+< 			sprintf(FileName, "input_data/shuffle_data_%d_D%d.txt", func_num, nx);
+---
+> 			sprintf(FileName, "%s/shuffle_data_%d_D%d.txt", g_data_dir, func_num, nx);
