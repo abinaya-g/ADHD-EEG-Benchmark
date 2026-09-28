@@ -1,0 +1,13 @@
+method,avg_rank
+MPA,1.0
+LA-KAIE-NoLandscape,2.0
+LA-KAIE-NoInteraction,3.0
+LA-KAIE-DimensionOnly,4.0
+LA-KAIE-NoKnowledgeReward,5.0
+LA-KAIE-Full,6.0
+MPHBS,7.0
+LA-KAIE-RandomExchange,8.0
+MPHB,9.0
+HBA,10.0
+LA-KAIE-NoAdaptiveController,11.0
+LA-KAIE-FixedPolicy,12.0

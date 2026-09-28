@@ -1,0 +1,16 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\caption{CEC2022 ablation: mean, standard deviation and mean-based rank over paired runs (lower is better; minimum mean in bold).}
+\label{tab:cec2022_ablation}
+\begin{tabular}{llrrrrrrrr}
+\hline
+Function & statistic & LA-KAIE-Full & LA-KAIE-NoLandscape & LA-KAIE-NoInteraction & LA-KAIE-NoKnowledgeReward & LA-KAIE-DimensionOnly & LA-KAIE-RandomExchange & LA-KAIE-FixedPolicy & LA-KAIE-NoAdaptiveController \\
+\hline
+1 & Mean & 7.250e+02 & \textbf{5.121e+02} & 6.222e+02 & 6.643e+02 & 6.573e+02 & 1.503e+03 & 3.126e+03 & 2.675e+03 \\
+1 & Std & 5.770e+02 & 6.843e+02 & 3.328e+02 & 1.444e+02 & 6.593e+02 & 6.886e+02 & 2.155e+03 & 1.026e+03 \\
+1 & Rank & 5.000 & 1.000 & 2.000 & 4.000 & 3.000 & 6.000 & 8.000 & 7.000 \\
+AvgRank & Rank & 5.000 & 1.000 & 2.000 & 4.000 & 3.000 & 6.000 & 8.000 & 7.000 \\
+\hline
+\end{tabular}
+\end{table*}

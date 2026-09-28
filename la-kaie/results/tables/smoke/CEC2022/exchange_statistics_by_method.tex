@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{CEC2022: LA-KAIE exchange diagnostics averaged over instances and runs.}
+\label{tab:cec2022_exchange}
+\begin{tabular}{lrrrrrr}
+\toprule
+method & exchange\_frequency & successful\_exchange\_rate & controller\_entropy & group\_level\_fraction & final\_S8 & overhead\_fraction \\
+\midrule
+LA-KAIE-DimensionOnly & 4.24 & 0.318 & 0.776 & 0 & 0.0126 & 0.446 \\
+LA-KAIE-FixedPolicy & 23.9 & 0.018 & 0 & 1 & 0.0467 & 0.389 \\
+LA-KAIE-Full & 4.63 & 0.355 & 0.772 & 0.0927 & 0.00668 & 0.449 \\
+LA-KAIE-NoAdaptiveController & 23.9 & 0.14 & 0.399 & 0 & 0.0715 & 0.357 \\
+LA-KAIE-NoInteraction & 1.53 & 0.69 & 0.661 & 0.302 & 0.954 & 0.469 \\
+LA-KAIE-NoKnowledgeReward & 2.4 & 0.503 & 0.735 & 0.0623 & 0.000225 & 0.421 \\
+LA-KAIE-NoLandscape & 7.4 & 0.473 & 0.514 & 0.0245 & 0.00885 & 0.404 \\
+LA-KAIE-RandomExchange & 6.75 & 0.145 & 0.99 & 0.151 & 0.0106 & 0.385 \\
+\bottomrule
+\end{tabular}
+\end{table}

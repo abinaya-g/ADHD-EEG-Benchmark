@@ -35,6 +35,7 @@ def main():
     ap.add_argument("--runs", type=int, default=30)
     ap.add_argument("--max-fes", type=int, help="override expected budget (pilot/smoke)")
     ap.add_argument("--instances", nargs="*", type=int)
+    ap.add_argument("--benchmarks", nargs="*", default=list(EXPECT))
     a = ap.parse_args()
     report = {"campaign": a.campaign, "checks": [], "pass": True}
 
@@ -43,7 +44,8 @@ def main():
         report["pass"] &= bool(ok)
         print(("PASS " if ok else "FAIL ") + name + ("" if ok or detail is None else f" :: {str(detail)[:400]}"))
 
-    for bench, exp in EXPECT.items():
+    for bench in a.benchmarks:
+        exp = EXPECT[bench]
         df = load_campaign(ROOT / "results" / "raw", a.campaign, bench)
         if df.empty:
             check(f"{bench}: runs present", False, "no runs found")

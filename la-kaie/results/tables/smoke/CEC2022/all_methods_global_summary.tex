@@ -1,0 +1,23 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\caption{CEC2022 all_methods: instances as blocks. Friedman p = 4.433e-01, Kendall's W = 1.000; post hoc p Holm-adjusted across competitors; Wilcoxon instance tests Holm-adjusted over the whole stage.}
+\label{tab:cec2022_all_methods_global}
+\begin{tabular}{lllrrrrll}
+\toprule
+method & role & W/T/L (instances, anchor view) & anchor avg rank & method avg rank & posthoc p (Holm) & reject & sig. instances anchor/method & run-level W/T/L (anchor view) \\
+\midrule
+HBA & baseline & 1/0/0 & 6 & 10 & 1 & False & 0/0 & 5/0/0 \\
+MPA & baseline & 0/0/1 & 6 & 1 & 1 & False & 0/0 & 2/0/3 \\
+MPHB & baseline & 1/0/0 & 6 & 9 & 1 & False & 0/0 & 5/0/0 \\
+MPHBS & baseline & 1/0/0 & 6 & 7 & 1 & False & 0/0 & 3/0/2 \\
+LA-KAIE-NoLandscape & ablation & 0/0/1 & 6 & 2 & 1 & False & 0/0 & 2/0/3 \\
+LA-KAIE-NoInteraction & ablation & 0/0/1 & 6 & 3 & 1 & False & 0/0 & 2/0/3 \\
+LA-KAIE-NoKnowledgeReward & ablation & 0/0/1 & 6 & 5 & 1 & False & 0/0 & 2/0/3 \\
+LA-KAIE-DimensionOnly & ablation & 0/0/1 & 6 & 4 & 1 & False & 0/0 & 1/3/1 \\
+LA-KAIE-RandomExchange & ablation & 1/0/0 & 6 & 8 & 1 & False & 0/0 & 4/0/1 \\
+LA-KAIE-FixedPolicy & ablation & 1/0/0 & 6 & 12 & 1 & False & 0/0 & 4/0/1 \\
+LA-KAIE-NoAdaptiveController & ablation & 1/0/0 & 6 & 11 & 1 & False & 0/0 & 5/0/0 \\
+\bottomrule
+\end{tabular}
+\end{table}

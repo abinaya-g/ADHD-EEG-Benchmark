@@ -1,0 +1,12 @@
+method,role,"W/T/L (instances, anchor view)",anchor avg rank,method avg rank,posthoc p (Holm),reject,sig. instances anchor/method,run-level W/T/L (anchor view)
+HBA,baseline,1/0/0,6.0,10.0,1.0,False,0/0,5/0/0
+MPA,baseline,0/0/1,6.0,1.0,1.0,False,0/0,2/0/3
+MPHB,baseline,1/0/0,6.0,9.0,1.0,False,0/0,5/0/0
+MPHBS,baseline,1/0/0,6.0,7.0,1.0,False,0/0,3/0/2
+LA-KAIE-NoLandscape,ablation,0/0/1,6.0,2.0,1.0,False,0/0,2/0/3
+LA-KAIE-NoInteraction,ablation,0/0/1,6.0,3.0,1.0,False,0/0,2/0/3
+LA-KAIE-NoKnowledgeReward,ablation,0/0/1,6.0,5.0,1.0,False,0/0,2/0/3
+LA-KAIE-DimensionOnly,ablation,0/0/1,6.0,4.0,1.0,False,0/0,1/3/1
+LA-KAIE-RandomExchange,ablation,1/0/0,6.0,8.0,1.0,False,0/0,4/0/1
+LA-KAIE-FixedPolicy,ablation,1/0/0,6.0,12.0,1.0,False,0/0,4/0/1
+LA-KAIE-NoAdaptiveController,ablation,1/0/0,6.0,11.0,1.0,False,0/0,5/0/0

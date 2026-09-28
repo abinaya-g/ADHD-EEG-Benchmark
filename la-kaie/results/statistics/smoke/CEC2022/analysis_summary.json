@@ -1,0 +1,310 @@
+{
+  "n_runs": 60,
+  "n_failed": 0,
+  "comparison": {
+    "omnibus": {
+      "n_blocks": 1,
+      "k_methods": 5,
+      "friedman_chi2": 4.0,
+      "friedman_p": 0.40600584970983794,
+      "kendall_w": 1.0,
+      "avg_ranks": {
+        "LA-KAIE-Full": 2.0,
+        "HBA": 5.0,
+        "MPA": 1.0,
+        "MPHB": 4.0,
+        "MPHBS": 3.0
+      }
+    },
+    "summary": [
+      {
+        "method": "HBA",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 2.0,
+        "method avg rank": 5.0,
+        "posthoc p (Holm)": 0.718849979515999,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "5/0/0"
+      },
+      {
+        "method": "MPA",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "0/0/1",
+        "anchor avg rank": 2.0,
+        "method avg rank": 1.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "2/0/3"
+      },
+      {
+        "method": "MPHB",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 2.0,
+        "method avg rank": 4.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "5/0/0"
+      },
+      {
+        "method": "MPHBS",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 2.0,
+        "method avg rank": 3.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "3/0/2"
+      }
+    ]
+  },
+  "ablation": {
+    "omnibus": {
+      "n_blocks": 1,
+      "k_methods": 8,
+      "friedman_chi2": 7.0,
+      "friedman_p": 0.42887985755305486,
+      "kendall_w": 1.0,
+      "avg_ranks": {
+        "LA-KAIE-Full": 5.0,
+        "LA-KAIE-NoLandscape": 1.0,
+        "LA-KAIE-NoInteraction": 2.0,
+        "LA-KAIE-NoKnowledgeReward": 4.0,
+        "LA-KAIE-DimensionOnly": 3.0,
+        "LA-KAIE-RandomExchange": 6.0,
+        "LA-KAIE-FixedPolicy": 8.0,
+        "LA-KAIE-NoAdaptiveController": 7.0
+      }
+    },
+    "summary": [
+      {
+        "method": "LA-KAIE-NoLandscape",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "0/0/1",
+        "anchor avg rank": 5.0,
+        "method avg rank": 1.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "2/0/3"
+      },
+      {
+        "method": "LA-KAIE-NoInteraction",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "0/0/1",
+        "anchor avg rank": 5.0,
+        "method avg rank": 2.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "2/0/3"
+      },
+      {
+        "method": "LA-KAIE-NoKnowledgeReward",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "0/0/1",
+        "anchor avg rank": 5.0,
+        "method avg rank": 4.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "2/0/3"
+      },
+      {
+        "method": "LA-KAIE-DimensionOnly",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "0/0/1",
+        "anchor avg rank": 5.0,
+        "method avg rank": 3.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "1/3/1"
+      },
+      {
+        "method": "LA-KAIE-RandomExchange",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 5.0,
+        "method avg rank": 6.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "4/0/1"
+      },
+      {
+        "method": "LA-KAIE-FixedPolicy",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 5.0,
+        "method avg rank": 8.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "4/0/1"
+      },
+      {
+        "method": "LA-KAIE-NoAdaptiveController",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 5.0,
+        "method avg rank": 7.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "5/0/0"
+      }
+    ]
+  },
+  "all_methods": {
+    "omnibus": {
+      "n_blocks": 1,
+      "k_methods": 12,
+      "friedman_chi2": 11.0,
+      "friedman_p": 0.4432632784264655,
+      "kendall_w": 1.0,
+      "avg_ranks": {
+        "LA-KAIE-Full": 6.0,
+        "HBA": 10.0,
+        "MPA": 1.0,
+        "MPHB": 9.0,
+        "MPHBS": 7.0,
+        "LA-KAIE-NoLandscape": 2.0,
+        "LA-KAIE-NoInteraction": 3.0,
+        "LA-KAIE-NoKnowledgeReward": 5.0,
+        "LA-KAIE-DimensionOnly": 4.0,
+        "LA-KAIE-RandomExchange": 8.0,
+        "LA-KAIE-FixedPolicy": 12.0,
+        "LA-KAIE-NoAdaptiveController": 11.0
+      }
+    },
+    "summary": [
+      {
+        "method": "HBA",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 6.0,
+        "method avg rank": 10.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "5/0/0"
+      },
+      {
+        "method": "MPA",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "0/0/1",
+        "anchor avg rank": 6.0,
+        "method avg rank": 1.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "2/0/3"
+      },
+      {
+        "method": "MPHB",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 6.0,
+        "method avg rank": 9.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "5/0/0"
+      },
+      {
+        "method": "MPHBS",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 6.0,
+        "method avg rank": 7.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "3/0/2"
+      },
+      {
+        "method": "LA-KAIE-NoLandscape",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "0/0/1",
+        "anchor avg rank": 6.0,
+        "method avg rank": 2.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "2/0/3"
+      },
+      {
+        "method": "LA-KAIE-NoInteraction",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "0/0/1",
+        "anchor avg rank": 6.0,
+        "method avg rank": 3.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "2/0/3"
+      },
+      {
+        "method": "LA-KAIE-NoKnowledgeReward",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "0/0/1",
+        "anchor avg rank": 6.0,
+        "method avg rank": 5.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "2/0/3"
+      },
+      {
+        "method": "LA-KAIE-DimensionOnly",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "0/0/1",
+        "anchor avg rank": 6.0,
+        "method avg rank": 4.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "1/3/1"
+      },
+      {
+        "method": "LA-KAIE-RandomExchange",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 6.0,
+        "method avg rank": 8.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "4/0/1"
+      },
+      {
+        "method": "LA-KAIE-FixedPolicy",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 6.0,
+        "method avg rank": 12.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "4/0/1"
+      },
+      {
+        "method": "LA-KAIE-NoAdaptiveController",
+        "role": "ablation",
+        "W/T/L (instances, anchor view)": "1/0/0",
+        "anchor avg rank": 6.0,
+        "method avg rank": 11.0,
+        "posthoc p (Holm)": 1.0,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "5/0/0"
+      }
+    ]
+  }
+}
