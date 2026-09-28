@@ -69,3 +69,39 @@ knowledge transfer paper (arXiv 2510.23407); *Predetermined versus learned
 linkage models* (GECCO 2012); the island-EDA model-migration papers; the
 multi-representation island models paper; Gupta & Ong (arXiv 1607.05390);
 the KBS EMT papers listed in S14.
+
+## D. Gate 0 run (2026-09-28)
+
+This run is reported in full in `literature/GATE0_LITERATURE_VERIFICATION.md`.
+
+Access:
+- All publisher, preprint and repository hosts are still blocked (proxy
+  403 / EGRESS_BLOCKED).
+- GitHub (git) and PyPI are reachable.
+
+New code-level verifications. Source: MTO-Platform, commit `3ca17b2`. These
+are third-party reimplementations, not the authors' code.
+
+| # | work | finding |
+|---|---|---|
+| V6 | AEMTO (doi 10.1109/TEVC.2021.3107435) | transfer probability set by smoothed transfer vs self-evolution survival rates (lb 0.05, ub 0.7) |
+| V7 | MMTO-ETA (doi 10.1109/TAI.2026.3689513) | roulette over {eigen-subspace transfer, mean transfer, no transfer}, weighted by survival-rate reward |
+| V8 | SSLT, KBS 2025 (doi 10.1016/j.knosys.2025.113824) | DQN over {no KT, shape KT, bi-KT, domain KT} |
+| V9 | AMT (doi 10.1109/TCYB.2018.2864345) | EM mixture weights including the target's own model (diagonal Gaussian), which can suppress transfer |
+| V10 | MTEA-AD (doi 10.1109/TEVC.2021.3068157) | full-covariance Gaussian filtering of transferred individuals; transfer fraction set to the previous success rate |
+| V11 | BLKT-DE (doi 10.1109/TCYB.2023.3273625) | random-size contiguous blocks, clustered by k-means |
+| — | LCC, LH-CC, ACoS | not found in metaevobox 2.0.2 or pypop7 |
+
+Search snippets added:
+- AIE + MAS: DAE/RBM/ADM chosen by bandit; AIE adapts transfer
+  probability and migration count; doi 10.1016/j.swevo.2023.101394.
+- LCC: random, min-variance and max-variance splitting; 58-dimensional
+  state; PPO.
+- GECCO 2012 linkage paper: offline comparison of predetermined vs learned
+  models.
+
+Outcome:
+- Gate 0 is **not resolved**.
+- The classification is left at B.
+- The E3 concept (exchange regulated against native search) is
+  precedented in code (V6).
