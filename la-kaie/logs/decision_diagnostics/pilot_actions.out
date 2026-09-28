@@ -1,0 +1,8 @@
+== CEC2022 LA-KAIE-Full: exchanges/iter 8.0; S8 max(first10%) 0.072, max(run) 0.126, final 0.008
+   A1:succ=0.32,R=-0.16,n=101136  A2:succ=0.69,R=+0.74,n=121848  A3:succ=0.10,R=-0.29,n=103672  A4:succ=0.14,R=-0.23,n=154758  A5:succ=0.04,R=-0.33,n=91071  A6:succ=0.04,R=-0.26,n=90945  A7:succ=0.02,R=-0.34,n=64683  A8:succ=0.19,R=+0.01,n=352781
+== CEC2022 LA-KAIE-FixedPolicy: exchanges/iter 24.0; S8 max(first10%) 0.126, max(run) 0.220, final 0.027
+   A4:succ=0.10,R=-0.23,n=2524800
+== FIR LA-KAIE-Full: exchanges/iter 10.5; S8 max(first10%) 0.130, max(run) 0.178, final 0.057
+   A1:succ=0.53,R=+0.01,n=41513  A2:succ=1.00,R=+1.22,n=59019  A3:succ=0.14,R=-0.16,n=11833  A4:succ=0.13,R=-0.14,n=13242  A5:succ=0.02,R=-0.21,n=10575  A6:succ=0.11,R=-0.06,n=26607  A7:succ=0.22,R=-0.08,n=19335  A8:succ=0.29,R=+0.17,n=493598
+== FIR LA-KAIE-FixedPolicy: exchanges/iter 24.0; S8 max(first10%) 0.227, max(run) 0.250, final 0.057
+   A4:succ=0.03,R=-0.21,n=1263600

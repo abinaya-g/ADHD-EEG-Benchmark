@@ -1,0 +1,22 @@
+== CEC2022 D=20 rotation matrices: density of M (|M_ij|>0.05 off-diagonal)
+F1: dense frac=0.84  orthogonal_err=2.2e-15
+F2: dense frac=0.82  orthogonal_err=1.3e-14
+F3: dense frac=0.82  orthogonal_err=2.3e-15
+F4: dense frac=0.81  orthogonal_err=7.8e-15
+F5: dense frac=0.80  orthogonal_err=5.6e-15
+F6: dense frac=0.26  orthogonal_err=1.8e-15
+F7: dense frac=0.13  orthogonal_err=2.1e-15
+F8: dense frac=0.17  orthogonal_err=2.9e+00
+F9: dense frac=0.29  orthogonal_err=2.3e+00
+F10: dense frac=0.28  orthogonal_err=2.0e+00
+F11: dense frac=0.27  orthogonal_err=2.5e+00
+F12: dense frac=0.28  orthogonal_err=2.0e+00
+== FIR stopband quadratic-form coupling (exact, gray-box)
+FIR1: pairs>=0.3 0.00, mean|G| 0.06, groups(tau=.3,gmax=5) 31, lag1 0.30 lag5 0.06
+FIR2: pairs>=0.3 0.06, mean|G| 0.06, groups(tau=.3,gmax=5) 16, lag1 0.31 lag5 0.07
+FIR3: pairs>=0.3 0.00, mean|G| 0.06, groups(tau=.3,gmax=5) 31, lag1 0.30 lag5 0.06
+FIR4: pairs>=0.3 0.06, mean|G| 0.06, groups(tau=.3,gmax=5) 16, lag1 0.31 lag5 0.07
+FIR5: pairs>=0.3 0.06, mean|G| 0.06, groups(tau=.3,gmax=5) 15, lag1 0.00 lag5 0.00
+FIR6: pairs>=0.3 0.06, mean|G| 0.06, groups(tau=.3,gmax=5) 15, lag1 0.00 lag5 0.00
+FIR7: pairs>=0.3 0.12, mean|G| 0.12, groups(tau=.3,gmax=5) 8, lag1 0.00 lag5 0.00
+FIR8: pairs>=0.3 0.17, mean|G| 0.17, groups(tau=.3,gmax=5) 8, lag1 0.00 lag5 0.00
