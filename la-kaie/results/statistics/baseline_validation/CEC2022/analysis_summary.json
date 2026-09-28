@@ -1,0 +1,105 @@
+{
+  "n_runs": 480,
+  "n_failed": 0,
+  "comparison": {
+    "omnibus": {
+      "n_blocks": 12,
+      "k_methods": 4,
+      "friedman_chi2": 20.200000000000017,
+      "friedman_p": 0.00015428843096021273,
+      "kendall_w": 0.5611111111111111,
+      "avg_ranks": {
+        "MPHBS": 1.75,
+        "HBA": 3.9166666666666665,
+        "MPA": 2.25,
+        "MPHB": 2.0833333333333335
+      }
+    },
+    "summary": [
+      {
+        "method": "HBA",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "12/0/0",
+        "anchor avg rank": 1.75,
+        "method avg rank": 3.9166666666666665,
+        "posthoc p (Holm)": 0.00011820474817539613,
+        "reject": true,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "100/0/20"
+      },
+      {
+        "method": "MPA",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "9/0/3",
+        "anchor avg rank": 1.75,
+        "method avg rank": 2.25,
+        "posthoc p (Holm)": 0.6855634222958229,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "81/0/39"
+      },
+      {
+        "method": "MPHB",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "6/0/6",
+        "anchor avg rank": 1.75,
+        "method avg rank": 2.0833333333333335,
+        "posthoc p (Holm)": 0.6855634222958229,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "77/0/43"
+      }
+    ]
+  },
+  "ablation": null,
+  "all_methods": {
+    "omnibus": {
+      "n_blocks": 12,
+      "k_methods": 4,
+      "friedman_chi2": 20.200000000000017,
+      "friedman_p": 0.00015428843096021273,
+      "kendall_w": 0.5611111111111111,
+      "avg_ranks": {
+        "MPHBS": 1.75,
+        "HBA": 3.9166666666666665,
+        "MPA": 2.25,
+        "MPHB": 2.0833333333333335
+      }
+    },
+    "summary": [
+      {
+        "method": "HBA",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "12/0/0",
+        "anchor avg rank": 1.75,
+        "method avg rank": 3.9166666666666665,
+        "posthoc p (Holm)": 0.00011820474817539613,
+        "reject": true,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "100/0/20"
+      },
+      {
+        "method": "MPA",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "9/0/3",
+        "anchor avg rank": 1.75,
+        "method avg rank": 2.25,
+        "posthoc p (Holm)": 0.6855634222958229,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "81/0/39"
+      },
+      {
+        "method": "MPHB",
+        "role": "baseline",
+        "W/T/L (instances, anchor view)": "6/0/6",
+        "anchor avg rank": 1.75,
+        "method avg rank": 2.0833333333333335,
+        "posthoc p (Holm)": 0.6855634222958229,
+        "reject": false,
+        "sig. instances anchor/method": "0/0",
+        "run-level W/T/L (anchor view)": "77/0/43"
+      }
+    ]
+  }
+}

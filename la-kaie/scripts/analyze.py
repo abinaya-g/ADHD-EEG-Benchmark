@@ -78,7 +78,7 @@ def plain_latex(df, path, caption, label):
 
 
 def stage(df, methods, anchor, name, sdir, tdir, bench, item):
-    methods = [m for m in methods if m in set(df.method)]
+    methods = [m for m in dict.fromkeys(methods) if m in set(df.method)]
     if anchor not in methods or len(methods) < 2:
         return None
     d = df[df.method.isin(methods)]

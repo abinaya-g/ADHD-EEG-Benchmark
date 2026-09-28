@@ -40,6 +40,9 @@ def lakaie_config(variant: str = "Full", overrides: dict | None = None) -> dict:
     abl = load_yaml("ablation.yaml")["variants"]
     if variant not in abl:
         raise KeyError(f"unknown LA-KAIE variant {variant}")
+    sel = CFG / "selected_parameters.yaml"      # output of the sensitivity protocol, if run
+    if sel.exists():
+        ctrl = deep_update(ctrl, yaml.safe_load(sel.read_text()) or {})
     cfg = deep_update(ctrl, abl[variant] or {})
     cfg = deep_update(cfg, overrides or {})
     cfg["variant"] = variant

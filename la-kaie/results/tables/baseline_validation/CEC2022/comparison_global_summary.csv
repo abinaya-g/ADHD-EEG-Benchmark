@@ -1,0 +1,4 @@
+method,role,"W/T/L (instances, anchor view)",anchor avg rank,method avg rank,posthoc p (Holm),reject,sig. instances anchor/method,run-level W/T/L (anchor view)
+HBA,baseline,12/0/0,1.75,3.9166666666666665,0.00011820474817539613,True,0/0,100/0/20
+MPA,baseline,9/0/3,1.75,2.25,0.6855634222958229,False,0/0,81/0/39
+MPHB,baseline,6/0/6,1.75,2.0833333333333335,0.6855634222958229,False,0/0,77/0/43

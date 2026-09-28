@@ -153,17 +153,17 @@ def cd_diagram(df, methods, out, name, title):
     n = R.shape[0]
     avg = R.mean().sort_values()
     cd = Q05[k] * np.sqrt(k * (k + 1) / (6 * n))
-    fig, ax = plt.subplots(figsize=(6, 0.25 * k + 1.2))
-    ax.set_xlim(0.5, k + 0.5); ax.set_ylim(-0.5, k + 0.8)
-    ax.axhline(k + 0.3, color="#52514e", lw=0.8)
+    fig, ax = plt.subplots(figsize=(7, 0.25 * k + 1.4))
+    ax.set_xlim(0.5, k + 3.2); ax.set_ylim(-1.6, k + 0.8)
+    ax.plot([1, k], [k + 0.3, k + 0.3], color="#52514e", lw=0.8)
     for i in range(1, k + 1):
         ax.plot([i, i], [k + 0.3, k + 0.45], color="#52514e", lw=0.8)
         ax.text(i, k + 0.55, str(i), ha="center", fontsize=7)
     for j, (m, v) in enumerate(avg.items()):
         y = k - 1 - j
-        ax.plot([v, v], [y, k + 0.3], color="#8f8e88", lw=0.6)
+        ax.plot([v, v, k + 0.6], [k + 0.3, y, y], color="#8f8e88", lw=0.6)
         ax.plot(v, k + 0.3, "o", color="#2a78d6", ms=4)
-        ax.text(v + 0.05, y, f"{m} ({v:.2f})", fontsize=7, va="center")
+        ax.text(k + 0.7, y, f"{m} ({v:.2f})", fontsize=7, va="center")
     # cliques: maximal groups whose rank range < CD
     vals = avg.values
     bars = []
@@ -176,10 +176,10 @@ def cd_diagram(df, methods, out, name, title):
     for t, (i, j) in enumerate(bars):
         yy = -0.3 + 0.18 * t
         ax.plot([vals[i], vals[j]], [yy, yy], color="#0b0b0b", lw=2)
-    ax.plot([1, 1 + cd], [k + 0.75, k + 0.75], color="#e34948", lw=2)
-    ax.text(1 + cd / 2, k + 0.8, f"CD = {cd:.2f}", ha="center", va="bottom", fontsize=7)
+    ax.plot([1, 1 + cd], [-1.3, -1.3], color="#e34948", lw=2)
+    ax.text(1 + cd + 0.1, -1.3, f"critical difference CD = {cd:.2f}", ha="left", va="center", fontsize=7)
     ax.axis("off")
-    ax.set_title(title + "\n(Nemenyi CD, alpha = 0.05, instances as blocks; bars join methods not separated by CD)")
+    ax.set_title(title + "\n(Nemenyi CD, alpha = 0.05, instances as blocks; black bars join methods not separated by CD)", pad=18)
     save(fig, out, name)
 
 
