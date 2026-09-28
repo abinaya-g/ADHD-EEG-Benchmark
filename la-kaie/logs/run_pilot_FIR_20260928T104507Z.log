@@ -25,3 +25,8 @@
 2026-09-28T10:47:33.137108+00:00 {"status": "ok", "path": "/home/user/ADHD-EEG-Benchmark/la-kaie/results/raw/pilot/FIR/LA-KAIE-RandomExchange/inst01/run03.json", "runtime": 11.735599122999702, "best": 0.0046061128244095405}
 2026-09-28T10:47:34.792331+00:00 {"status": "ok", "path": "/home/user/ADHD-EEG-Benchmark/la-kaie/results/raw/pilot/FIR/LA-KAIE-NoKnowledgeReward/inst01/run03.json", "runtime": 18.07181234900054, "best": 0.004718960540075618}
 2026-09-28T10:47:37.818325+00:00 {"status": "ok", "path": "/home/user/ADHD-EEG-Benchmark/la-kaie/results/raw/pilot/FIR/LA-KAIE-DimensionOnly/inst01/run03.json", "runtime": 17.716223218999403, "best": 0.00526534258387713}
+2026-09-28T10:47:49.539921+00:00 {"status": "ok", "path": "/home/user/ADHD-EEG-Benchmark/la-kaie/results/raw/pilot/FIR/LA-KAIE-FixedPolicy/inst01/run03.json", "runtime": 18.88071664400013, "best": 0.006090071320306449}
+2026-09-28T10:47:52.363089+00:00 {"status": "ok", "path": "/home/user/ADHD-EEG-Benchmark/la-kaie/results/raw/pilot/FIR/LA-KAIE-FIRPrior/inst01/run03.json", "runtime": 17.529564262999884, "best": 0.004563162708916935}
+2026-09-28T10:47:52.957892+00:00 {"status": "ok", "path": "/home/user/ADHD-EEG-Benchmark/la-kaie/results/raw/pilot/FIR/LA-KAIE-NoAdaptiveController/inst01/run03.json", "runtime": 19.766405379999924, "best": 0.00644283854293495}
+2026-09-28T10:47:59.007576+00:00 {"status": "ok", "path": "/home/user/ADHD-EEG-Benchmark/la-kaie/results/raw/pilot/FIR/MPHBS/inst01/run04.json", "runtime": 21.174208845000067, "best": 0.004765116342229647}
+2026-09-28T10:48:01.898015+00:00 {"status": "ok", "path": "/home/user/ADHD-EEG-Benchmark/la-kaie/results/raw/pilot/FIR/LA-KAIE-NoInteraction/inst01/run04.json", "runtime": 8.914593357999365, "best": 0.004972942243115904}
