@@ -126,7 +126,9 @@ three Markdown files were edited or created.
 
 ---
 
-# Part II — rev. 2 → rev. 3 (research reframing)
+# Part II — rev. 2 → rev. 3 (research reframing) — REVERTED
+
+> **Status: reverted (2026-09-29).** The user reverted the rev. 3 spec. They named rev. 2 of the spec and of the risk register as authoritative; the spec is now rev. 2.1 (§17) and the register is back to its rev. 2 content. This part is kept for traceability only.
 
 Date: 2026-09-28. The change was requested by the user after the Gate 0
 literature run.

@@ -19,10 +19,13 @@ CFG = N1Config()
 
 
 def _block_cov(D, blocks, rng):
+    """Block-diagonal covariance with a random rotation and condition number 1e3
+    inside each block (as in S2), so that within-block correlations are strong."""
     C = np.eye(D)
     for b in blocks:
-        A = rng.standard_normal((len(b), len(b)))
-        C[np.ix_(b, b)] = A @ A.T + len(b) * np.eye(len(b))
+        k = len(b)
+        Q = np.linalg.qr(rng.standard_normal((k, k)))[0]
+        C[np.ix_(b, b)] = Q @ np.diag(10.0 ** np.linspace(0, 3, k)) @ Q.T
     return C
 
 

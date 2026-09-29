@@ -1,15 +1,8 @@
-# IMPLEMENTATION_RISK_REGISTER — Revised N1 (rev. 3)
+# IMPLEMENTATION_RISK_REGISTER — Revised N1 (rev. 2)
 
-This register goes with `IMPLEMENTATION_SPEC.md` rev. 3; section references
-(§) point to that spec. The changes are listed in `SPEC_REVIEW_REPORT.md`:
-Part I covers rev. 2 and Part II covers rev. 3. No earlier risk was
-deleted.
-
-Rev. 3 reframes the research questions:
-- **RQ1 (primary)** is the former E4: complementary structural evidence.
-- **RQ2 (secondary)** covers exchange decisions: RQ2a is the representation
-  decision; RQ2b is the former E3 (activation).
-- In this register, "E4" and "RQ1" refer to the same question.
+This register goes with `IMPLEMENTATION_SPEC.md` rev. 2; section references
+(§) point to that spec. The changes since rev. 1 are listed in
+`SPEC_REVIEW_REPORT.md`. No risk from rev. 1 was deleted.
 
 ## Severity
 
@@ -283,47 +276,6 @@ mitigation and stop condition. Part B lists the non-critical risks.
 - *Mitigation:* `rng_init = default_rng(seed)`, as in MPHBS (§15.1).
 - *Stop condition:* T-INIT fails.
 
-### RQ1 framing (rev. 3)
-
-**R-RQ1-TRANSFER — RQ1 is reported as evidence "for transferable information" when it only shows structure identification**
-- *Why it matters:*
-  - RQ1's central test (JOINT vs POOLED accuracy against the known
-    structure of S1–S3) measures *identification of structure*.
-  - The known structure need not be the representation that makes
-    exchange useful.
-  - Claiming "transferable" without evidence would overstate the result.
-- *Detection:* check reports for the transferability qualifier on cells
-  where the T-REL check (§14.7) failed or could not be assessed.
-- *Mitigation:*
-  - T-REL, a pre-declared transfer-relevance check using the existing
-    fixed-structure arms A1–A3.
-  - The qualifier "for transferable information" is permitted only on
-    cells where T-REL holds.
-- *Stop condition:* any report attaching the transferability qualifier
-  without T-REL support. Stop and correct the report.
-
-**R-RQ2-ATTRIBUTION — an RQ2 benefit is attributed to complementary evidence when RQ1 is not supported, or when A7 does not beat P**
-- *Why it matters:* an exchange benefit may come from the amount of
-  evidence or from exchange itself, not from complementarity.
-- *Detection:* the §14.7 conditional-interpretation table is applied to
-  every RQ2 statement.
-- *Mitigation:* the permitted statements are fixed in advance (§14.7).
-  C10 (A7 vs P) is the attribution test.
-- *Stop condition:* any RQ2 statement that falls outside the permitted
-  table.
-
-**R-FRAME-TIMING — the reframing is mistaken for post-hoc hypothesis change**
-- *Why it matters:* integrity rule R-INT-3.
-- *Detection:* git history.
-- *Mitigation:*
-  - The reframing (rev. 3) was made **before any N1 result exists**. No
-    N1 code or experiment exists.
-  - It was motivated by literature evidence (Gate 0), not by results.
-  - It is logged in `SPEC_REVIEW_REPORT.md` Part II and must be frozen
-    with the spec (§15.6).
-- *Stop condition:* any further change of RQ1 or RQ2 after the
-  `n1-freeze-synthetic` tag.
-
 ### Research integrity
 
 **R-INT-1 — hyperparameters changed after full-test results**
@@ -423,8 +375,6 @@ mitigation and stop condition. Part B lists the non-critical risks.
 | R-DES-6 | mechanism inactive on CEC/FIR (as with LA-KAIE) | H | exchange FE share; state and selection logs | mechanism metrics reported with performance | no mechanism-benefit claim without activity evidence |
 | R-DES-7 | passive (A0) accuracy does not transfer to the active regime | M | A7 vs P, A5, A6 | §14.6 Q3 | report both |
 | R-DES-8 | T-SPRT calibration Level 2 harness (native-equivalent null, oracle donor) differs from real exchange conditions | M | Levels 1 and 2 reported side by side | declared as a harness | report |
-| R-TREL-FALLBACK | fixed-structure arms fall back to HI (A2 on S1, where the partition is degenerate; A3 during warm-up), so T-REL comparisons are not assessable | M | fallback-epoch fraction logged | fallback rule, with more than 50% fallback meaning not assessable (§14.7) | report the excluded count |
-| R-RQ2B-PRECEDENT | RQ2b (activation relative to native search) is precedented in concept (AEMTO, Gate 0 G1); presenting it as a research contribution would overstate it | H | report review | RQ2b is framed as a component analysis only (spec header) | correct the wording |
 | R-ENG-1 | runtime (5 selectors × 2 populations per epoch; 13 arms) | M | smoke timing | U = 5; single thread per run | report; ask before reducing arms |
 | R-ENG-2 | cross-machine non-determinism | L | pinned environment | `capture_environment` | report |
 | R-ENG-3 | log size, increased by per-epoch window logging for JOINT-HALF and BIC-power diagnostics | M | disk check | float32 npz per run, compressed | report; ask before dropping window logs |
@@ -432,15 +382,7 @@ mitigation and stop condition. Part B lists the non-critical risks.
 
 ---
 
-## Consistency checklist (spec rev. 3 ↔ register rev. 3)
-
-- [x] Rev. 3 additions are present: R-RQ1-TRANSFER, R-RQ2-ATTRIBUTION and
-  R-FRAME-TIMING (critical cards), and R-TREL-FALLBACK and
-  R-RQ2B-PRECEDENT (Part B).
-- [x] RQ1 still uses JOINT vs POOLED as the central test (spec §14.6). The
-  risks R-E4-SAMPLE and R-BIC-POWER apply to RQ1 unchanged.
-
-### Carried over from rev. 2
+## Consistency checklist (spec rev. 2 ↔ register rev. 2)
 
 - [x] Every **C** risk has a card with its description, why it matters,
   detection, mitigation and stop condition (Part A).
