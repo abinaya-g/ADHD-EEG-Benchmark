@@ -1,0 +1,101 @@
+{
+  "level1": {
+    "null_sigma0.0": {
+      "false_activation_rate": 0.06603705416498064,
+      "se": 0.0006675797832010665,
+      "frac_sequences_ending_active": 0.1,
+      "stopping": {
+        "n_decisions": 138392,
+        "median": 74.0,
+        "q25": 45.0,
+        "q75": 128.0,
+        "p95": 200.0,
+        "max": 200.0
+      },
+      "truncation_fraction": 0.12439302849875715,
+      "n_sequences": 1600
+    },
+    "null_sigma0.5": {
+      "false_activation_rate": 0.14698885689245023,
+      "se": 0.0009338808366669468,
+      "frac_sequences_ending_active": 0.15375,
+      "stopping": {
+        "n_decisions": 143766,
+        "median": 69.0,
+        "q25": 40.0,
+        "q75": 126.0,
+        "p95": 200.0,
+        "max": 200.0
+      },
+      "truncation_fraction": 0.1282500730353491,
+      "n_sequences": 1600
+    },
+    "positive_sigma0.0": {
+      "false_suppression_rate": 0.07846448042965254,
+      "se": 0.0007002348093428792,
+      "frac_outcomes_while_suppressed": 0.12855558537961215,
+      "stopping": {
+        "n_decisions": 147468,
+        "median": 68.0,
+        "q25": 39.0,
+        "q75": 120.0,
+        "p95": 200.0,
+        "max": 200.0
+      },
+      "truncation_fraction": 0.11204464697425882,
+      "n_sequences": 1600
+    },
+    "positive_sigma0.5": {
+      "false_suppression_rate": 0.1011430246189918,
+      "se": 0.0007300014982958246,
+      "frac_outcomes_while_suppressed": 0.12926808117372351,
+      "stopping": {
+        "n_decisions": 170600,
+        "median": 55.0,
+        "q25": 30.0,
+        "q75": 101.0,
+        "p95": 200.0,
+        "max": 200.0
+      },
+      "truncation_fraction": 0.08349941383352873,
+      "n_sequences": 1600
+    }
+  },
+  "level1_source_runs": 80,
+  "level2": {
+    "null": {
+      "false_activation_rate": 0.0,
+      "se": 2.2639736366332933e-08,
+      "frac_runs_ending_active": 0.0,
+      "stopping": {
+        "n_decisions": 1951,
+        "median": 28.0,
+        "q25": 21.0,
+        "q75": 38.0,
+        "p95": 66.5,
+        "max": 182.0
+      },
+      "truncation_fraction": 0.0,
+      "n_runs": 20
+    },
+    "positive": {
+      "false_suppression_rate": 0.2469195457840058,
+      "se": 0.00670271431919212,
+      "frac_iterations_suppressed": 0.8042813364876006,
+      "stopping": {
+        "n_decisions": 4139,
+        "median": 24.0,
+        "q25": 20.0,
+        "q75": 45.0,
+        "p95": 152.0,
+        "max": 200.0
+      },
+      "truncation_fraction": 0.03213336554723363,
+      "n_runs": 20
+    }
+  },
+  "nominal_alpha": 0.05,
+  "nominal_beta": 0.05,
+  "grossly_off": false,
+  "criterion": "Level 1 sigma_u=0: false activation or false suppression > 3 x nominal -> STOP"
+}

@@ -1,0 +1,60 @@
+campaign: n1_smoke
+spec:
+  runs: 5
+  dims:
+  - 10
+  - 20
+  budget_per_dim: 10000
+  groups:
+  - arms:
+    - A0
+    - A7
+    functions:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+  - arms:
+    - A0_noshadow
+    functions:
+    - 1
+    - 2
+    - 3
+n1_config:
+  N: 30
+  E_x: 24
+  r_probe: 2
+  p_x: 0.2
+  W_min: 60
+  W_per_dim: 5
+  U: 5
+  kappa: 3.0
+  alpha_link: 0.01
+  alpha: 0.05
+  beta: 0.05
+  delta: 0.6931471805599453
+  n_min: 20
+  n_max: 200
+  W_nat_iters: 10
+  lambda_nat: 0.01
+  include_fad: true
+  eps_rel: 1.0e-08
+  s_floor: 1.0e-12
+  p_clip: 0.0001
+  eps_l: 1.0e-12
+  irls_max_iter: 25
+  irls_tol: 1.0e-08
+  fisher_clip: 0.999999
+  support_q:
+  - 0.01
+  - 0.99
+  a10_floor: 0.1
+  a10_lr: 0.1
+n1_config_hash: 943d1f6f3aa1f1f4f4dc0bfe945ec7d3100bb59638b5d10bafbd0a968ab38e5a
+git_commit: 0512bda9e3399b578b0218c81825b57c58c22c34
+utc: 20260929T085002Z
+n_tasks: 190

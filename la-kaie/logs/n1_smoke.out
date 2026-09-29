@@ -1,0 +1,11 @@
+[    93s] 20/190 ok=20 fail=0 invalid=0 skipped=0
+[   141s] 40/190 ok=40 fail=0 invalid=0 skipped=0
+[   191s] 60/190 ok=60 fail=0 invalid=0 skipped=0
+[   242s] 80/190 ok=80 fail=0 invalid=0 skipped=0
+[   272s] 100/190 ok=100 fail=0 invalid=0 skipped=0
+[   294s] 120/190 ok=120 fail=0 invalid=0 skipped=0
+[   312s] 140/190 ok=140 fail=0 invalid=0 skipped=0
+[   333s] 160/190 ok=160 fail=0 invalid=0 skipped=0
+[   348s] 180/190 ok=180 fail=0 invalid=0 skipped=0
+[   352s] 190/190 ok=190 fail=0 invalid=0 skipped=0
+finished: ok=190 fail=0 invalid=0 skipped=0 log=/home/user/ADHD-EEG-Benchmark/la-kaie/logs/run_n1_smoke_20260929T085002Z.log

@@ -1,0 +1,39 @@
+{
+  "1": {
+    "pass": true,
+    "evidence": "92 tests, 0 failures, 0 errors, 0 skipped (full suite: tests/ incl. tests/n1 and the existing baseline tests = T-MPHBS)"
+  },
+  "2": {
+    "pass": true,
+    "evidence": "190/190 runs; runs failing status/audit/unused-bound: 0"
+  },
+  "3": {
+    "pass": true,
+    "evidence": "A0 vs A0_noshadow pairs compared: 30; mismatches: 0; zero-FE section check passed in every iteration of every run: True"
+  },
+  "4": {
+    "pass": true,
+    "evidence": "A7 runs with a p0-after-evaluation record: 0; runs whose window rows differ from the native-success count (exchange leakage): 0; T-PREQ unit tests passed: True"
+  },
+  "5": {
+    "pass": false,
+    "evidence": "D=10: HI modal in 4/5 runs (modal labels ['HI', 'HB', 'HI', 'HI', 'HI']); D=20: HI modal in 0/5 runs (modal labels ['HR', 'HR', 'HR', 'HR', 'HR'])"
+  },
+  "6": {
+    "pass": false,
+    "evidence": "D=10: HB modal in 0/5 runs (modal labels ['HR', 'HR', 'HR', 'HR', 'HR']); D=20: HB modal in 0/5 runs (modal labels ['HR', 'HR', 'HR', 'HR', 'HR']); ARI of the last joint partition vs truth: D=10: [-0.01, 0.0, 0.0, -0.038, 0.031]; D=20: [0.0, 0.0, 0.0, 0.012, 0.0]"
+  },
+  "7": {
+    "pass": true,
+    "evidence": "D=10: (a) fraction of selection epochs with >= W samples per population (JOINT evidence) = 1.00 [pass]; (b) HR share of evidence-bearing epochs: k_cur 0.999, k_hat 0.999 [pass]; HR ever selected: True; k_cur frequencies {'HR': 1104, 'HB': 1}; W = 60 per population; median BIC HI/HB/HR = -5976.7 / 878.0 / -9093.9; \u0394BIC(HR \u2212 best other) median -2130.7, min -8994.6 | D=20: (a) fraction of selection epochs with >= W samples per population (JOINT evidence) = 1.00 [pass]; (b) HR share of evidence-bearing epochs: k_cur 0.996, k_hat 0.996 [pass]; HR ever selected: True; k_cur frequencies {'HR': 2206, 'HB': 9}; W = 100 per population; median BIC HI/HB/HR = -14866.1 / 5056.4 / -23727.4; \u0394BIC(HR \u2212 best other) median -6985.3, min -24448.7"
+  },
+  "8": {
+    "pass": true,
+    "evidence": "Level 1 and Level 2 reported: True; grossly off: False (see results/n1_calibration/T_SPRT_CALIBRATION_REPORT.md)"
+  },
+  "9": {
+    "pass": true,
+    "evidence": "evidence-bearing JOINT epochs: 26520; epochs with differing JOINT/POOLED observation digests: 0; valid selections JOINT 26520, POOLED 26520; offline JOINT-HALF recomputed at 990/990 sampled epochs (n = W each)"
+  },
+  "stop": []
+}
