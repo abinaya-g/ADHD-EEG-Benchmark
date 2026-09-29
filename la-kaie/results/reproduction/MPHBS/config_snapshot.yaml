@@ -1,0 +1,22 @@
+campaign: n1_reproduction_mphbs
+methods:
+  CEC2022:
+    K: 7
+    Ni: 3
+    rho_sub: 0.25
+    w_best: 0.05
+    gamma: 0.3
+    fad_before_p2: true
+    fad_after_p2: false
+  FIR:
+    K: 3
+    Ni: 9
+    rho_sub: 0.25
+    w_best: 0.05
+    gamma: 0.3
+    fad_before_p2: false
+    fad_after_p2: true
+git_commit: 673b1d59962226e0442bd75481370985b7684414
+utc: '2026-09-29T06:43:24.458161+00:00'
+config_hash: 77d39d25c6dc7a65da22cf2bf7d97af8a2f18c0ce4178afe960e695a5e95d021
+n_tasks: 600

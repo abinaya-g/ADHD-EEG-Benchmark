@@ -1,0 +1,34 @@
+{
+  "verdict": {
+    "CEC2022": {
+      "P1": true,
+      "P2": true,
+      "P4": false,
+      "n_sig_authors": 1,
+      "n_sig_earlier": 0
+    },
+    "FIR": {
+      "P1": true,
+      "P2": true,
+      "P4": true,
+      "n_sig_authors": 0,
+      "n_sig_earlier": 0
+    }
+  },
+  "ok": false,
+  "git_commit": "673b1d59962226e0442bd75481370985b7684414",
+  "utc": "2026-09-29T06:43:24.458161+00:00",
+  "config_hash": "77d39d25c6dc7a65da22cf2bf7d97af8a2f18c0ce4178afe960e695a5e95d021",
+  "n_tasks": 600,
+  "argv": [
+    "scripts/n1_reproduce_mphbs.py",
+    "--workers",
+    "4",
+    "--tests-ok",
+    "--tests-status",
+    "92 passed (tests/ incl. test_baselines.py FE totals 199,930/149,857 and determinism; tests/n1 incl. backbone freeze), commit 673b1d5"
+  ],
+  "elapsed_sec": 2490.380401611328,
+  "tests": "92 passed (tests/ incl. test_baselines.py FE totals 199,930/149,857 and determinism; tests/n1 incl. backbone freeze), commit 673b1d5",
+  "tests_ok": true
+}
