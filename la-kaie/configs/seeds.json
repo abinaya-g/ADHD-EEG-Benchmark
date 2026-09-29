@@ -1,0 +1,20 @@
+{
+  "formula": "seed = master[campaign] + benchmark_offset[benchmark] + 1000*instance + run  (run = 1..R)",
+  "synthetic_instance": "instance = 10*fid + (1 if D == 10 else 2)  (amendment A-6)",
+  "synthetic_instance_seed": "91000000 + 100*fid + D  (spec §12)",
+  "rng_streams": "rng_init = default_rng(seed) (identical to MPHBS); rng_native, rng_exchange, rng_placebo = SeedSequence([seed, 1]).spawn(3)",
+  "masters": {
+    "n1_unit": 70000000,
+    "n1_synthetic": 71000000,
+    "n1_pilot": 72000000,
+    "n1_smoke": 81000000,
+    "n1_calib": 83000000,
+    "n1_main": 20260405,
+    "n1_reproduction_mphbs": 20260405
+  },
+  "benchmark_offset": {"CEC2022": 0, "FIR": 100000, "SYN": 200000},
+  "notes": [
+    "n1_reproduction_mphbs uses the n1_main master so that the Stage 0 MPHBS runs are seed-identical to the future A4 main-campaign runs.",
+    "Every realised seed is also written into each raw-result JSON record and into results/*/seeds_used.csv by the campaign scripts."
+  ]
+}

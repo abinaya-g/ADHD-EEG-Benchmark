@@ -13,17 +13,12 @@ logged in `logs/DEVELOPMENT_CHANGES.md` with:
 
 Changes made after full-test results have been seen are forbidden (see §15.6).
 
-Revision: **rev. 3** (research reframing; see `SPEC_REVIEW_REPORT.md`,
-Part II).
-- Rev. 2 changed terminology, analysis priorities, benchmark roles and
-  gates.
-- Rev. 3 changes **only the research framing** and the ordering of
-  analyses:
-  - the structural-evidence question becomes primary;
-  - exchange decisions become secondary.
-- The core algorithm, hyperparameters, baselines, benchmarks, tests and
-  gates of rev. 2 are unchanged.
-- The JOINT/POOLED design remains the central test.
+Revision: **rev. 2.1** (2026-09-29). Rev. 2 plus the implementation-time
+amendments in §17. The rev. 3 reframing was reverted by the user.
+Rev. 2 itself was (corrections from the user's specification review;
+see `SPEC_REVIEW_REPORT.md`). Rev. 2 changes terminology, analysis
+priorities, benchmark roles and gates. The core algorithm of rev. 1 is
+preserved.
 
 **Implementation status: BLOCKED.**
 - Implementation may start only after both of the following:
@@ -50,69 +45,25 @@ Scope statement (not a claim):
   - transfer-probability adaptation
   - negative-transfer suppression
   - model selection by itself
-### Research framing (rev. 3)
-
-**Primary research question (RQ1).** *Do heterogeneous optimizers provide
-complementary structural evidence for transferable information?*
-
-Operationalisation (this is the former **E4**):
-- **"Structural evidence"** means the likelihood/BIC evidence for HI, HB
-  and HR computed from each optimizer's **native successful
-  displacements** (§4.2–4.4).
-- **"Complementary"** means that treating HBA and MPA as *separate*
-  evidence sources, each with its own parameters and sharing only the
-  structural hypothesis (JOINT), identifies structure better than both of
-  the following:
-  - each source alone (HBA-only, MPA-only);
-  - **the same observations merged into one pooled model (POOLED)**.
-  - Complementarity is therefore **not** "more data". It is the
-    contribution of the optimizer-specific partition of the evidence.
-- **Central test: JOINT vs POOLED**, in the trajectory-neutral A0 design
-  (§6.2, §14.6). The required pattern is **JOINT > POOLED and JOINT >
-  HBA-only and JOINT > MPA-only**, plus the sample-matched check
-  (JOINT-HALF, C9).
-  - JOINT has about twice the observations of either single-optimizer
-    selector. JOINT > HBA-only / MPA-only alone is therefore **not
-    sufficient** (risk R-E4-SAMPLE).
-- **"For transferable information"** is **not** established by RQ1
-  alone. RQ1 measures *structure identification* against the known
-  structure of S1–S3. Whether the identified structure is the one that
-  makes exchange useful is tested by the **transfer-relevance check**
-  (§14.7, T-REL). That check links RQ1 to RQ2 without adding a mechanism.
-  RQ1 is reported as supported "for transferable information" only if
-  T-REL also holds (risk R-RQ1-TRANSFER).
-
-**Secondary research question (RQ2).** *Can this structural evidence
-improve exchange decisions?*
-
-RQ2 has two parts, both conditional on RQ1:
-- **RQ2a (representation decision):** does exchange driven by JOINT
-  structural evidence perform better than exchange driven by POOLED,
-  single-source or placebo evidence, and better than fixed
-  representations? The comparisons are A7 vs P, A5, A6, A11 and A1–A3.
-- **RQ2b (activation decision; the former E3):** does the SPRT-style
-  native-control rule improve on always-on exchange (A7 vs A8)?
-  - Gate 0 found that regulating exchange against native search is
-    precedented (AEMTO; see `literature/GATE0_LITERATURE_VERIFICATION.md`).
-  - RQ2b is therefore reported **only as a component analysis** of the
-    exchange decision. It is not an independent research claim.
-
-Rules for both questions:
-- RQ2 results are interpreted only after the RQ1 outcome has been
-  reported.
-- If RQ1 is not supported, RQ2 is still run and reported. However, any
-  RQ2 benefit **cannot be attributed to complementary evidence** (§14.7).
-- Neither RQ1 nor RQ2 outcomes are converted into a novelty claim.
-- Gate 0 remains unresolved. The unverified works on representation
-  selection (AIE + MAS, LCC, ACoS) bear on RQ1 as well as RQ2.
-
-Label mapping. Internal names are kept for traceability:
-
-| rev. 3 name | rev. 2 name |
-|---|---|
-| RQ1 | E4 |
-| RQ2b | E3 |
-| RQ2a | new label only; it groups existing comparisons |
+- The object under study is narrower. It asks two things:
+  1. **E3:** is the outcome of exchange informative, relative to a
+     native-search control?
+  2. **E4:** does joint HBA+MPA structural evidence provide information
+     beyond single-optimizer evidence **and beyond pooled evidence from the
+     same observations**?
+     - JOINT has about twice the observations of either single-optimizer
+       selector. JOINT > HBA-only / MPA-only is therefore **not
+       sufficient** for E4 (risk R-E4-SAMPLE).
+     - The intended evidence pattern is:
+       **JOINT > POOLED and JOINT > HBA-only and JOINT > MPA-only**.
+       Only this pattern supports "optimizer-specific heterogeneous
+       evidence contributes beyond sample size".
+     - **Rev. 2.1 amendment:** the primary inferential result is
+       **JOINT > POOLED** (C2). The comparisons with HBA-only and MPA-only
+       are supporting; JOINT-HALF is a sensitivity analysis. See §14.6 and
+       §17.
+     - **JOINT vs POOLED is the primary E4 control** (§14.6).
+     - E4 results are not converted into a novelty claim.
 
 Notation:
 
@@ -1037,14 +988,6 @@ family.
 
 Confirmatory structure tests use **only S1, S2 and S3** (§12).
 
-Grouping by research question (rev. 3):
-
-| question | tests |
-|---|---|
-| **RQ1 (primary)** | C1, **C2 (central: JOINT vs POOLED)**, C3, C4, C9 and T-REL (§14.7) |
-| **RQ2 (secondary)** | RQ2a: C10, C11 (§14.7). RQ2b: C5, C6 |
-| controls and robustness | C7, C8 |
-
 | id | hypothesis | data | test | family |
 |---|---|---|---|---|
 | C1 | JOINT selector accuracy > 1/3 (chance over 3 labels) | A0 shadows, S1–S3 × D | one-sided Wilcoxon signed-rank on (acc − 1/3) | 6 tests |
@@ -1097,9 +1040,7 @@ implementation, and the choice logged.
   stochastic placebo*.
 - Neither is described as ground-truth H0 detection or structure recovery.
 
-### 14.6 RQ1 analysis: complementary structural evidence (formerly "E4 analysis"; defined before any experiment)
-
-In this section, "E4" and "RQ1" refer to the same question.
+### 14.6 E4 analysis (defined before any experiment)
 
 All primary E4 analyses use A0 shadow selectors on S1–S3, D ∈ {10, 20}, 30
 paired runs. Accuracy is computed per run over evidence-bearing epochs
@@ -1111,19 +1052,27 @@ paired runs. Accuracy is computed per run over evidence-bearing epochs
 | **Q2** Does JOINT outperform MPA-only? | C3 (accuracy, passive); secondary: A7 vs A6 | necessary, not sufficient |
 | **Q3** Does JOINT outperform POOLED? | active regime: A7 vs P (selection accuracy against S1–S3 labels; final error, paired Wilcoxon, two-sided, Holm over S1–S3 × D) | secondary (feedback-confounded) |
 | **Q4** Does JOINT provide more accurate structural selection than POOLED on S1–S3? | **C2** (passive, trajectory-neutral) | **PRIMARY E4 control** |
-| **Q5** Does the evidence persist after controlling for the number of observations? | (i) C2: JOINT vs POOLED have identical observations by construction (checked by T-E4-OBS); (ii) C9: JOINT-HALF (n = W) vs HBA-only / MPA-only (n = W) | required for the E4 pattern |
+| **Q5** Does the evidence persist after controlling for the number of observations? | (i) C2: JOINT vs POOLED have identical observations by construction (checked by T-E4-OBS); (ii) C9: JOINT-HALF (n = W) vs HBA-only / MPA-only (n = W) | (i) primary; (ii) sensitivity (rev. 2.1) |
 
-**E4 decision rule** (intersection-union, fixed in advance). For a cell
-(function ∈ {S1, S2, S3}, D), the E4 evidence pattern holds only if **all**
-of the following are significant after Holm within their families:
-- C2: JOINT > POOLED;
-- C3: JOINT > HBA-only;
-- C3: JOINT > MPA-only;
-- C9: JOINT-HALF > HBA-only and JOINT-HALF > MPA-only.
+**E4 decision rule (rev. 2.1; replaces the rev. 2 intersection-union
+rule on the user's instruction of 2026-09-29, before any result).**
+- **Primary inferential result:** C2, JOINT > POOLED (one-sided,
+  Holm-corrected over the 6 cells S1–S3 × D). JOINT and POOLED receive
+  exactly the same observations, so this is the test of whether
+  optimizer-specific heterogeneous evidence contributes beyond sample
+  size.
+- **Supporting comparisons:** C3, JOINT > HBA-only and JOINT > MPA-only.
+  They establish consistency against each individual source. They are
+  always reported, but they are **not** co-equal requirements.
+- **Sample-matched sensitivity:** C9, JOINT-HALF > HBA-only / MPA-only.
+  This is a sensitivity/control analysis. It is always reported, and it is
+  **not** a mandatory condition.
+- JOINT > HBA-only / MPA-only **without** JOINT > POOLED is never
+  interpreted as E4 evidence.
 
 Reporting of the rule:
-- Results are reported per cell as the number of cells, out of 6, where
-  the pattern holds, and for which functions.
+- Results are reported per cell: the C2 outcome, the C3 outcomes, the C9
+  outcomes, and the functions concerned.
 - Cells in which all selectors are at ceiling (accuracy ≥ 0.95 for all)
   are reported as "ceiling: pattern not assessable". They are **not**
   counted as support.
@@ -1137,77 +1086,6 @@ Interpretation:
 - JOINT ≤ POOLED on all cells means E4 is not supported, and it is reported
   as such.
 - None of these outcomes is converted into a novelty claim.
-
-### 14.7 Transfer relevance and RQ2 analyses (defined before any experiment)
-
-All analyses here use only existing arms and logged data. No mechanism is
-added.
-
-**T-REL: transfer-relevance check (links RQ1 to "transferable
-information").**
-- Data: runs of the fixed-structure arms A1 (HI), A2 (HB) and A3 (HR) on
-  S1–S3, for each D.
-- Per run and arm, compute the **exchange success rate** (the fraction of
-  exchange candidates with f' < f(x_r)). Also compute the batch
-  exchange-vs-native log-odds offset, estimated as in §12 for the offline
-  reference label.
-- **Pre-declared prediction:** on each cell, the arm whose structure
-  matches the function's known label has a higher exchange success rate
-  than each mismatched arm:
-  - S1: HI > HB, HR;
-  - S2: HB > HI, HR;
-  - S3: HR > HI, HB.
-- Test: one-sided paired Wilcoxon over 30 runs, 6 cells × 2 mismatched
-  arms = 12 tests, Holm-corrected.
-- Descriptive addition: agreement between the JOINT shadow selection (in
-  A0) and the structure with the highest exchange success rate (from
-  A1–A3), per cell.
-- **Fallback rule** (fixed a priori):
-  - A2 falls back to HI when the joint partition is degenerate or
-    unavailable (§8.4). This is expected on S1, where the partition is
-    singletons.
-  - A3 falls back to HI until W samples exist.
-  - A pairwise comparison is reported as **"not assessable"**, and is
-    excluded from the Holm family, if the mismatched arm spent more than
-    50% of its exchange iterations in fallback.
-  - The number of excluded comparisons is reported.
-
-Interpretation of T-REL:
-- If T-REL holds on a cell, the known structure is also the more
-  *transferable* representation there. RQ1 support on that cell can then
-  be stated as "complementary structural evidence **for transferable
-  information**".
-- If T-REL fails, RQ1 support (if any) is reported only as
-  "complementary structural evidence", with **no** transferability
-  qualifier (risk R-RQ1-TRANSFER).
-
-**RQ2a: representation decision.** Data: S1–S3 × D, 30 paired runs.
-
-| id | comparison | measure | test | family |
-|---|---|---|---|---|
-| C10 | A7 (JOINT-driven) vs P (POOLED-driven) | final error; exchange success rate | two-sided paired Wilcoxon | 12 tests (6 cells × 2 measures) |
-| C11 | A7 vs A5, A6 and A11 | final error | two-sided paired Wilcoxon | 18 tests |
-
-Reported descriptively (not confirmatory):
-- A7 vs A1–A3 (fixed representations) and vs A10 (success-rate control);
-- all of the above on S4–S8, CEC2022 and FIR (§14.4).
-
-**RQ2b: activation decision (former E3).**
-- Tests: C5 and C6 (§14.3), interpreted only after T-SPRT calibration
-  (§7.2).
-- Reported as a component analysis of the exchange decision (see the
-  framing section in the header).
-
-**Conditional interpretation of RQ2 on RQ1:**
-
-| RQ1 outcome | RQ2 outcome | permitted statement |
-|---|---|---|
-| supported (the pattern in §14.6) | A7 better than P on C10 | structural evidence improves exchange decisions, and the improvement is consistent with complementary evidence |
-| supported | A7 not better than P | complementary evidence exists but does **not** translate into better exchange decisions in this design |
-| not supported | A7 better than A5/A6/A11 but not better than P | any benefit is attributable to the amount of evidence, **not** to complementarity |
-| not supported | no RQ2 benefit | neither question is supported |
-
-Every outcome is reported, including negative ones.
 
 ---
 
@@ -1372,3 +1250,28 @@ still needed for:
 
 Anything that remains inaccessible is recorded as an **unresolved evidence
 gap**, not as absence of overlap.
+
+**Gate 0 status (2026-09-29): closed by explicit user acceptance.**
+- The user's words were: "The literature gate has been reviewed. Proceed
+  … Remaining inaccessible literature is acknowledged as an unresolved
+  evidence gap."
+- The gaps listed above remain gaps.
+- The novelty classification remains B.
+
+---
+
+## 17. Rev. 2.1 amendments (2026-09-29, before any N1 result)
+
+Each amendment is recorded in `logs/DEVELOPMENT_CHANGES.md` (N1-DCx) and
+in `docs/N1_REPOSITORY_AUDIT.md` §3.
+
+| # | amendment | reason |
+|---|---|---|
+| A-1 | **E4 decision rule** (§14.6): C2 (JOINT > POOLED) is the primary inferential result; C3 is supporting; C9 is a sensitivity analysis. The intersection-union requirement is removed | explicit user instruction |
+| A-2 | **HR mapping when the driving selector has no Σ̂ for the receiver population** (§8.2): single-source selectors (HBA-only, MPA-only) use their only Σ̂ for both receivers; POOLED uses the pooled Σ̂ for both receivers. JOINT and DECOUPLED use the receiver population's own Σ̂, as before | the spec was ambiguous; this keeps each arm restricted to its own evidence |
+| A-3 | **Strict success** (§3): NA `y` and structural-window membership use `f_cand < f_parent`, also for MPA. The backbone's memory rule accepts ties (`F_new == fit_old`); such ties are *not* successes in N1 records and are counted (`n_mpa_ties`). The backbone is unchanged | the backbone rule and the spec definition differ; the spec definition is kept |
+| A-4 | **Native-attempt recording**: a recording proxy around the single `CountedObjective` captures each evaluated batch. `HybridState` is unchanged | the backbone exposes no per-agent attempts |
+| A-5 | **Smoke campaign arms** (§15.4, stage 3a): A0 (shadows on) and A7 on S1–S8 × D ∈ {10, 20} × 5 runs, plus A0 with shadows **off** on S1–S3 (campaign-level T-SHADOW) | the arms were unspecified |
+| A-6 | **Synthetic seed instance index**: `instance = 10·fid + (1 if D = 10 else 2)`, benchmark offset SYN = 200000. New campaign master `n1_calib = 83000000` for T-SPRT calibration | seeds were undefined; this avoids collisions with other campaigns |
+| A-7 | **Non-finite objective values** remain a hard run failure (`CountedObjective` raises), reported, never converted to `y = 0` | the validated counter already enforces this; silent conversion would hide defects |
+| A-8 | **Scale vector timing** (§4.1): s is computed once per iteration after the native phases and used for all of that iteration's records and exchanges | makes "at recording time" exact |

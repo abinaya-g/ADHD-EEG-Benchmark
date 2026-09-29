@@ -13,3 +13,23 @@ smoke run (seed 1, not part of any campaign) had been executed with LA-KAIE.
 The baseline-validation campaign (HBA/MPA/MPHB/MPHBS) was started from the
 working tree before these LA-KAIE changes were committed; none of these
 changes touch baseline code (hba.py, mpa.py, mphb.py, mphbs.py, hybrid_common.py).
+
+---
+
+# N1 implementation changes (spec rev. 2.1; change control per user instruction §24)
+
+Scope and status:
+- All entries were made before any N1 experimental result existed.
+- No file under `lakaie/` (validated backbone, MPHBS, benchmarks) was
+  modified.
+
+| id | date | file | change | reason | behaviour change? | associated test |
+|----|------|------|--------|--------|-------------------|-----------------|
+| N1-DC1 | 2026-09-29 | IMPLEMENTATION_SPEC.md §14.6, header, §17 | E4 decision rule: C2 JOINT > POOLED is primary; C3 supporting; C9 sensitivity (amendment A-1) | explicit user instruction (implementation brief §14) | no (analysis rule) | – |
+| N1-DC2 | 2026-09-29 | IMPLEMENTATION_RISK_REGISTER.md, SPEC_REVIEW_REPORT.md | register restored to rev. 2 content (commit cdeb725); review Part II marked reverted | the user named rev. 2 as authoritative after reverting the rev. 3 spec | no | – |
+| N1-DC3 | 2026-09-29 | IMPLEMENTATION_SPEC.md §16 | Gate 0 closed by explicit user acceptance; gaps remain gaps; classification B | user statement of 2026-09-29 | no | – |
+| N1-DC4 | 2026-09-29 | IMPLEMENTATION_SPEC.md §17 A-2 … A-8 | clarifications: HR basis for single-source/POOLED selectors; strict success for MPA ties; recording proxy; smoke arms; synthetic seed index and n1_calib master; non-finite f stays a hard error; timing of the scale vector | spec ambiguities found in the repository audit (docs/N1_REPOSITORY_AUDIT.md §3) | defines behaviour of new code only | T-MAP, T-FE, T-INIT |
+| N1-DC5 | 2026-09-29 | src/n1/* (new) | N1 implementation: records, structure, selectors, native control, SPRT-style rule, mapping, synthetic suite, algorithm, runner | Stage 1 | new code | tests/n1/* |
+| N1-DC6 | 2026-09-29 | pytest.ini | `pythonpath = . src` | make `src/n1` importable by tests | no | all |
+| N1-DC7 | 2026-09-29 | scripts/n1_reproduce_mphbs.py, n1_run.py, n1_calibrate_sprt.py, n1_smoke_report.py; configs/seeds.json, configs/n1.yaml (new) | stage scripts and configuration | Stages 0, 3a, 3b | no | – |
+| N1-DC8 | 2026-09-29 | scripts/n1_calibrate_sprt.py | Level 1 replay uses the A7 smoke p0 sequences instead of A0 | spec §7.2 says "from A0 runs", but A0 has no exchange candidates, so the stated source is impossible; documented deviation | no (calibration only) | – |

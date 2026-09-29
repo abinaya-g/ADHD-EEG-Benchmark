@@ -1,0 +1,235 @@
+"""Stage 0: reproduce the validated MPHBS backbone on the N1 seeds (spec §11, R-BASE-1).
+
+Protocol (fixed before running):
+  * MPHBS, unchanged: B-C1 on CEC2022 (F1-F12, D=20, 200,000 FE), A-C1 on FIR
+    (cases 1-8, D=31, 150,000 FE); N = 30; 30 runs per instance.
+  * seeds: configs/seeds.json master n1_reproduction_mphbs (= n1_main).
+  * pass criteria:
+      P1 every run finishes with status ok;
+      P2 FE used == 199,930 (CEC2022) / 149,857 (FIR) in every run;
+      P3 the existing baseline test suite (tests/test_baselines.py,
+         tests/test_core_and_benchmarks.py) passes (run separately, recorded);
+      P4 distributional agreement with the authors' 30 published runs:
+         no instance significantly different (two-sided Mann-Whitney U,
+         Holm-corrected within domain, 0.05).
+  * P4 is also reported against our earlier baseline_validation runs.
+
+Usage:  python scripts/n1_reproduce_mphbs.py [--workers 4] [--analyze-only]
+"""
+from __future__ import annotations
+
+import os
+for _v in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ.setdefault(_v, "1")
+
+import argparse
+import datetime as dt
+import json
+import multiprocessing as mp
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import yaml
+from scipy import stats
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "src"))
+from lakaie.analysis.stats import holm  # noqa: E402
+from lakaie.experiment import load_yaml, run_single  # noqa: E402
+from n1.config import config_hash  # noqa: E402
+
+CAMPAIGN = "n1_reproduction_mphbs"
+OUT = ROOT / "results" / "reproduction" / "MPHBS"
+EXPECTED_FE = {"CEC2022": 199930, "FIR": 149857}
+BENCH = {"CEC2022": "cec2022.yaml", "FIR": "fir.yaml"}
+REF = ROOT / "third_party" / "mphbs_reference" / "results"
+
+
+def git_hash():
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    except Exception:  # noqa: BLE001
+        return "unknown"
+
+
+def tasks():
+    seeds = json.loads((ROOT / "configs" / "seeds.json").read_text())
+    out = []
+    for bench, cfgfile in BENCH.items():
+        b = load_yaml(cfgfile)
+        cfg = b["methods"]["MPHBS"]
+        for inst in b["instances"]:
+            for r in range(1, b["runs"] + 1):
+                seed = seeds["masters"][CAMPAIGN] + seeds["benchmark_offset"][bench] + 1000 * inst + r
+                out.append({"label": "MPHBS", "family": "MPHBS", "cfg": cfg, "benchmark": bench,
+                            "instance": inst, "run": r, "campaign": CAMPAIGN, "seed": int(seed),
+                            "max_fes": b["max_fes"], "N": b["population_size"], "dim": b["dimension"],
+                            "n_checkpoints": 200, "out_root": str(OUT / "raw")})
+    return out
+
+
+def load_runs():
+    rows = []
+    for bench in BENCH:
+        for p in sorted((OUT / "raw" / CAMPAIGN / bench / "MPHBS").glob("inst*/run*.json")):
+            r = json.loads(p.read_text())
+            rows.append({"benchmark": bench, "instance": r["instance"], "run": r["run_id"],
+                         "seed": r["seed"], "FE": r["FE"], "best": r["best_fitness"],
+                         "status": r["status"], "runtime": r["runtime_sec"],
+                         "dimension": r["dimension"], "N": r["population_size"],
+                         "iterations": r["iterations"]})
+    return pd.DataFrame(rows)
+
+
+def authors(bench):
+    if bench == "CEC2022":
+        d = pd.read_csv(REF / "CEC2022_external_BC1_common_seeds" / "task_results.csv")
+        d = d.rename(columns={"FunctionID": "instance", "Error": "value"})
+        return d[d.Alias == "B-C1"]
+    d = pd.read_csv(REF / "FIR_external_AC1_common_seeds" / "task_results.csv")
+    d = d.rename(columns={"CaseID": "instance", "BestFit": "value"})
+    return d[d.Alias == "A-C1"]
+
+
+def earlier(bench):
+    rows = []
+    for p in (ROOT / "results" / "raw" / "baseline_validation" / bench / "MPHBS").glob("inst*/run*.json"):
+        r = json.loads(p.read_text())
+        rows.append({"instance": r["instance"], "value": r["best_fitness"]})
+    return pd.DataFrame(rows)
+
+
+def compare(df, ref, what):
+    out = []
+    for inst, g in df.groupby("instance"):
+        a = g.best.values.astype(float)
+        b = ref[ref.instance == inst].value.values.astype(float)
+        if b.size == 0:
+            continue
+        same = np.allclose(np.r_[a, b], a[0])
+        p = 1.0 if same else stats.mannwhitneyu(a, b, alternative="two-sided").pvalue
+        out.append({"instance": inst, "ref": what, "n": a.size, "n_ref": b.size,
+                    "median": np.median(a), "median_ref": np.median(b), "p": p})
+    T = pd.DataFrame(out)
+    if not T.empty:
+        T["p_holm"] = holm(T.p.values)
+    return T
+
+
+def report(meta):
+    df = load_runs()
+    lines = ["# MPHBS reproduction report (Stage 0)\n",
+             "Generated by `scripts/n1_reproduce_mphbs.py`. This file reports only the "
+             "reproduction of the unchanged MPHBS port. No N1 result is involved.\n",
+             "## Expected protocol\n",
+             "- MPHBS (validated port `lakaie/algorithms/mphbs.py`, unchanged), configurations:",
+             "  - B-C1 on CEC2022 F1–F12 (D = 20, MaxFE = 200,000);",
+             "  - A-C1 on FIR cases 1–8 (D = 31, MaxFE = 150,000).",
+             "- N = 30; 30 runs per instance.",
+             f"- Seeds from `configs/seeds.json` (campaign `{CAMPAIGN}`, the n1_main master).",
+             "- Pass criteria:",
+             "  - P1: every run finishes with status ok;",
+             "  - P2: exact FE totals (199,930 / 149,857);",
+             "  - P3: the existing baseline tests pass;",
+             "  - P4: no instance differs from the authors' 30 published runs (two-sided "
+             "Mann–Whitney U, Holm within domain, α = 0.05).\n",
+             "## Run metadata\n",
+             f"- git commit at launch: `{meta.get('git_commit')}`",
+             f"- configuration hash (MPHBS configs + seeds + budgets): `{meta.get('config_hash')}`",
+             f"- launch (UTC): {meta.get('utc')}; wall-clock: {meta.get('elapsed_sec', float('nan')):.0f} s",
+             f"- per-run records (seed, FE, final objective, runtime, status): `{OUT.relative_to(ROOT)}/runs.csv`\n"]
+    verdict = {}
+    for bench in BENCH:
+        g = df[df.benchmark == bench]
+        n_exp = 12 * 30 if bench == "CEC2022" else 8 * 30
+        p1 = len(g) == n_exp and bool((g.status == "ok").all())
+        p2 = bool((g.FE == EXPECTED_FE[bench]).all()) and len(g) == n_exp
+        Ta = compare(g, authors(bench), "authors")
+        Te = compare(g, earlier(bench), "baseline_validation")
+        p4 = bool((Ta.p_holm >= 0.05).all()) if not Ta.empty else False
+        verdict[bench] = dict(P1=p1, P2=p2, P4=p4, n_sig_authors=int((Ta.p_holm < 0.05).sum()),
+                              n_sig_earlier=int((Te.p_holm < 0.05).sum()) if not Te.empty else None)
+        lines += [f"## {bench}\n",
+                  f"- runs: {len(g)} / {n_exp}; status ok: {int((g.status == 'ok').sum())}",
+                  f"- FE used: unique values {sorted(g.FE.unique().tolist())}; "
+                  f"expected {EXPECTED_FE[bench]} → **P2 {'pass' if p2 else 'FAIL'}**",
+                  f"- dimension {sorted(g.dimension.unique().tolist())}, N {sorted(g.N.unique().tolist())}, "
+                  f"iterations {sorted(g.iterations.unique().tolist())}",
+                  f"- runtime per run: median {g.runtime.median():.1f} s, max {g.runtime.max():.1f} s",
+                  f"- **P1 {'pass' if p1 else 'FAIL'}**; **P4 {'pass' if p4 else 'FAIL'}** "
+                  f"({verdict[bench]['n_sig_authors']} instance(s) significantly different from the authors "
+                  f"after Holm; {verdict[bench]['n_sig_earlier']} vs our earlier baseline_validation runs)\n",
+                  "| inst | median (this run) | median authors | MWU p (Holm) vs authors | "
+                  "median earlier port runs | p (Holm) vs earlier |",
+                  "|---|---|---|---|---|---|"]
+        for _, r in Ta.iterrows():
+            e = Te[Te.instance == r.instance]
+            em = f"{e.median_ref.iloc[0]:.4e}" if len(e) else "–"
+            ep = f"{e.p_holm.iloc[0]:.3g}" if len(e) else "–"
+            lines.append(f"| {int(r.instance)} | {r['median']:.4e} | {r.median_ref:.4e} | {r.p_holm:.3g} | {em} | {ep} |")
+        lines.append("")
+    p3 = meta.get("tests")
+    lines += ["## Existing baseline test suite (P3)\n", f"- {p3}\n"]
+    ok = all(v["P1"] and v["P2"] and v["P4"] for v in verdict.values()) and bool(meta.get("tests_ok"))
+    lines += ["## Verdict\n",
+              f"**Stage 0 {'PASSED' if ok else 'NOT PASSED'}.** "
+              + ("All pass criteria hold." if ok else "At least one pass criterion failed; see the "
+                 "discrepancy section. Stop before Stage 1 until the discrepancy is diagnosed."), ""]
+    lines += ["## Discrepancies and diagnosis\n"]
+    disc = [f"- {b}: {k} failed" for b, v in verdict.items() for k in ("P1", "P2", "P4") if not v[k]]
+    if not meta.get("tests_ok"):
+        disc.append("- P3: the existing baseline tests did not pass")
+    lines += disc or ["- none."]
+    lines += ["", "Notes:",
+              "- A non-significant Mann–Whitney test does not prove equivalence. MATLAB and "
+              "NumPy random streams differ, so agreement can only be distributional.",
+              "- These runs are seed-identical to the future A4 main-campaign runs. Neither "
+              "this report nor these runs involve any N1 comparison.", ""]
+    (ROOT / "MPHBS_REPRODUCTION_REPORT.md").write_text("\n".join(lines))
+    df.to_csv(OUT / "runs.csv", index=False)
+    (OUT / "verdict.json").write_text(json.dumps({"verdict": verdict, "ok": ok, **meta}, indent=2, default=str))
+    return ok
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--analyze-only", action="store_true")
+    ap.add_argument("--tests-status", default="", help="summary line of the P3 pytest run")
+    ap.add_argument("--tests-ok", action="store_true")
+    args = ap.parse_args()
+    OUT.mkdir(parents=True, exist_ok=True)
+    meta_path = OUT / "meta.json"
+    meta = json.loads(meta_path.read_text()) if meta_path.exists() else {}
+    T = tasks()
+    if not args.analyze_only:
+        meta = {"git_commit": git_hash(), "utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+                "config_hash": config_hash({"tasks": [(t["benchmark"], t["instance"], t["run"], t["seed"],
+                                                       t["max_fes"], t["cfg"]) for t in T]}),
+                "n_tasks": len(T), "argv": sys.argv}
+        (OUT / "config_snapshot.yaml").write_text(yaml.safe_dump(
+            {"campaign": CAMPAIGN, "methods": {b: load_yaml(f)["methods"]["MPHBS"] for b, f in BENCH.items()},
+             **{k: v for k, v in meta.items() if k != "argv"}}, sort_keys=False))
+        t0 = time.time()
+        log = ROOT / "logs" / f"run_{CAMPAIGN}_{dt.datetime.now(dt.timezone.utc):%Y%m%dT%H%M%SZ}.log"
+        with mp.get_context("fork").Pool(args.workers, maxtasksperchild=50) as pool, log.open("a") as lf:
+            for i, res in enumerate(pool.imap_unordered(run_single, T, chunksize=1), 1):
+                lf.write(json.dumps(res, default=str) + "\n")
+                if i % 50 == 0 or i == len(T):
+                    print(f"[{time.time() - t0:6.0f}s] {i}/{len(T)}", flush=True)
+        meta["elapsed_sec"] = time.time() - t0
+    meta["tests"] = args.tests_status or meta.get("tests", "not recorded")
+    meta["tests_ok"] = bool(args.tests_ok or meta.get("tests_ok", False))
+    meta_path.write_text(json.dumps(meta, indent=2))
+    ok = report(meta)
+    print("Stage 0", "PASSED" if ok else "NOT PASSED")
+    sys.exit(0 if ok else 1)
+
+
+if __name__ == "__main__":
+    main()

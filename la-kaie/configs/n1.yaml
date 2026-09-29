@@ -1,0 +1,22 @@
+# N1 campaigns (spec §15.4, amendment A-5). Hyperparameters live in src/n1/config.py
+# (spec §10) and are recorded, with their hash, in every run record.
+campaigns:
+  n1_smoke:
+    runs: 5
+    dims: [10, 20]
+    budget_per_dim: 10000          # MaxFE = 10000 * D
+    groups:
+      - {arms: [A0, A7], functions: [1, 2, 3, 4, 5, 6, 7, 8]}
+      - {arms: [A0_noshadow], functions: [1, 2, 3]}      # campaign-level T-SHADOW
+  n1_calib:                        # T-SPRT calibration Level 2 harness (spec §7.2)
+    runs: 5
+    dims: [10, 20]
+    budget_per_dim: 10000
+    groups:
+      - {arms: [H_null, H_pos], functions: [1, 3]}
+  n1_synthetic:                    # Stage 4 - NOT run before gate approval
+    runs: 30
+    dims: [10, 20]
+    budget_per_dim: 10000
+    groups:
+      - {arms: [A0, A1, A2, A3, A5, A6, A7, A8, A10, A11, P], functions: [1, 2, 3, 4, 5, 6, 7, 8]}
