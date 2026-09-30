@@ -1,0 +1,47 @@
+{
+  "status": "FROZEN before any D3 metric was computed (committed before the analysis run). Exploratory, offline, zero-FE.",
+  "data": "results/raw/n1_d3_diagnostic/A0/S{1,2,3}_D{10,20}/run01..05 (30 runs)",
+  "landscape_reference": {
+    "definition": "Sigma_ref = H^-1, the inverse Hessian of the quadratic landscape, in original coordinates; R_ref = its correlation matrix",
+    "S1": "H = diag(c)",
+    "S2": "f = sum c_i (M z[perm])_i^2  ->  H[perm][:,perm] = M^T diag(c) M",
+    "S3": "H = Q^T diag(c) Q"
+  },
+  "representations": {
+    "dx_all": "all successful raw displacements Delta x of the population in the bin (H: HBA rows; M: MPA + FAD rows; M also reported per operator)",
+    "dx_ep": "successful raw displacements at epoch iterations only (t % 5 == 0), where parents are logged; HBA and MPA operators only",
+    "target": "g = target - parent: HBA: xprey(t) - XH_pre[agent]; MPA: elite(t) - XM_pre[agent]; FAD has no target vector (excluded)",
+    "residual_R2_primary": "res = dx - b*g, b = sum<dx,g>/sum|g|^2 fitted per (run, population/operator, bin)",
+    "residual_R1_secondary": "per-row projection removal: res = dx - (<dx,g>/|g|^2) g",
+    "whitened": "z = C_X^{-1/2} dx, C_X = post-native population covariance (MLE) of the row's own population at the latest epoch <= t; symmetric (ZCA) inverse square root via eigh with eigenvalue floor 1e-12 * tr(C_X)/D",
+    "population": "mean of the per-epoch post-native population covariances in the bin"
+  },
+  "temporal_bins": "5 contiguous bins of equal numbers of selection epochs (numpy.array_split of the epoch list); rows assigned by epoch index t//5",
+  "metrics": {
+    "primary_rmse_off": "RMS difference of off-diagonal correlation entries: ||R_A - R_B||_F / sqrt(D(D-1)); lower = more similar; sign-of-eigenvector and ordering invariant; scale invariant",
+    "noise_floor": "1/sqrt(n) (expected RMS off-diagonal sample correlation under independence); reported with every rows-based value",
+    "landscape_skill": "S2, S3: 1 - rmse_off(R_rep, R_ref) / rmse_off(I, R_ref) (0 = no better than independence, 1 = exact); S1 (R_ref = I): rmse_off(R_rep, I) is reported and compared with the noise floor",
+    "cs_off": "cosine between the off-diagonal correlation vectors (Delta x vs population only)",
+    "subspace_similarity": "||U_A^T U_B||_F^2 / k for the top-k covariance eigenvectors, k = max(2, D//5); chance level k/D; eigen-gap lambda_k/lambda_{k+1} reported",
+    "row_cosine_and_norm_ratio": "per successful row: cos(dx, g), |dx|/|g| (median per cell)",
+    "within_block_share_S2": "sum over within-true-block off-diagonal R_ij^2 / sum over all off-diagonal R_ij^2; chance = fraction of within-block pairs",
+    "partition_ARI_S2": "production partition procedure (Fisher, Bonferroni alpha_link = 0.01, connected components) applied to the rows of each representation per bin; ARI vs true blocks",
+    "explained": {
+      "R2_target": "1 - sum|res_R2|^2 / sum|dx_ep|^2",
+      "E_pop": "tr(P_k^X C_dx) / tr(C_dx): share of displacement variance in the top-k population principal subspace (chance k/D)",
+      "E_land": "tr(P_k^ref C_dx) / tr(C_dx): share in the top-k subspace of Sigma_ref (chance k/D)"
+    }
+  },
+  "aggregation": "per run: mean over bins with >= D+1 rows; per cell: median over the 5 runs; counts of runs meeting a criterion use the per-run means",
+  "joint_pooled_descriptive": "per bin, CUR = last W rows, OLD = preceding W rows of each population's representation (raw standardized, residual R2, whitened); production evaluate_sources JOINT (Stouffer) and POOLED; label shares only; no inference",
+  "classification_rule": {
+    "landscape_criterion_cell": "an adjusted representation (residual R2 or whitened) meets the landscape criterion in a cell if >= 4/5 runs satisfy: S1: rmse_off(R, I) <= 2 x noise floor; S2: skill >= 0.25 AND partition ARI >= 0.5; S3: skill >= 0.25 -- for at least one population",
+    "A": "some single adjusted representation meets the landscape criterion in all 6 cells",
+    "B": "raw Delta x is closer to population than to landscape (rmse_off(dx, X) < rmse_off(dx, ref)) in >= 4 of 6 cells for both populations, AND no adjusted representation meets the landscape criterion in any S2 or S3 cell",
+    "C": "raw Delta x closer to population in >= 4 of 6 cells for at least one population, AND some adjusted representation meets the landscape criterion in at least one S2 or S3 cell but A does not hold",
+    "D": "integrity failure or metrics undefined for >= 2 cells",
+    "otherwise": "reported as the closest category with an explicit statement of which condition failed"
+  },
+  "figures": ["eigen spectra (dx vs population vs landscape)", "similarity over time", "HBA vs MPA", "target vs actual", "raw/residual/whitened recovery", "S2 block heatmaps", "S3 heatmaps"],
+  "palette": "dataviz reference categorical slots 1-4 (#2a78d6, #eb6834, #1baf7a, #eda100; validated, contrast relief = legends + tables); diverging #2a78d6 - #f0efec - #e34948"
+}
