@@ -1,0 +1,16 @@
+{
+ "runs_found": 30,
+ "seed_match": 30,
+ "prod_identical": 30,
+ "fe_match": 30,
+ "nan_free": 30,
+ "std_eq_raw_over_scale": 30,
+ "agent_identity_hba_max_err": 6.870390310961719e-15,
+ "agent_identity_mpa_violations": 0,
+ "agent_identity_mpa_checked": 300150,
+ "xprey_member": 10005,
+ "elite_member": 10005,
+ "epochs_checked": 10005,
+ "equivalence_file_mismatch_runs": 0,
+ "ok": true
+}
