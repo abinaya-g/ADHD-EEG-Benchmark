@@ -96,8 +96,12 @@ class SuccessRateControl:
 
 
 def run_n1(problem, arm: Arm, cfg: N1Config, seed: int, obj, max_fe: int,
-           rec: Recorder | None = None) -> RunOutput:
-    """One N1 run. ``obj`` is the run's single CountedObjective (budget max_fe)."""
+           rec: Recorder | None = None, diag=None) -> RunOutput:
+    """One N1 run. ``obj`` is the run's single CountedObjective (budget max_fe).
+
+    ``diag``: optional passive observer (n1.diagnostics.D3Recorder). It only
+    receives copies of values already computed here; with diag=None (default)
+    it is never called. It must not draw RNG, evaluate, or modify state."""
     N, D = cfg.N, problem.dim
     lb, ub = problem.lb, problem.ub
     W = cfg.W(D)
@@ -140,12 +144,16 @@ def run_n1(problem, arm: Arm, cfg: N1Config, seed: int, obj, max_fe: int,
         if obj.remaining() < 3 * N + e_t:
             break
         prog_t = T_ref * obj.fe / max_fe
+        if diag is not None:
+            diag.iteration_start(t, obj.fe, prog_t, T_ref, st)
 
         # ------------------------------------------------------- 1 native
         XH0, FH0 = st.X_H.copy(), st.F_H.copy()
         XM0, FM0 = st.X_M_old.copy(), st.fit_old.copy()      # memory = MPA parents
         proxy.begin("phase1")
         CF = st.phase1(proxy, rng_native, prog_t, T_ref)
+        if diag is not None:
+            diag.cf(CF)
         b = proxy.take()
         if len(b) != 2 or b[0][0].shape[0] != N or b[1][0].shape[0] != N:
             raise RuntimeError("unexpected phase1 evaluation pattern")
@@ -165,6 +173,8 @@ def run_n1(problem, arm: Arm, cfg: N1Config, seed: int, obj, max_fe: int,
         yM = fM_c < FM0                                   # strict (amendment A-3)
         counts["n_mpa_ties"] += int(np.sum(fM_c == FM0))
         yF = fF_c < FF0
+        if diag is not None:
+            diag.scale(s_vec)
         for pop, op, Xc, X0, y in (("H", "HBA", XH_c, XH0, yH), ("M", "MPA", XM_c, XM0, yM),
                                    ("M", "FAD", XF_c, XF0, yF)):
             U_ = (Xc - X0) / s_vec
@@ -177,10 +187,14 @@ def run_n1(problem, arm: Arm, cfg: N1Config, seed: int, obj, max_fe: int,
             fin = np.all(np.isfinite(Zs), axis=1)
             counts["n_nonfinite_disp"] += int(np.sum(~fin))
             (ZH if pop == "H" else ZM).append_native(Zs[fin], op, t)
+            if diag is not None:
+                diag.native(t, pop, op, Xc, X0, y, Zs, fin)
         l_all, pop_all, y_all = NA.arrays()
         control.fit(l_all, pop_all, y_all)
         counts["n_separation"] += int(control.separation)
 
+        if diag is not None and t % cfg.U == 0:
+            diag.epoch(t, obj.fe, st, XH0, XM0)
         if t % cfg.U == 0 and sel_names:
             counts["n_epochs"] += 1
             epoch_ptr.add(t=t, fe=obj.fe, nH=int(ZH.n_total), nM=int(ZM.n_total))
