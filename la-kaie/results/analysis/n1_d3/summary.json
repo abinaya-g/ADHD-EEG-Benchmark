@@ -1,0 +1,50 @@
+{
+ "classification": "B",
+ "closer_to_population_cells": {
+  "H": 6,
+  "M": 6
+ },
+ "landscape_criterion_S2_S3_any": false,
+ "criterion_detail": {
+  "residual_R2|S1D10|H": "0/5 runs within 2x noise floor",
+  "residual_R2|S1D10|M": "5/5 runs within 2x noise floor",
+  "residual_R2|S1D20|H": "0/5 runs within 2x noise floor",
+  "residual_R2|S1D20|M": "2/5 runs within 2x noise floor",
+  "residual_R2|S2D10|H": "0/5 runs skill>=0.25 & ARI>=0.5",
+  "residual_R2|S2D10|M": "0/5 runs skill>=0.25 & ARI>=0.5",
+  "residual_R2|S2D20|H": "0/5 runs skill>=0.25 & ARI>=0.5",
+  "residual_R2|S2D20|M": "0/5 runs skill>=0.25 & ARI>=0.5",
+  "residual_R2|S3D10|H": "0/5 runs skill>=0.25",
+  "residual_R2|S3D10|M": "0/5 runs skill>=0.25",
+  "residual_R2|S3D20|H": "0/5 runs skill>=0.25",
+  "residual_R2|S3D20|M": "0/5 runs skill>=0.25",
+  "whitened|S1D10|H": "0/5 runs within 2x noise floor",
+  "whitened|S1D10|M": "2/5 runs within 2x noise floor",
+  "whitened|S1D20|H": "0/5 runs within 2x noise floor",
+  "whitened|S1D20|M": "0/5 runs within 2x noise floor",
+  "whitened|S2D10|H": "0/5 runs skill>=0.25 & ARI>=0.5",
+  "whitened|S2D10|M": "0/5 runs skill>=0.25 & ARI>=0.5",
+  "whitened|S2D20|H": "0/5 runs skill>=0.25 & ARI>=0.5",
+  "whitened|S2D20|M": "0/5 runs skill>=0.25 & ARI>=0.5",
+  "whitened|S3D10|H": "0/5 runs skill>=0.25",
+  "whitened|S3D10|M": "0/5 runs skill>=0.25",
+  "whitened|S3D20|H": "0/5 runs skill>=0.25",
+  "whitened|S3D20|M": "0/5 runs skill>=0.25"
+ },
+ "integrity": {
+  "runs_found": 30,
+  "seed_match": 30,
+  "prod_identical": 30,
+  "fe_match": 30,
+  "nan_free": 30,
+  "std_eq_raw_over_scale": 30,
+  "agent_identity_hba_max_err": 6.870390310961719e-15,
+  "agent_identity_mpa_violations": 0,
+  "agent_identity_mpa_checked": 300150,
+  "xprey_member": 10005,
+  "elite_member": 10005,
+  "epochs_checked": 10005,
+  "equivalence_file_mismatch_runs": 0,
+  "ok": true
+ }
+}
