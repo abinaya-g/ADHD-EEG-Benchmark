@@ -95,8 +95,8 @@ Supplementary results:
 **Finding.**
 - Removing within-iteration dependence does **not** remove the HR preference.
   - On S1 at D = 20, the HR share stays at 0.84–0.88 under all three reductions (raw 0.89).
-  - On S1 at D = 10, the reductions move *further* toward HR (raw 0 correct runs of 5 is
-    unchanged or worse).
+  - On S1 at D = 10, the reductions move *further* toward HR: raw has 4/5 correct runs,
+    thinning and iteration-aggregation 1/5, epoch-aggregation 0/5.
   - S2 is still labelled HR (0.78–0.91).
 - Within-iteration dependence alone therefore does not explain the failure. The spurious
   structure persists *across* iterations, so D1 in its within-iteration form is **not
