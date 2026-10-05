@@ -47,3 +47,4 @@ Scope and status:
 |----|------|------|--------|--------|-------------------|-----------------|
 | SHE-DC0 | 2026-10-05 | experiments/SHE_SPEC.md (new) | Stage 0 pre-registered specification | user instruction (Stage 0) | no (document only) | – |
 | SHE-DC1 | 2026-10-05 | scripts/make_figures.py, tests/n1/test_n1_components.py | removed two unused imports (`pandas as pd`; `bic` from n1.structure) | pyflakes clean required before Stage 1 (user instruction) | no (dead imports only; pytest 97/97 before and after) | pyflakes |
+| SHE-DC2 | 2026-10-05 | experiments/SHE_SPEC.md §24 | Amendment 1: D-1..D-4 resolutions, fixed-E regime per variant, h0 free-attempt accounting + SHE-no-h0 / SHE-h0-eval, E3 probe deadlock analysis (option a), eta/rho 3x3 synthetic-only sweep with pre-stated rules, F4+R2 fallback assessment | user decisions of 2026-10-05 | no (document only; pre-registered before any SHE code/run) | – |

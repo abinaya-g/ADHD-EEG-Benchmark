@@ -588,3 +588,143 @@ with Holm per family; effect sizes as in §16. **Outputs:**
   - IRLS: about 4 models × 1000 × (2D + 1)² per iteration;
   - FISTA: about 300 × 1000 × (D(D−1)/2 + 2D) every U iterations.
   - It may exceed the MPHBS mediator's cost; this will be measured, not assumed.
+
+---
+
+## 24. Amendment 1 (pre-registered 2026-10-05, after user decisions; before any SHE code or run)
+
+### A-1 (D-1) FAD placement
+
+Default confirmed:
+- CEC2022 and the synthetic suite: *before* the exchange phase;
+- FIR: *after* the exchange phase;
+- identical for every SHE variant.
+
+### A-2 (D-2) Exchange-FE regime per variant
+
+**E is a cap only for the E3 variants** (SHE-Full, SHE-LikIntensity):
+- slots not executed there return their FEs to native search;
+- total FEs = MaxFE.
+
+**Every other variant spends exactly E evaluated exchanges per iteration**, so the E3 effect is
+isolated. These are:
+- SHE-NoE3;
+- SHE-h0 … SHE-h3;
+- SHE-Uniform, SHE-SuccessRate, SHE-NoShare, SHE-NoIW;
+- the leave-one-out variants;
+- the h2 linkage-source variants;
+- SHE-h0-eval.
+
+The final partial iteration (§2) follows the same rule for all variants.
+
+### A-3 (D-3) h0 accounting
+
+This replaces the h0 paragraph of §3.3.
+
+**h0 attempts are free records.** An h0 draw is executed at 0 FE (x' = x_d; y = 1[f_d < f_r]). Its
+record (δ, y) enters the shared data and acceptance is applied. It does **not** consume one of the E
+evaluated-exchange slots.
+
+**Cap.** At most E h0 attempts per iteration. After that, h0 is excluded and draws are taken from
+π̃ renormalised over the remaining hypotheses. This guarantees that the fixed-E variants spend
+exactly E exchange FEs.
+
+**Probes** (§12.3) must be evaluated exchanges: an h0 draw for a probe is redrawn among the non-h0
+hypotheses.
+
+**New variants:**
+- **SHE-no-h0:** H = {h1, h2, h3}; floor recomputed for |H| = 3.
+- **SHE-h0-eval:** every h0 attempt is evaluated (1 FE; a re-evaluation of the stored donor) and
+  consumes a slot. Everything else as SHE-Full.
+- **SHE-h0 (fixed):** under the fixed-E rule, all E slots per iteration are h0 attempts charged
+  1 FE each, i.e. h0-eval semantics. Otherwise the variant would spend 0 exchange FEs. This is
+  wasteful by design and stated as such.
+
+**Reported per run:** the number of h0 attempts = **FEs saved by h0**, i.e. the FEs SHE-h0-eval
+semantics would have spent.
+
+### A-4 (D-4) E3 initial state and deadlock check
+
+**Choice: option (a).** The initial state is SUPPRESSED, with the budget-counted probe rate that is
+already in §12.3:
+- r_probe = 2 evaluated, non-h0 exchanges per iteration while SUPPRESSED;
+- each probe is charged 1 FE inside the E cap, and E − 2 slots return to native search.
+
+**Deadlock analysis:**
+- **Evidence never stops.** While SUPPRESSED, the activation e-process receives ≥ 2 outcomes per
+  iteration, so the chain "suppressed → no exchange evidence → never rejects" cannot occur.
+- **Iteration 1.** The e-process starts updating once a predictable reference exists: p_nat is first
+  fitted at the end of iteration 1. Iteration-1 probes are recorded for the models but not added
+  to K.
+- **Expected activation time (plug-in approximation, not a guarantee).** With p0 = 0.10 and a true
+  odds ratio of 2 (p = 0.182), the expected log-growth per outcome is ≈ KL = 0.029 nats. Reaching
+  log(1/α) = 3.0 takes about 100 outcomes, i.e. about 50 iterations (≈ 3% of a D=20 run of ≈ 1,700
+  iterations).
+- **Weaker advantages give proportionally longer delays.** The Stage 3 harness reports the measured
+  activation-time distribution.
+
+**Alternative (b), a 20-iteration burn-in, is not adopted.** I'll show you this choice again before
+Stage 3.
+
+### A-5 η/ρ sensitivity sweep on the synthetic known-structure functions only
+
+**Scope:**
+- Functions S1, S2, S3 × D ∈ {10, 20}, with the 30 Stage 1 seeds (she_diag).
+- CEC2022 and FIR are not touched.
+- Levels: η ∈ {0.5, 1.0, 2.0} × ρ ∈ {0.99, 0.995, 0.999}, the full 3 × 3 grid.
+
+**Data and method:**
+- **Source:** the **passive π of the SHE-Uniform runs**.
+- **Exact offline recomputation.** Under uniform selection the trajectory, the records, the
+  per-record losses ℓ_{g,n} and the weights (w = 1/0.25) do not depend on (η, ρ). So π for every
+  grid point is recomputed exactly from the logged ℓ_{g,n}, with **no extra runs and no FEs**.
+- **SHE-Full feedback runs are not swept.** There η and ρ change the trajectory.
+
+**Per grid point, report:**
+- the H-S1 criterion of §16 (contrast Δ, one-sided Wilcoxon, Holm over 6 cells);
+- the near-uniform statistic of §17 (median max_h π̄(h)).
+
+**Decision rules (fixed in advance):**
+1. **The Stage 1 gate (§17) is evaluated only at the defaults** (η = 1.0, ρ = 0.995):
+   - primary: SHE-NoE3;
+   - secondary, reported alongside: SHE-Uniform.
+   The sweep can neither rescue nor fail the gate.
+2. **Classification of the sweep:**
+   - *robust*: H-S1 holds at ≥ 7 of 9 grid points;
+   - *setting-sensitive*: it holds at 1–6;
+   - *absent*: it holds at 0.
+3. **If the gate fails and the sweep is setting-sensitive or robust,** the report says
+   "identification may depend on evidence settings". **No default is changed:** defaults change
+   only through the CEC2022 D=10 protocol (§14), and only after a gate pass.
+4. **If the gate passes and the sweep is absent at non-default points,** this is reported as
+   fragility.
+
+### A-6 Stage 1 fallback assessment
+
+If the gate fails, `results/SHE_DIAGNOSTIC_REPORT.md` assesses **both** fallbacks:
+- **R2:** heterogeneous processes as FE-free structure estimators. Its closest formulation was rated
+  C in `FINAL_LITERATURE_OVERLAP_GATE.md`.
+- **F4:** an empirical study with structure diagnostics.
+
+For each, the report states:
+- which is defensible;
+- what evidence supports it;
+- what is unverified.
+
+### A-7 Stage 1 implementation clarifications (no new design freedom)
+
+**Runs.** Stage 1 runs SHE-NoE3 (primary; π-driven selection, exactly E evaluated exchanges per
+iteration, h0 free per A-3) and SHE-Uniform:
+- S1–S3 × D ∈ {10, 20} × 30 seeds;
+- MaxFE = 10000·D; E = 24; FADs *before*; N = 30;
+- seeds: she_diag master 75000000, SYN offset 200000, instance index 10·fid + (1 if D=10 else 2).
+
+**Successful native displacements** (H-E4b artefact matrices) come from state snapshots taken
+immediately before and after each backbone call:
+- **HBA:** rows of X_H changed by `phase1`;
+- **MPA population:** rows of X_M changed by `phase1` (moves retained by marine memory) and by
+  `fads_greedy` (FAD successes). FAD is the MPA population's operator, as in D3.
+
+Exchange replacements occur outside these calls and are therefore never counted as native.
+
+**Burn-in.** π̄ excludes records generated in the first 10% of FEs (§16).
