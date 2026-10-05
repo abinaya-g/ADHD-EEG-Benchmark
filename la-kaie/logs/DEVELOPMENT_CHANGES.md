@@ -38,3 +38,11 @@ Scope and status:
 | N1-DC11 | 2026-09-29 | results/reproduction/MPHBS/AUDIT.md, diagnostic_F10/ | Stage 0 mediator audit and F10 diagnostic (30+30 runs, n1_unit seeds); no code change | P4 failure on CEC F10 | no | – |
 | N1-DC12 | 2026-09-29 | MECHANISM_SMOKE_REPORT.md | Stage 3a/3b completed; Gates 5 and 6 FAIL; diagnostic analysis appended; no code or parameter change | hard-stop rule | no | – |
 | N1-DC13 | 2026-09-30 | src/n1/diagnostics.py (new), src/n1/algorithm.py (optional `diag=None` hook), src/n1/runner.py (opt-in `diag`, reference-structure metadata), scripts/n1_d3_diagnostic.py (new), tests/n1/test_d3_trajectory.py (new) | passive D3 diagnostic logging (agent IDs, raw and standardized displacements with scale, populations, operator target vectors, population covariance, reference structure) | offline diagnostic decision D (N1_OFFLINE_EVIDENCE_DIAGNOSTIC.md) | **no**: with diag=None the hook is never called; with diag on the trajectory is bit-identical | T-D3-TRAJECTORY (tests/n1/test_d3_trajectory.py) + campaign-level equivalence vs stored n1_smoke |
+
+---
+
+# SHE changes (spec experiments/SHE_SPEC.md; change control as for N1)
+
+| id | date | file | change | reason | behaviour change? | associated test |
+|----|------|------|--------|--------|-------------------|-----------------|
+| SHE-DC0 | 2026-10-05 | experiments/SHE_SPEC.md (new) | Stage 0 pre-registered specification | user instruction (Stage 0) | no (document only) | – |
