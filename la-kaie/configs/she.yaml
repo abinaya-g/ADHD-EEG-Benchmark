@@ -1,0 +1,51 @@
+# SHE (experiments/SHE_SPEC.md, incl. Amendment 1). Pre-registered 2026-10-05.
+# Defaults below are the PRE-TUNING values (spec §14). They are used for Stage 1
+# (synthetic diagnostic) and are changed only by the CEC2022 D=10 protocol, after
+# a Stage 1 gate pass. Seed masters exist only here (spec §15.2).
+defaults:
+  N: 30
+  p_x: 0.2
+  eta: 1.0
+  rho: 0.995
+  pi_min: 0.05
+  U: 20
+  lam_m: 0.995
+  kappa2: 1.0
+  W_x: 1000
+  W_L: 1000
+  W_n: 3000
+  q_e: 0.5
+  lam_LW: 0.2
+  g_max: 5
+  alpha: 0.05
+  beta_min: 0.6931471805599453   # log 2
+  lam_cap: 0.5
+  r_probe: 2
+  eps_p: 1.0e-4
+  y0: 0.1
+exchange_budget:          # E = MPHBS's E per domain (spec §1)
+  CEC2022: 24             # B-C1: N_sub*N_i = 8*3
+  FIR: 72                 # A-C1: 8*9
+  SYN: 24
+fad_placement:            # Amendment 1 A-1 (D-1)
+  CEC2022: before
+  FIR: after
+  SYN: before
+masters:
+  she_unit: 74000000
+  she_diag: 75000000
+  she_e3calib: 76000000
+  she_sensitivity: 77000000
+  she_smoke: 78000000
+  she_pilot: 79000000
+  main: 20260405          # existing master (pairs with MPHBS main runs)
+benchmark_offset: {CEC2022: 0, FIR: 100000, SYN: 200000}
+campaigns:
+  she_diag:               # Stage 1 (spec §16, §17, Amendment 1 A-5, A-7)
+    variants: [SHE-NoE3, SHE-Uniform]
+    functions: [1, 2, 3]
+    dims: [10, 20]
+    runs: 30
+    budget_per_dim: 10000
+    burnin_fe_frac: 0.10
+    sweep: {eta: [0.5, 1.0, 2.0], rho: [0.99, 0.995, 0.999]}
