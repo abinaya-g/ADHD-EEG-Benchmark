@@ -12,7 +12,7 @@ from n1.native_control import NativeControl
 from n1.records import StructuralWindow, rows_digest
 from n1.selectors import Hysteresis, evaluate_selector, evaluate_sources, joint_half_sources
 from n1.sprt import INFORMATIVE, UNINFORMATIVE, SPRTStyleRule, p1_from_p0
-from n1.structure import (bic, degeneracy, fit_model, loglik_from_scatter, partition_from_stat,
+from n1.structure import (degeneracy, fit_model, loglik_from_scatter, partition_from_stat,
                           fisher_stat, scatter)
 
 CFG = N1Config()

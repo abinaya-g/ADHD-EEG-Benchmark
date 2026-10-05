@@ -46,3 +46,4 @@ Scope and status:
 | id | date | file | change | reason | behaviour change? | associated test |
 |----|------|------|--------|--------|-------------------|-----------------|
 | SHE-DC0 | 2026-10-05 | experiments/SHE_SPEC.md (new) | Stage 0 pre-registered specification | user instruction (Stage 0) | no (document only) | – |
+| SHE-DC1 | 2026-10-05 | scripts/make_figures.py, tests/n1/test_n1_components.py | removed two unused imports (`pandas as pd`; `bic` from n1.structure) | pyflakes clean required before Stage 1 (user instruction) | no (dead imports only; pytest 97/97 before and after) | pyflakes |
