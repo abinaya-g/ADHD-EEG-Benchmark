@@ -33,7 +33,7 @@ from lakaie.she.algorithm import run_she  # noqa: E402
 from lakaie.she.config import VARIANTS, config_for, config_hash, load_yaml  # noqa: E402
 from n1.synthetic import SyntheticProblem, synthetic_instance_id  # noqa: E402
 
-CAMPAIGN = "she_diag"
+CAMPAIGN = "she_diag"          # default; Amendment 2 uses --campaign she_v2_diag
 RAW = ROOT / "results" / "raw" / CAMPAIGN
 
 
@@ -101,7 +101,10 @@ def run_task(t: dict) -> dict:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--campaign", default="she_diag", choices=["she_diag", "she_v2_diag"])
     args = ap.parse_args()
+    global CAMPAIGN, RAW
+    CAMPAIGN, RAW = args.campaign, ROOT / "results" / "raw" / args.campaign
     g = git_hash()
     T = [dict(t, git=g) for t in tasks()]
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")

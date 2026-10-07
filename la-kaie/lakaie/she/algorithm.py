@@ -66,8 +66,10 @@ def run_she(problem, variant: Variant, cfg: SHEConfig, seed: int, obj, max_fe: i
     st = HybridState(obj, lb, ub, D, N, rng_init)
     fr = Frame(D, lb, ub)
     fr.update_scale(st.X_H, st.X_M)
-    ev = Evidence(cfg, D, hyps)
-    shadows = {0: Evidence(cfg, D, hyps), 1: Evidence(cfg, D, hyps)} if variant.shadows else {}
+    nested = bool(variant.nested)
+    ev = Evidence(cfg, D, hyps, nested=nested)
+    shadows = {0: Evidence(cfg, D, hyps, nested=nested), 1: Evidence(cfg, D, hyps, nested=nested)} \
+        if variant.shadows else {}
     T_nom = max_fe / (3 * N + E)
     burn_fe = 0.1 * max_fe
 
@@ -78,6 +80,11 @@ def run_she(problem, variant: Variant, cfg: SHEConfig, seed: int, obj, max_fe: i
     A_sum = {0: np.zeros((D, D)), 1: np.zeros((D, D))}
     A_cnt = {0: 0, 1: 0}
     A_n = {0: [], 1: []}
+    # Amendment 2 B-2 (passive): zero-variance coordinates per artefact window, and the
+    # artefact average restricted to windows without any zero-variance coordinate
+    zv = {0: [], 1: []}
+    A_sum_nz = {0: np.zeros((D, D)), 1: np.zeros((D, D))}
+    A_n_nz = {0: [], 1: []}
     link_log = []
     it_extra = {k: [] for k in ("pi", "piH", "piM", "h0att", "nev", "npairs")}
     counts = dict(h0_attempts=0, exchange_fe=0, iters=0, iters_not_E=0, records=0)
@@ -150,7 +157,7 @@ def run_she(problem, variant: Variant, cfg: SHEConfig, seed: int, obj, max_fe: i
         engines = [("main", ev)] + [(f"shadow{k}", e) for k, e in shadows.items()]
         for name, e in engines:
             z1, _, y, w, _ = e.window()
-            pairs, groups, info = fit_linkage(z1, y, w, cfg)
+            pairs, groups, info = fit_linkage(z1, y, w, cfg, nested=nested)
             e.set_pairs(pairs)
             if name == "main":
                 fr.set_linkage(pairs, groups)
@@ -158,7 +165,13 @@ def run_she(problem, variant: Variant, cfg: SHEConfig, seed: int, obj, max_fe: i
         for pop in (0, 1):
             Z = native[pop].rows()
             if Z.shape[0] >= 2 * D:
-                A_sum[pop] += _offdiag_corr(Z); A_cnt[pop] += 1; A_n[pop].append(Z.shape[0])
+                C = _offdiag_corr(Z)
+                A_sum[pop] += C; A_cnt[pop] += 1; A_n[pop].append(Z.shape[0])
+                if variant.zv_log:
+                    k = int(np.sum(Z.std(axis=0) == 0.0))
+                    zv[pop].append(k)
+                    if k == 0:
+                        A_sum_nz[pop] += C; A_n_nz[pop].append(Z.shape[0])
 
     it = 0
     while obj.remaining() >= 3 * N:
@@ -204,6 +217,10 @@ def run_she(problem, variant: Variant, cfg: SHEConfig, seed: int, obj, max_fe: i
     for pop, nm in ((0, "H"), (1, "M")):
         arrays[f"A_{nm}"] = A_sum[pop] / max(1, A_cnt[pop])
         arrays[f"A_{nm}_n"] = np.asarray(A_n[pop], dtype=np.int64)
+        if variant.zv_log:
+            arrays[f"zv_{nm}"] = np.asarray(zv[pop], dtype=np.int64)
+            arrays[f"A_{nm}_nz"] = A_sum_nz[pop] / max(1, len(A_n_nz[pop]))
+            arrays[f"A_{nm}_nz_n"] = np.asarray(A_n_nz[pop], dtype=np.int64)
     rows = [np.column_stack([np.full(len(p), i), p]) for i, p in link_log if len(p)]
     arrays["link_rows"] = np.vstack(rows).astype(np.int64) if rows else np.zeros((0, 3), np.int64)
     arrays["link_k"] = np.asarray([[i, len(p)] for i, p in link_log], dtype=np.int64).reshape(-1, 2)

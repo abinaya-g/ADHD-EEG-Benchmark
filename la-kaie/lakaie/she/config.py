@@ -56,12 +56,17 @@ class Variant:
     e3: bool = False                     # Stage 3; Stage 1 variants run without E3
     h0_eval: bool = False                # Amendment 1 A-3
     shadows: bool = True                 # passive donor-split evidence (spec §13)
+    nested: bool = False                 # Amendment 2 B-1 (SHE-v2): h0 features nested in h1-h3
+    zv_log: bool = False                 # Amendment 2 B-2: passive zero-variance window logging
     extra: dict = field(default_factory=dict)
 
 
 VARIANTS = {
     "SHE-NoE3": Variant("SHE-NoE3"),
     "SHE-Uniform": Variant("SHE-Uniform", selection="uniform"),
+    # Amendment 2 (spec §25): identical to the Stage 1 variants except the nested models
+    "SHE-v2-NoE3": Variant("SHE-v2-NoE3", nested=True, zv_log=True),
+    "SHE-v2-Uniform": Variant("SHE-v2-Uniform", selection="uniform", nested=True, zv_log=True),
 }
 
 

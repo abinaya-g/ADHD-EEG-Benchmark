@@ -19,8 +19,9 @@ from lakaie.analysis.stats import holm  # noqa: E402
 from lakaie.she.config import load_yaml  # noqa: E402
 from lakaie.she.evidence import posterior  # noqa: E402
 
-RAW = ROOT / "results" / "raw" / "she_diag"
+RAW = ROOT / "results" / "raw" / "she_diag"           # default (Stage 1); see --campaign
 OUT = ROOT / "results" / "analysis" / "she_stage1"
+OUT_BY_CAMPAIGN = {"she_diag": "she_stage1", "she_v2_diag": "she_v2"}
 TRUTH = {1: 1, 2: 2, 3: 3}
 ALPHA = 0.05
 
@@ -128,8 +129,17 @@ def cell_stats(vals):
 
 
 def main():
+    import argparse
+    global RAW, OUT
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--campaign", default="she_diag", choices=sorted(OUT_BY_CAMPAIGN))
+    ap.add_argument("--out", default=None, help="override output dir (verification only)")
+    a = ap.parse_args()
+    RAW = ROOT / "results" / "raw" / a.campaign
+    OUT = Path(a.out) if a.out else ROOT / "results" / "analysis" / OUT_BY_CAMPAIGN[a.campaign]
     y = load_yaml()
-    camp = y["campaigns"]["she_diag"]
+    camp = y["campaigns"][a.campaign]
+    PRIMARY, SECONDARY = camp["variants"][0], camp["variants"][1]
     cells = [(f, D) for f in camp["functions"] for D in camp["dims"]]
     S = {"cells": [f"S{f}_D{D}" for f, D in cells], "variants": {}}
     runs = {}
@@ -161,8 +171,8 @@ def main():
         S["variants"][v]["H_S1"] = {"n_significant": nsig, "all_medians_positive": allpos,
                                     "holds": bool(nsig >= 5 and allpos), "n_near_uniform_cells": nunif}
 
-    # ---- H-E4 (primary variant SHE-NoE3) ----
-    v = "SHE-NoE3"
+    # ---- H-E4 (primary variant: SHE-NoE3 in Stage 1, SHE-v2-NoE3 in Amendment 2) ----
+    v = PRIMARY
     e4 = {"agreement": {}, "artefact": {}}
     pa, labels = [], []
     for f in (2, 3):
@@ -213,7 +223,7 @@ def main():
             ps, deltas, maxp = [], {}, {}
             for f, D in cells:
                 dl, mp_ = [], []
-                for rec, z in load("SHE-Uniform", f, D):
+                for rec, z in load(SECONDARY, f, D):
                     pi = sweep_pi(z, eta, rho, d["pi_min"])
                     if eta == d["eta"] and rho == d["rho"]:
                         check.append(float(np.max(np.abs(pi - z["r_pi"].astype(float)))))
@@ -230,11 +240,55 @@ def main():
     S["sweep"] = {"grid": sw, "n_holds_of_9": int(nh),
                   "classification": "robust" if nh >= 7 else ("setting-sensitive" if nh >= 1 else "absent"),
                   "recompute_check_max_abs_diff_at_defaults": float(max(check)) if check else None}
+    # ---- Amendment 2 B-2 (secondary, descriptive): zero-variance windows ----
+    if all("zv_H" in z.files for _, z in load(PRIMARY, 1, camp["dims"][0])[:1]):
+        S["B2_zero_variance"] = b2_zero_variance(camp, PRIMARY, SECONDARY)
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "summary.json").write_text(json.dumps(S, indent=1))
     print(json.dumps({"gate": S["gate"], "H_S1": {k: S["variants"][k]["H_S1"] for k in S["variants"]},
                       "H_E4": e4["criteria"], "sweep": {k: S["sweep"][k] for k in ("n_holds_of_9", "classification",
                       "recompute_check_max_abs_diff_at_defaults")}}, indent=1))
+
+
+def b2_zero_variance(camp, primary, secondary):
+    """Per-cell zero-variance window counts (both variants) and the H-E4(b) ratio r
+    recomputed on windows without zero-variance coordinates (primary variant, S1)."""
+    out = {"counts": {}, "r_excluding_zv_windows": {}}
+    for v in (primary, secondary):
+        for f in camp["functions"]:
+            for D in camp["dims"]:
+                rows = []
+                for rec, z in load(v, f, D):
+                    rows.append([int(np.sum(z["zv_H"] > 0)), int(z["zv_H"].size),
+                                 int(np.sum(z["zv_M"] > 0)), int(z["zv_M"].size)])
+                a = np.asarray(rows)
+                out["counts"][f"{v}/S{f}_D{D}"] = {
+                    "runs_with_any_zv_window_H": int(np.sum(a[:, 0] > 0)),
+                    "runs_with_any_zv_window_M": int(np.sum(a[:, 2] > 0)),
+                    "zv_windows_H_total": int(a[:, 0].sum()), "windows_H_total": int(a[:, 1].sum()),
+                    "zv_windows_M_total": int(a[:, 2].sum()), "windows_M_total": int(a[:, 3].sum()),
+                    "zv_windows_per_run_H_max": int(a[:, 0].max()), "zv_windows_per_run_M_max": int(a[:, 2].max())}
+    pb = []
+    for D in camp["dims"]:
+        rs = []
+        for rec, z in load(primary, 1, D):
+            iu = np.triu_indices(z["A_H"].shape[0], 1)
+            nH, nM = z["A_H_nz_n"], z["A_M_nz_n"]
+            if nH.size == 0 or nM.size == 0:
+                rs.append(np.nan); continue
+            rmse = float(np.sqrt(np.mean((z["A_H_nz"][iu] - z["A_M_nz"][iu]) ** 2)))
+            rs.append(rmse / np.sqrt(1 / float(np.mean(nH)) + 1 / float(np.mean(nM))))
+        rs = np.asarray(rs, float)
+        ok = rs[np.isfinite(rs)]
+        p = wil_greater(ok, mu=2.0) if ok.size else 1.0
+        pb.append(p)
+        out["r_excluding_zv_windows"][f"S1_D{D}"] = {"r": cell_stats(ok) if ok.size else None,
+                                                    "n_runs_usable": int(ok.size), "p_one_sided_r_gt_2": p}
+    adj = holm(pb)
+    for D, a in zip(camp["dims"], adj):
+        out["r_excluding_zv_windows"][f"S1_D{D}"]["p_holm"] = float(a)
+    out["artefact_holds_excluding_zv"] = bool(all(a < ALPHA for a in adj))
+    return out
 
 
 if __name__ == "__main__":

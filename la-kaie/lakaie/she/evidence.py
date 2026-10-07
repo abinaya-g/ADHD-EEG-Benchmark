@@ -11,10 +11,17 @@ def sigmoid(u):
     return 0.5 * (1.0 + np.tanh(0.5 * u))
 
 
-def features(g: int, z1: np.ndarray, z3: np.ndarray, pairs: np.ndarray) -> np.ndarray:
-    """Design matrix rows phi_g for records (z1, z3: (n, D)); spec §5."""
+def features(g: int, z1: np.ndarray, z3: np.ndarray, pairs: np.ndarray, nested: bool = False) -> np.ndarray:
+    """Design matrix rows phi_g for records (z1, z3: (n, D)); spec §5.
+    nested=True (Amendment 2, spec §25 B-1): h1-h3 additionally contain h0's step-size
+    term m = log(1+||z1||) right after the intercept, so h0 is nested in every model.
+    nested=False is the Stage 1 definition, unchanged."""
     n = z1.shape[0]
     one = np.ones((n, 1))
+    if nested and g in (1, 2, 3):
+        m = np.log1p(np.linalg.norm(z1, axis=1))[:, None]
+        rest = features(g, z1, z3, pairs, nested=False)[:, 1:]
+        return np.hstack([one, m, rest])
     if g == 0:
         return np.hstack([one, np.log1p(np.linalg.norm(z1, axis=1))[:, None]])
     if g == 1:
@@ -64,8 +71,8 @@ class Evidence:
     updates the discounted losses L_g, and stores the record in the fit window.
     ``refit`` performs the end-of-iteration IRLS step for every model."""
 
-    def __init__(self, cfg: SHEConfig, D: int, hyps=HYPS):
-        self.cfg, self.D, self.hyps = cfg, D, tuple(hyps)
+    def __init__(self, cfg: SHEConfig, D: int, hyps=HYPS, nested: bool = False):
+        self.cfg, self.D, self.hyps, self.nested = cfg, D, tuple(hyps), bool(nested)
         self.pairs = np.zeros((0, 2), dtype=int)
         self.models = {g: LogisticModel(self._p(g), cfg.kappa2, cfg.y0, cfg.eps_p) for g in self.hyps}
         self.L = np.zeros(4)
@@ -75,18 +82,22 @@ class Evidence:
         self.n = 0                                   # records seen
 
     def _p(self, g):
-        return {0: 2, 1: 2 * self.D + 1, 2: 2 * self.D + 1 + self.pairs.shape[0], 3: 2 * self.D + 1}[g]
+        return {0: 2, 1: self._nb(), 2: self._nb() + self.pairs.shape[0], 3: self._nb()}[g]
+
+    def _nb(self):
+        """Base feature count of h1-h3 (one more under nesting: the h0 step-size term)."""
+        return 2 * self.D + 1 + (1 if self.nested else 0)
 
     def set_pairs(self, pairs: np.ndarray):
         self.pairs = np.asarray(pairs, dtype=int).reshape(-1, 2)
         if 2 in self.models:
-            self.models[2].reset_tail(self._p(2), 2 * self.D + 1)
+            self.models[2].reset_tail(self._p(2), self._nb())
 
     def losses(self, z1, z3, y: int) -> np.ndarray:
         """Per-hypothesis log-loss -log p_g(y | delta) with pre-update parameters."""
         out = np.full(4, np.nan)
         for g in self.hyps:
-            pr = float(self.models[g].prob(features(g, z1[None, :], z3[None, :], self.pairs))[0])
+            pr = float(self.models[g].prob(features(g, z1[None, :], z3[None, :], self.pairs, self.nested))[0])
             out[g] = -np.log(pr if y == 1 else 1.0 - pr)
         return out
 
@@ -110,7 +121,7 @@ class Evidence:
         z1, z3, y, w, idx = self.window()
         sw = w * self.cfg.lam_m ** (self.n - 1 - idx)
         for g in self.hyps:
-            self.models[g].irls_step(features(g, z1, z3, self.pairs), y, sw)
+            self.models[g].irls_step(features(g, z1, z3, self.pairs, self.nested), y, sw)
 
     def pi(self) -> np.ndarray:
         return posterior(self.L, self.hyps, self.cfg.eta, self.cfg.pi_min)
@@ -133,7 +144,7 @@ def _soft(x, t):
     return np.sign(x) * np.maximum(np.abs(x) - t, 0.0)
 
 
-def fit_linkage(z1: np.ndarray, y: np.ndarray, w: np.ndarray, cfg: SHEConfig):
+def fit_linkage(z1: np.ndarray, y: np.ndarray, w: np.ndarray, cfg: SHEConfig, nested: bool = False):
     """Sparse pairwise-interaction logistic fit (spec §11): base terms L2, pair
     terms L1; lambda chosen by BIC on a 10-point geometric path; FISTA solver.
     Returns (pairs (k,2), groups list, info dict)."""
@@ -146,6 +157,8 @@ def fit_linkage(z1: np.ndarray, y: np.ndarray, w: np.ndarray, cfg: SHEConfig):
     sd[sd < 1e-12] = 1.0
     P = P / sd
     Bm = np.hstack([np.ones((n, 1)), z1, z1 * z1])
+    if nested:                     # Amendment 2 B-1: step-size term as an extra L2-penalised base column
+        Bm = np.hstack([Bm[:, :1], np.log1p(np.linalg.norm(z1, axis=1))[:, None], Bm[:, 1:]])
     X = np.hstack([Bm, P])
     nb = Bm.shape[1]
     wn = w / w.mean()
