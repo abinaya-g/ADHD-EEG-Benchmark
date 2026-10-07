@@ -34,6 +34,7 @@ fad_placement:            # Amendment 1 A-1 (D-1)
 masters:
   she_unit: 74000000
   she_diag: 75000000
+  she_v2_diag: 75500000      # Amendment 2 (SHE-v2; not run)
   she_e3calib: 76000000
   she_sensitivity: 77000000
   she_smoke: 78000000
@@ -43,6 +44,14 @@ benchmark_offset: {CEC2022: 0, FIR: 100000, SYN: 200000}
 campaigns:
   she_diag:               # Stage 1 (spec §16, §17, Amendment 1 A-5, A-7)
     variants: [SHE-NoE3, SHE-Uniform]
+    functions: [1, 2, 3]
+    dims: [10, 20]
+    runs: 30
+    budget_per_dim: 10000
+    burnin_fe_frac: 0.10
+    sweep: {eta: [0.5, 1.0, 2.0], rho: [0.99, 0.995, 0.999]}
+  she_v2_diag:            # Amendment 2 (spec §25) — pre-registered, NOT run, awaiting approval
+    variants: [SHE-v2-NoE3, SHE-v2-Uniform]
     functions: [1, 2, 3]
     dims: [10, 20]
     runs: 30

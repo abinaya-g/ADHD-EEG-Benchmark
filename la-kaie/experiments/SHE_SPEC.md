@@ -728,3 +728,108 @@ immediately before and after each backbone call:
 Exchange replacements occur outside these calls and are therefore never counted as native.
 
 **Burn-in.** π̄ excludes records generated in the first 10% of FEs (§16).
+
+---
+
+## 25. Amendment 2 — SHE-v2 nested-evidence diagnostic (pre-registered 2026-10-07; NOT run; awaiting approval)
+
+### B-0 Provenance (read first)
+
+This amendment was written **after** the Stage 1 result: gate STOP, tag `she-stage1-negative` on
+commit `ad47c82`, `results/SHE_DIAGNOSTIC_REPORT.md`. It was **motivated by that result**.
+
+**What motivated it.** The Stage 1 outcome models were not nested:
+
+| model | features (spec §5; `lakaie/she/evidence.features`) |
+|---|---|
+| h0 | [1, log(1 + ‖ζ¹‖)] |
+| h1 | [1, ζ¹_k, (ζ¹_k)²] |
+| h2 | h1's features + [ζ¹_kζ¹_l for (k,l) ∈ E_t] |
+| h3 | [1, ζ³_k, (ζ³_k)²] |
+
+log(1 + ‖ζ‖) is not in the span of {1, ζ_k, ζ_k²}. So the evidence compared *different* predictors
+of step-size effects. It did not measure the incremental value of structure over step size.
+
+**How to read a v2 result.** A v2 result is **not** an independent confirmation of anything:
+- **v2 passing** would show that the Stage 1 failure depended on this model specification. It would
+  carry the weight of a single post-hoc, pre-specified modification.
+- **v2 failing** closes the SHE line: there is no v3.
+
+**The Stage 1 STOP decision stands either way.** No later stage starts automatically on a v2 pass;
+the user decides.
+
+### B-1 The single change: nested feature sets
+
+Every structural model gets h0's features plus its structural terms. Everything else in §3–§11 and
+Amendment 1 is unchanged: hypotheses, generation, masks, transforms, record-time feature fixing,
+the logistic fit (κ₂, λ_m, IRLS once per iteration), importance weights, the prequential loss,
+posterior, floor and selection, the U refresh, the L1 linkage, h0 accounting (A-3) and the fixed-E
+regime (A-2).
+
+| model | v2 feature vector φ_g(δ) |
+|---|---|
+| h0 | [1, m] with m = log(1 + ‖ζ¹‖) (unchanged) |
+| h1 | [1, m, ζ¹_k, (ζ¹_k)²] |
+| h2 | h1's v2 features + [ζ¹_k ζ¹_l for (k,l) ∈ E_t] |
+| h3 | [1, m, ζ³_k, (ζ³_k)²] (m always uses the identity-frame ζ¹, so the h0 term is identical in every model) |
+
+**Nesting.** h0 ⊂ h1 ⊂ h2 and h0 ⊂ h3 (as feature sets). The prequential loss therefore measures
+whether the structural terms **add** predictive value beyond step size, after paying for their extra
+parameters.
+
+**The L1 linkage fit (§11)** gets the same base change: m is added as an unpenalised-by-L1,
+L2-penalised base column. Nothing else changes.
+
+### B-2 Instrumentation added, with no effect on trajectories
+
+Counts of zero-variance coordinates per artefact window: for each window, the number of coordinates
+with std = 0 in that population, logged per refresh.
+
+**H-E4(b) reporting:**
+- **primary:** exactly as in §16 (zero-variance correlations set to 0);
+- **secondary, descriptive:** r recomputed over windows with no zero-variance coordinate.
+
+**Test:** T-SHADOW-style trajectory-equality between instrumentation on and off.
+
+### B-3 Campaign she_v2_diag
+
+| item | value |
+|---|---|
+| variants | SHE-v2-NoE3 (primary), SHE-v2-Uniform (secondary) |
+| functions | S1, S2, S3 |
+| dimensions | D ∈ {10, 20} |
+| seeds | 30 per cell |
+| budget | MaxFE = 10000·D |
+| setting | E = 24, FADs before, N = 30 |
+| defaults | the pre-tuning defaults of `configs/she.yaml` (unchanged) |
+| seed master | **she_v2_diag = 75500000** (new; disjoint from all existing masters, checked by T-SEED); SYN offset 200000; instance index 10·fid + (1 if D=10 else 2) |
+| attempts | **single attempt** |
+
+**Change control:**
+- **After approval and before any run:** only the code that implements B-1/B-2 is written, behind a
+  `nested=True` model flag for the v2 variants. Stage 1 behaviour must stay bit-identical (tested).
+  Then a smoke-free single campaign follows.
+- **Frozen once this amendment is committed:** the scientific content of the amendment (features,
+  gate, criteria, seeds, defaults, analysis). No change to it afterwards, except bug fixes for failing
+  tests, logged as SHE-DC entries **before** the campaign runs.
+- If a bug is found after the campaign starts, the campaign is discarded and reported, not patched
+  and re-run silently.
+
+### B-4 Gate (numerically identical to §17) and reporting
+
+**STOP** if either holds:
+1. median over seeds of max_h π̄(h) < 0.35 in ≥ 4 of the 6 H-S1 cells; **or**
+2. H-E4 fails under exactly the §16 criteria (≥ 7/8 agreement tests significant and upper 95% CI of
+   median JSD < 0.10 in all 4 cells; and both artefact tests r > 2 significant).
+
+**H-S1:** identical definition, test and family; reported for both variants.
+
+**η/ρ sweep (A-5):** recomputed offline on SHE-v2-Uniform and reported with the same classification.
+It cannot change the gate.
+
+**Specific risk, stated in advance.** Under nesting, a STOP with π concentrated on h0 means
+"structural terms add no prequential predictive value beyond step size". That is the cleanest
+negative form of the Stage 1 finding.
+
+**Report:** `results/SHE_V2_DIAGNOSTIC_REPORT.md`, including a side-by-side table with Stage 1.
+Stage 1 is not re-analysed.
