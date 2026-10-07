@@ -1,0 +1,362 @@
+she_v2_diag start 20261007T093015Z git=511079ef2c04b21b484e6d803e6bdea89ac48a7c tasks=360
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "exists"}
+{"status": "ok", "valid": true, "rt": 235.61522982600036}
+{"status": "ok", "valid": true, "rt": 236.30362460799915}
+{"status": "ok", "valid": true, "rt": 236.81269860499924}
+{"status": "ok", "valid": true, "rt": 237.8866850859995}
+{"status": "ok", "valid": true, "rt": 228.13652938300038}
+{"status": "ok", "valid": true, "rt": 227.38191837900013}
+{"status": "ok", "valid": true, "rt": 229.76781286200094}
+{"status": "ok", "valid": true, "rt": 231.23835584900007}
+{"status": "ok", "valid": true, "rt": 225.2570782290004}
+{"status": "ok", "valid": true, "rt": 225.38419569000143}
+{"status": "ok", "valid": true, "rt": 231.82024299799923}
+{"status": "ok", "valid": true, "rt": 230.73823829299909}
+{"status": "ok", "valid": true, "rt": 227.47489529199993}
+{"status": "ok", "valid": true, "rt": 231.2559575539999}
+{"status": "ok", "valid": true, "rt": 230.04861624899968}
+{"status": "ok", "valid": true, "rt": 229.69161845799863}
+{"status": "ok", "valid": true, "rt": 235.76564981500087}
+{"status": "ok", "valid": true, "rt": 234.36132007200104}
+{"status": "ok", "valid": true, "rt": 240.2052793260009}
+{"status": "ok", "valid": true, "rt": 236.52200740699845}
+{"status": "ok", "valid": true, "rt": 42.79272451500037}
+{"status": "ok", "valid": true, "rt": 38.121880693001}
+{"status": "ok", "valid": true, "rt": 41.08963514700008}
+{"status": "ok", "valid": true, "rt": 40.60902768100095}
+{"status": "ok", "valid": true, "rt": 38.685626417000094}
+{"status": "ok", "valid": true, "rt": 40.08987076900121}
+{"status": "ok", "valid": true, "rt": 37.59485486500125}
+{"status": "ok", "valid": true, "rt": 38.8252144629987}
+{"status": "ok", "valid": true, "rt": 37.141713783999876}
+{"status": "ok", "valid": true, "rt": 44.441858985999716}
+{"status": "ok", "valid": true, "rt": 39.8356219469988}
+{"status": "ok", "valid": true, "rt": 40.65969058200062}
+{"status": "ok", "valid": true, "rt": 34.15397885799939}
+{"status": "ok", "valid": true, "rt": 38.13818697300121}
+{"status": "ok", "valid": true, "rt": 36.558326510999905}
+{"status": "ok", "valid": true, "rt": 38.44970955000099}
+{"status": "ok", "valid": true, "rt": 37.241797480999594}
+{"status": "ok", "valid": true, "rt": 36.57185321199904}
+{"status": "ok", "valid": true, "rt": 36.45150549000027}
+{"status": "ok", "valid": true, "rt": 39.311152800000855}
+{"status": "ok", "valid": true, "rt": 40.91834382399975}
+{"status": "ok", "valid": true, "rt": 37.652016688}
+{"status": "ok", "valid": true, "rt": 38.59734594600013}
+{"status": "ok", "valid": true, "rt": 40.63188426099987}
+{"status": "ok", "valid": true, "rt": 40.057198698999855}
+{"status": "ok", "valid": true, "rt": 38.24286965000101}
+{"status": "ok", "valid": true, "rt": 42.94285592199958}
+{"status": "ok", "valid": true, "rt": 42.539912157999424}
+{"status": "ok", "valid": true, "rt": 37.764152533000015}
+{"status": "ok", "valid": true, "rt": 37.438430710999455}
+{"status": "ok", "valid": true, "rt": 46.93964637099998}
+{"status": "ok", "valid": true, "rt": 52.431454722000126}
+{"status": "ok", "valid": true, "rt": 53.69435197199891}
+{"status": "ok", "valid": true, "rt": 50.35711452299984}
+{"status": "ok", "valid": true, "rt": 58.823203622998335}
+{"status": "ok", "valid": true, "rt": 55.41720403099862}
+{"status": "ok", "valid": true, "rt": 52.648038825000185}
+{"status": "ok", "valid": true, "rt": 50.40071125299983}
+{"status": "ok", "valid": true, "rt": 52.422581971999534}
+{"status": "ok", "valid": true, "rt": 58.829175213999406}
+{"status": "ok", "valid": true, "rt": 53.66932135500065}
+{"status": "ok", "valid": true, "rt": 56.36065254999994}
+{"status": "ok", "valid": true, "rt": 51.17223200499939}
+{"status": "ok", "valid": true, "rt": 64.7211417139988}
+{"status": "ok", "valid": true, "rt": 51.19130165200113}
+{"status": "ok", "valid": true, "rt": 59.70496238400119}
+{"status": "ok", "valid": true, "rt": 51.81910504299958}
+{"status": "ok", "valid": true, "rt": 51.99172677700153}
+{"status": "ok", "valid": true, "rt": 55.92435186600051}
+{"status": "ok", "valid": true, "rt": 50.99284237200118}
+{"status": "ok", "valid": true, "rt": 46.748491170001216}
+{"status": "ok", "valid": true, "rt": 45.28459092900084}
+{"status": "ok", "valid": true, "rt": 46.765504513999986}
+{"status": "ok", "valid": true, "rt": 50.65868715999932}
+{"status": "ok", "valid": true, "rt": 50.83468590099983}
+{"status": "ok", "valid": true, "rt": 48.01681005499995}
+{"status": "ok", "valid": true, "rt": 53.410264096999526}
+{"status": "ok", "valid": true, "rt": 47.437086676000035}
+{"status": "ok", "valid": true, "rt": 56.204683380999995}
+{"status": "ok", "valid": true, "rt": 50.19674053699964}
+{"status": "ok", "valid": true, "rt": 65.70630210899981}
+{"status": "ok", "valid": true, "rt": 66.1428564630005}
+{"status": "ok", "valid": true, "rt": 65.66670632100067}
+{"status": "ok", "valid": true, "rt": 64.28933017999952}
+{"status": "ok", "valid": true, "rt": 63.99314834600045}
+{"status": "ok", "valid": true, "rt": 64.04518449500029}
+{"status": "ok", "valid": true, "rt": 61.80208854000011}
+{"status": "ok", "valid": true, "rt": 64.40078069300034}
+{"status": "ok", "valid": true, "rt": 63.1160810220008}
+{"status": "ok", "valid": true, "rt": 62.67000624599859}
+{"status": "ok", "valid": true, "rt": 62.94707763800034}
+{"status": "ok", "valid": true, "rt": 61.980959616999826}
+{"status": "ok", "valid": true, "rt": 61.208488223999666}
+{"status": "ok", "valid": true, "rt": 62.535675922001246}
+{"status": "ok", "valid": true, "rt": 62.07180285699906}
+{"status": "ok", "valid": true, "rt": 62.41189207299976}
+{"status": "ok", "valid": true, "rt": 54.79120585900091}
+{"status": "ok", "valid": true, "rt": 63.03531408600065}
+{"status": "ok", "valid": true, "rt": 62.7751359319991}
+{"status": "ok", "valid": true, "rt": 55.650125672000286}
+{"status": "ok", "valid": true, "rt": 65.29975436700079}
+{"status": "ok", "valid": true, "rt": 68.77376128600008}
+{"status": "ok", "valid": true, "rt": 58.589423168001304}
+{"status": "ok", "valid": true, "rt": 67.71193274399957}
+{"status": "ok", "valid": true, "rt": 59.04039956999986}
+{"status": "ok", "valid": true, "rt": 57.47150205199978}
+{"status": "ok", "valid": true, "rt": 65.41072741599965}
+{"status": "ok", "valid": true, "rt": 55.58427307099919}
+{"status": "ok", "valid": true, "rt": 36.51934621300097}
+{"status": "ok", "valid": true, "rt": 64.23205839299953}
+{"status": "ok", "valid": true, "rt": 39.66373537999971}
+{"status": "ok", "valid": true, "rt": 59.657506208000996}
+{"status": "ok", "valid": true, "rt": 39.86607186499896}
+{"status": "ok", "valid": true, "rt": 40.53663031199903}
+{"status": "ok", "valid": true, "rt": 41.92882155299958}
+{"status": "ok", "valid": true, "rt": 44.29835775200081}
+{"status": "ok", "valid": true, "rt": 37.481787365000855}
+{"status": "ok", "valid": true, "rt": 41.9094902529996}
+{"status": "ok", "valid": true, "rt": 42.93917729900022}
+{"status": "ok", "valid": true, "rt": 38.9287168310002}
+{"status": "ok", "valid": true, "rt": 37.072840797000026}
+{"status": "ok", "valid": true, "rt": 35.796524699000656}
+{"status": "ok", "valid": true, "rt": 37.97480139700019}
+{"status": "ok", "valid": true, "rt": 39.394060594999246}
+{"status": "ok", "valid": true, "rt": 39.04530499700013}
+{"status": "ok", "valid": true, "rt": 35.63252080100028}
+{"status": "ok", "valid": true, "rt": 42.95428613900003}
+{"status": "ok", "valid": true, "rt": 41.111391221000304}
+{"status": "ok", "valid": true, "rt": 39.41439013499985}
+{"status": "ok", "valid": true, "rt": 39.97703787399951}
+{"status": "ok", "valid": true, "rt": 40.49279864100026}
+{"status": "ok", "valid": true, "rt": 38.589837202000126}
+{"status": "ok", "valid": true, "rt": 41.34486674100117}
+{"status": "ok", "valid": true, "rt": 37.19433028599997}
+{"status": "ok", "valid": true, "rt": 40.71247087499978}
+{"status": "ok", "valid": true, "rt": 38.846944764}
+{"status": "ok", "valid": true, "rt": 36.60288627599948}
+{"status": "ok", "valid": true, "rt": 38.303153340999415}
+{"status": "ok", "valid": true, "rt": 42.1138683879999}
+{"status": "ok", "valid": true, "rt": 40.57109843900071}
+{"status": "ok", "valid": true, "rt": 48.46462574799989}
+{"status": "ok", "valid": true, "rt": 51.77201207699909}
+{"status": "ok", "valid": true, "rt": 48.53536277499916}
+{"status": "ok", "valid": true, "rt": 56.97625967800013}
+{"status": "ok", "valid": true, "rt": 54.00002799499998}
+{"status": "ok", "valid": true, "rt": 49.160179627000616}
+{"status": "ok", "valid": true, "rt": 41.37474736299919}
+{"status": "ok", "valid": true, "rt": 41.25327593300062}
+{"status": "ok", "valid": true, "rt": 44.42694465100067}
+{"status": "ok", "valid": true, "rt": 48.11716479399911}
+{"status": "ok", "valid": true, "rt": 42.60656358899905}
+{"status": "ok", "valid": true, "rt": 46.48775780100004}
+{"status": "ok", "valid": true, "rt": 48.322066098000505}
+{"status": "ok", "valid": true, "rt": 55.62003986200034}
+{"status": "ok", "valid": true, "rt": 58.01017926200075}
+{"status": "ok", "valid": true, "rt": 54.05308069400053}
+{"status": "ok", "valid": true, "rt": 45.6931539670004}
+{"status": "ok", "valid": true, "rt": 50.87069772700124}
+{"status": "ok", "valid": true, "rt": 53.883350497999345}
+{"status": "ok", "valid": true, "rt": 52.31978207300017}
+{"status": "ok", "valid": true, "rt": 44.96181681000053}
+{"status": "ok", "valid": true, "rt": 47.78390870699877}
+{"status": "ok", "valid": true, "rt": 50.72858137900039}
+{"status": "ok", "valid": true, "rt": 48.85382915300033}
+{"status": "ok", "valid": true, "rt": 51.465130677999696}
+{"status": "ok", "valid": true, "rt": 57.31247930099926}
+{"status": "ok", "valid": true, "rt": 47.5710952469999}
+{"status": "ok", "valid": true, "rt": 46.21681578700009}
+{"status": "ok", "valid": true, "rt": 49.10901453899896}
+{"status": "ok", "valid": true, "rt": 49.15688628300086}
+{"status": "ok", "valid": true, "rt": 54.633770170999924}
+{"status": "ok", "valid": true, "rt": 53.453785519999656}
+{"status": "ok", "valid": true, "rt": 55.79114306200063}
+{"status": "ok", "valid": true, "rt": 54.845761607000895}
+{"status": "ok", "valid": true, "rt": 56.17234501600069}
+{"status": "ok", "valid": true, "rt": 54.66794074899917}
+{"status": "ok", "valid": true, "rt": 53.56452266800079}
+{"status": "ok", "valid": true, "rt": 56.461936433999654}
+{"status": "ok", "valid": true, "rt": 56.400324633999844}
+{"status": "ok", "valid": true, "rt": 54.97254221500043}
+{"status": "ok", "valid": true, "rt": 54.72245817000112}
+{"status": "ok", "valid": true, "rt": 54.522885234999194}
+{"status": "ok", "valid": true, "rt": 55.22460447100093}
+{"status": "ok", "valid": true, "rt": 55.163783404999776}
+{"status": "ok", "valid": true, "rt": 55.37756149500092}
+{"status": "ok", "valid": true, "rt": 56.82729894099975}
+{"status": "ok", "valid": true, "rt": 57.62744185199881}
+{"status": "ok", "valid": true, "rt": 56.07042054200065}
+{"status": "ok", "valid": true, "rt": 57.675803125999664}
+{"status": "ok", "valid": true, "rt": 55.05140141499942}
+{"status": "ok", "valid": true, "rt": 54.09693991699896}
+{"status": "ok", "valid": true, "rt": 54.9032854699999}
+{"status": "ok", "valid": true, "rt": 54.233264381999106}
+{"status": "ok", "valid": true, "rt": 54.57119677999981}
+{"status": "ok", "valid": true, "rt": 55.080625550999684}
+{"status": "ok", "valid": true, "rt": 55.73325803299849}
+{"status": "ok", "valid": true, "rt": 54.95746211500045}
+{"status": "ok", "valid": true, "rt": 54.571510371999466}
+{"status": "ok", "valid": true, "rt": 55.78819181399922}
+{"status": "ok", "valid": true, "rt": 53.9963973899994}
+done 2026-10-07T10:27:14.269370+00:00
