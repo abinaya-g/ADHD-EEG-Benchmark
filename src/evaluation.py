@@ -218,7 +218,7 @@ def run_nested_repeat(architecture_name, build_fn, X, y, groups, *,
                        preprocessing_label, fs, n_timesamples,
                        max_epochs, batch_size, patience, learning_rate,
                        run_classifiers=True, run_coral=False,
-                       n_channels=None, coral_lambdas=(1e-3,)):
+                       n_channels=None, coral_lambdas=(1e-3,), only_outer_folds=None):
     """
     Returns
     -------
@@ -246,6 +246,8 @@ def run_nested_repeat(architecture_name, build_fn, X, y, groups, *,
     run_t0 = time.time()
 
     for outer_fold_idx, (outer_train_idx, outer_test_idx) in enumerate(outer_splits):
+        if only_outer_folds is not None and outer_fold_idx not in only_outer_folds:
+            continue  # resume support: run a subset of outer folds (fold seeds depend only on the fold index)
         outer_train_subjects = set(groups[outer_train_idx])
         outer_test_subjects = set(groups[outer_test_idx])
         assert outer_train_subjects.isdisjoint(outer_test_subjects), (

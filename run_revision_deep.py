@@ -65,12 +65,14 @@ def task_leakage(args, X, y, groups, fs, n_time, out):
                 continue
             preds, _, _ = evaluation.run_nested_repeat(
                 name, build, X, y, ep_ids, seed=seed, repeat_id=i, preprocessing_label=f"{fs}Hz",
-                run_classifiers=clf, run_coral=False, **common_kwargs(args, fs, n_time))
+                run_classifiers=clf, run_coral=False, only_outer_folds=args.folds,
+                **common_kwargs(args, fs, n_time))
             df = pd.DataFrame(preds)
             df["split"] = "epoch_level_leaky"
             df["subject_id"] = df["subject_id"].map(to_subject)
             rows.append(df)
-            df.to_csv(f"{out}/leakage_epoch_level_predictions_{name}_rep{i}.csv", index=False)  # per-arch checkpoint
+            tag = "" if args.folds is None else "_folds" + "-".join(map(str, args.folds))
+            df.to_csv(f"{out}/leakage_epoch_level_predictions_{name}_rep{i}{tag}.csv", index=False)  # checkpoint
     return pd.concat(rows)
 
 
@@ -115,10 +117,12 @@ def main():
     ap.add_argument("--inner-folds", type=int, default=config.INNER_FOLDS)
     ap.add_argument("--max-epochs", type=int, default=config.MAX_EPOCHS)
     ap.add_argument("--archs", default="CNN,EEGNet", help="leakage task: comma-separated subset of CNN,EEGNet")
+    ap.add_argument("--folds", default=None, help="leakage task: comma-separated outer-fold indices (0-based) to run, for resuming")
     ap.add_argument("--out", default="results_revision")
     args = ap.parse_args()
     args.repeat_list = [int(v) for v in args.repeat_indices.split(",")] if args.repeat_indices else list(range(args.repeats))
     args.archs = args.archs.split(",")
+    args.folds = [int(v) for v in args.folds.split(",")] if args.folds else None
     out = args.out + ("_SYNTHETIC" if args.smoke_test else "")
     os.makedirs(out, exist_ok=True)
 
