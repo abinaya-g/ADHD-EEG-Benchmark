@@ -22,7 +22,8 @@ def level_metrics(d):
 
 
 def leakage(dir_, pred):
-    leaky = pd.read_csv(f"{dir_}/leakage_epoch_level_predictions.csv")
+    import glob
+    leaky = pd.concat([pd.read_csv(f) for f in sorted(glob.glob(f"{dir_}/leakage_epoch_level_predictions_*.csv"))])
     base = pd.read_csv(pred)
     base = base[base.preprocessing == "128Hz"]
     rows = []
@@ -54,7 +55,8 @@ if __name__ == "__main__":
     ap.add_argument("--pred", default="results_final/predictions/all_predictions.csv")
     a = ap.parse_args()
     pd.set_option("display.width", 220, "display.max_columns", 30)
-    if os.path.exists(f"{a.dir}/leakage_epoch_level_predictions.csv"):
+    import glob
+    if glob.glob(f"{a.dir}/leakage_epoch_level_predictions_*.csv"):
         print(leakage(a.dir, a.pred).round(3).to_string(index=False))
     if os.path.exists(f"{a.dir}/coral_lambda_sweep_folds.csv"):
         print(coral(a.dir).round(4).to_string(index=False))
