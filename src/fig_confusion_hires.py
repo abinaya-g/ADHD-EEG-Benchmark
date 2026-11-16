@@ -18,7 +18,9 @@ def main(pred="results_final/predictions/all_predictions.csv",
     d = pd.read_csv(pred)
     d = d[d.preprocessing == "128Hz"]
     plt.rcParams.update({"font.family": "DejaVu Sans"})
-    fig, axes = plt.subplots(2, 5, figsize=(16, 7.6))
+    fig, axes = plt.subplots(3, 4, figsize=(11, 9.4))
+    for ax in axes.ravel()[len(ORDER):]:
+        ax.axis("off")
     for ax, m in zip(axes.ravel(), ORDER):
         s = d[d.model == m].groupby("subject_id").agg(y=("y_true", "first"), p=("y_proba", "mean"))
         yh = (s.p >= 0.5).astype(int)
@@ -28,12 +30,12 @@ def main(pred="results_final/predictions/all_predictions.csv",
             for j in range(2):
                 frac = cm[i, j] / cm[i].sum()
                 ax.text(j, i, f"{cm[i, j]}\n({100 * frac:.0f}%)", ha="center", va="center",
-                        fontsize=15, fontweight="bold", color="white" if frac > 0.55 else "black")
+                        fontsize=14, fontweight="bold", color="white" if frac > 0.55 else "black")
         ax.set_xticks([0, 1]); ax.set_xticklabels(["Control", "ADHD"], fontsize=13)
         ax.set_yticks([0, 1]); ax.set_yticklabels(["Control", "ADHD"], fontsize=13, rotation=90, va="center")
         ax.set_xlabel("Predicted", fontsize=14); ax.set_ylabel("True", fontsize=14)
         ba = 0.5 * (cm[0, 0] / cm[0].sum() + cm[1, 1] / cm[1].sum())
-        ax.set_title(f"{m}\nBA = {ba:.3f}", fontsize=15, fontweight="bold")
+        ax.set_title(f"{m}\nBA = {ba:.3f}", fontsize=14, fontweight="bold")
     fig.tight_layout(h_pad=2.0, w_pad=1.5)
     os.makedirs(os.path.dirname(out), exist_ok=True)
     fig.savefig(out, dpi=300, bbox_inches="tight", facecolor="white")
