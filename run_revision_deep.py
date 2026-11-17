@@ -33,6 +33,7 @@ import numpy as np
 import pandas as pd
 
 from src import config, data, evaluation, models
+from src.models_matched import build_cnn_linear_head
 
 LAMBDAS = (1e-3, 1e-4, 1e-2, 1e-1)  # first entry = the value used in the paper
 
@@ -60,7 +61,9 @@ def task_leakage(args, X, y, groups, fs, n_time, out):
     rows = []
     for i in args.repeat_list:
         seed = config.RANDOM_SEEDS[i]
-        for name, build, clf in (("CNN", models.build_cnn, True), ("EEGNet", models.build_eegnet, False)):
+        for name, build, clf in (("CNN", models.build_cnn, True), ("EEGNet", models.build_eegnet, False),
+                                 ("ShallowConvNet", models.build_shallow_convnet, False),
+                                 ("DeepConvNet", models.build_deep_convnet, False)):
             if name not in args.archs:
                 continue
             preds, _, _ = evaluation.run_nested_repeat(
@@ -74,6 +77,18 @@ def task_leakage(args, X, y, groups, fs, n_time, out):
             tag = "" if args.folds is None else "_folds" + "-".join(map(str, args.folds))
             df.to_csv(f"{out}/leakage_epoch_level_predictions_{name}_rep{i}{tag}.csv", index=False)  # checkpoint
     return pd.concat(rows)
+
+
+def task_matched_head(args, X, y, groups, fs, n_time, out):
+    """Plain CNN trunk + regularised linear head, trained jointly under the primary nested subject-grouped protocol."""
+    rows = []
+    for i in args.repeat_list:
+        p, _, _ = evaluation.run_nested_repeat(
+            "CNN_linear_head", build_cnn_linear_head, X, y, groups, seed=config.RANDOM_SEEDS[i], repeat_id=i,
+            preprocessing_label=f"{fs}Hz", run_classifiers=False, run_coral=False, **common_kwargs(args, fs, n_time))
+        rows += p
+        pd.DataFrame(rows).to_csv(f"{out}/matched_head_predictions.csv", index=False)  # checkpoint
+    return pd.DataFrame(rows)
 
 
 def task_coral(args, X, y, groups, fs, n_time, out):
@@ -109,14 +124,14 @@ def task_resolution(args, X, y, groups, fs, n_time, out):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--task", required=True, choices=["leakage", "coral", "resolution"])
+    ap.add_argument("--task", required=True, choices=["leakage", "coral", "resolution", "matched_head"])
     ap.add_argument("--smoke-test", action="store_true")
     ap.add_argument("--repeats", type=int, default=1)
     ap.add_argument("--repeat-indices", type=str, default=None)
     ap.add_argument("--outer-folds", type=int, default=config.OUTER_FOLDS)
     ap.add_argument("--inner-folds", type=int, default=config.INNER_FOLDS)
     ap.add_argument("--max-epochs", type=int, default=config.MAX_EPOCHS)
-    ap.add_argument("--archs", default="CNN,EEGNet", help="leakage task: comma-separated subset of CNN,EEGNet")
+    ap.add_argument("--archs", default="CNN,EEGNet", help="leakage task: comma-separated subset of CNN,EEGNet,ShallowConvNet,DeepConvNet")
     ap.add_argument("--folds", default=None, help="leakage task: comma-separated outer-fold indices (0-based) to run, for resuming")
     ap.add_argument("--out", default="results_revision")
     args = ap.parse_args()
@@ -139,7 +154,7 @@ def main():
     json.dump(versions(), open(f"{out}/versions_{args.task}.json", "w"), indent=1)
 
     t0 = time.time()
-    res = {"leakage": task_leakage, "coral": task_coral, "resolution": task_resolution}[args.task](
+    res = {"leakage": task_leakage, "coral": task_coral, "resolution": task_resolution, "matched_head": task_matched_head}[args.task](
         args, X, y, groups, fs, n_time, out)
     print(res.head())
     print(f"done in {time.time() - t0:.0f}s -> {out}/")
