@@ -1,39 +1,35 @@
 # ADHD-EEG Robust Benchmark
 
-A leakage-corrected, subject-independent evaluation framework built around
-the CNN/hybrid-classifier pipeline from the manuscript *"Assessing the
-Robustness of CNN and Hybrid Classifiers for Subject-Independent ADHD
-Detection from Raw EEG"* (desk-rejected from *Computer Methods and Programs
-in Biomedicine Update*; see `original_notebooks/manuscript_desk_rejected.pdf`).
+A leakage-corrected, subject-independent evaluation framework for CNN and
+hybrid-classifier models that classify ADHD from raw EEG: nested, repeated,
+subject-grouped cross-validation with subject-level aggregation.
 
-**Read `AUDIT_REPORT.md` first.** It documents the leakage found in the
-original notebooks (outer test fold used as CNN early-stopping validation
-data) and exactly how this codebase fixes it. Read `FINAL_REPORT.md` for an
-honest accounting of what was and was not executed with real data.
+The original notebooks used the outer test fold as the CNN early-stopping
+validation data, which lets the stopping rule see held-out subjects. This
+codebase fixes that: early stopping uses inner folds drawn from the
+outer-training subjects only (see `src/evaluation.py`).
 
-## What this repository is (and isn't)
+## What this repository is
 
-This codebase was developed in a sandboxed environment with **no access to
-the actual dataset** (`abinayajone/adhd-eeg-dataset`, hosted on Kaggle — not
-bundled here, never claimed to be downloadable from this repo) and **no
-GPU**. Every module was validated against a synthetic surrogate dataset with
-the same array shapes and subject/epoch structure as the real one
-(`src/data.py:make_synthetic_dataset`), run end-to-end on CPU
-(`tests/test_synthetic_pipeline.py`), to prove the pipeline's *mechanics*
-are correct before it ever touches real data. **No number produced by the
-synthetic self-test is a real result** — every such output is prefixed
-`SYNTHETIC_` and must never be copied into a manuscript table or figure.
+Code for the evaluation framework, the saved predictions it produced, and
+the analysis scripts built on them. The EEG data (Kaggle dataset
+`abinayajone/adhd-eeg-dataset`) are not bundled here. Every module can be
+run end-to-end on a synthetic surrogate dataset with the same array shapes
+and subject/epoch structure as the real one (`src/data.py:make_synthetic_dataset`,
+`tests/test_synthetic_pipeline.py`) to check the pipeline's mechanics.
+**No number produced by the synthetic self-test is a real result**; every
+such output is prefixed `SYNTHETIC_`.
 
-To get real, publication-usable numbers, run `run_all_experiments.py`
-(without `--smoke-test`) in an environment with the actual dataset and,
-strongly recommended, a GPU — e.g. the same Kaggle environment the original
-notebooks used.
+To reproduce real results, run `run_all_experiments.py` (without
+`--smoke-test`) with the dataset available and, preferably, a GPU, for
+example in the same Kaggle environment the original notebooks used.
 
 ## Dataset
 
 - Source: Kaggle dataset `abinayajone/adhd-eeg-dataset` (as used by the
-  original notebooks). This repository does not redistribute it and makes
-  no claim about any other download location.
+  original notebooks), originally released by Nasrabadi et al. (2020),
+  IEEE DataPort, doi:10.21227/rzfh-zn36. This repository does not
+  redistribute it.
 - Expected structure once downloaded, pointed to by `ADHD_EEG_DATA_ROOT`:
   ```
   <ADHD_EEG_DATA_ROOT>/
@@ -45,9 +41,8 @@ notebooks used.
   ```
 - 121 subjects (61 ADHD / 60 Control), 508 total 30-second epochs (288
   ADHD / 220 Control), 19 EEG channels. Sampling rate is **assumed** 128 Hz
-  (no sampling-rate metadata is present in the released files — see
-  `AUDIT_REPORT.md` §5). Treat this as an assumption, not a verified fact,
-  in any text you write about it.
+  (no sampling-rate metadata is present in the released files). Treat this
+  as an assumption, not a verified fact, in any text you write about it.
 
 ## Setup
 
@@ -92,9 +87,8 @@ behavior as a side effect of a logging request.
 **GPU nondeterminism**: even
 with `TF_DETERMINISTIC_OPS=1` set (done automatically in
 `models.set_all_seeds`), some cuDNN convolution backward-pass kernels remain
-nondeterministic on GPU; the original manuscript's own Limitations section
-already reports up to ~1 percentage point / 0.014 AUC run-to-run variation
-attributable to this. CPU execution is deterministic given these seeds.
+nondeterministic on GPU; run-to-run variation of up to about 1 percentage point / 0.014 AUC has been
+observed on GPU. CPU execution is deterministic given these seeds.
 
 ## Running
 
@@ -134,10 +128,8 @@ src/
   explainability.py  Integrated Gradients channel/temporal importance
   sanity_checks.py   Phase 20 automated leakage/consistency checks
 run_all_experiments.py   main entrypoint (Phase 17)
-tests/test_synthetic_pipeline.py   synthetic self-test, actually executed in this session
-AUDIT_REPORT.md      Phase 1 + Phase 16 leakage audit
-FINAL_REPORT.md       Phase 22 submission-readiness report
-original_notebooks/  the two audited source notebooks + the desk-rejected manuscript PDF, verbatim
+tests/test_synthetic_pipeline.py   synthetic self-test
+original_notebooks/  the two original source notebooks, verbatim
 results/ tables/ figures/   generated outputs (git-ignored contents except .gitkeep-style placeholders)
 ```
 
@@ -153,11 +145,35 @@ existing `results/predictions.csv` without retraining, import the relevant
 
 ## Software versions used to build and validate this framework
 
-Validated in-session with: `numpy` 2.4.6, `scipy` 1.17.1, `scikit-learn`
+Validated with: `numpy` 2.4.6, `scipy` 1.17.1, `scikit-learn`
 1.9.0, `pandas` 3.0.5, `tensorflow-cpu` 2.21.0, Python 3.11.15, CPU only (no
-GPU available in the development sandbox). These are newer than the
+GPU available in the validation environment). These are newer than the
 TensorFlow build the original Kaggle notebooks ran on (visible in their
 saved outputs as TF using `Tesla T4` GPUs); if you reproduce on Kaggle with
 an older/GPU TensorFlow build, re-run `tests/test_synthetic_pipeline.py`
 first to confirm the pipeline still behaves identically in that environment
 before trusting real-data numbers from it.
+
+## Additional analyses
+
+Scripts built on the saved predictions and on re-runs of the models
+(outputs in `results_revision/`; software versions are saved next to them):
+
+```
+run_revision_experiments.py   band-power + theta/beta baseline; subject-grouped vs epoch-level splits; retrain-on-permuted-labels null
+run_revision_deep.py          deep-model tasks: leakage (epoch-level splits), CORAL regularization sweep,
+                              128->512 Hz resolution repetitions, matched linear-head control
+src/revision_analyses.py      per-repetition results, chance-level tests, pairwise comparisons, recording-length check
+src/revision_deep_analysis.py summaries for the deep-model re-runs
+src/artefact_analysis.py      artefact-like signal proxies, group differences, relation to model outputs (needs the raw EEG)
+src/resolution_five_repetitions.py   128 Hz vs 128->512 Hz over five repetitions
+src/models_matched.py         CNN with a regularised linear head
+```
+
+Example (from the repository root, with `ADHD_EEG_DATA_ROOT` set):
+
+```bash
+python -m src.artefact_analysis
+python run_revision_deep.py --task matched_head --repeats 5
+python -m src.revision_deep_analysis --dir results_revision
+```
