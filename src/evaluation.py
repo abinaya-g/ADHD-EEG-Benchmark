@@ -341,7 +341,7 @@ def run_nested_repeat(architecture_name, build_fn, X, y, groups, *,
 
             # One CORAL-aligned classifier per covariance-regularization value.
             # The first (default, 1e-3) keeps the model name used in the paper;
-            # additional values get a "_lam<value>" suffix (revision sensitivity sweep).
+            # additional values get a "_lam<value>" suffix (sensitivity sweep).
             for lam_i, lam in enumerate(coral_lambdas):
                 suffix = "" if lam_i == 0 else f"_lam{lam:g}"
                 train_feats_aligned = coral_mod.coral_transform(train_feats, test_feats, lambda_reg=lam)

@@ -1,10 +1,10 @@
 """
-Revision experiments that need TensorFlow (+ the raw EEG, ideally a GPU).
+Experiments that need TensorFlow (+ the raw EEG, ideally a GPU).
 Run on Kaggle exactly like run_all_experiments.py (same data root, same
 protocol, same seeds). Writes CSVs to results_revision/.
 
   --task leakage     Leakage-permitting vs subject-grouped evaluation of the SAME
-                     pipeline (CNN+classical heads and EEGNet): identical
+                     pipeline (CNN+classical heads, EEGNet, ShallowConvNet and DeepConvNet): identical
                      architecture, optimiser, early-stopping rule, epoch budget
                      selection and aggregation; the ONLY difference is that the
                      outer (and inner) folds are drawn at the epoch level, so one
@@ -14,13 +14,16 @@ protocol, same seeds). Writes CSVs to results_revision/.
                      the true child for subject-level aggregation.
   --task coral       CORAL covariance-regularisation sweep (lambda in LAMBDAS) and
                      per-fold covariance distances before/after alignment.
-  --task resolution  128 -> 512 Hz interpolation for the remaining repetitions
-                     (the paper ran repetition 0 only), CNN and EEGNet.
+  --task resolution  128 -> 512 Hz interpolation for further repetitions (repetition 0
+                     is in the primary results), CNN and EEGNet.
+  --task matched_head  Plain CNN trunk with a single regularised linear head, trained
+                     jointly under the primary nested subject-grouped protocol.
 
 Examples (Kaggle):
   !python run_revision_deep.py --task leakage --repeats 1
   !python run_revision_deep.py --task coral --repeats 1
   !python run_revision_deep.py --task resolution --repeat-indices 1,2,3,4
+  !python run_revision_deep.py --task matched_head --repeats 5
   !python run_revision_deep.py --task leakage --smoke-test   # synthetic, minutes on CPU
 """
 import argparse

@@ -1,14 +1,13 @@
 """
-Revision analyses that need ONLY the saved predictions
+Analyses that need ONLY the saved predictions
 (results_final/predictions/all_predictions.csv) -- no raw EEG, no GPU.
 
-Addresses (CIBM-D-26-06517 reviewer comments):
-  R2-3  per-repetition results; all-pairs comparisons among the leading
-        models with Holm correction; label-permutation chance tests; CIs.
-  R3    EEGNet vs ShallowConvNet vs CNN+LR direct comparisons.
-  R2-5  Table 6 reconciliation: compare 128 Hz vs 128->512 Hz on the SAME
-        repetition (repeat 0) -- the old Table 6 paired a 5-repetition pooled
-        128 Hz row with a 1-repetition interpolated row.
+Contents:
+  - per-repetition results; all-pairs comparisons among the leading models
+    with Holm correction; label-permutation chance tests; confidence intervals.
+  - EEGNet vs ShallowConvNet vs CNN+LR direct comparisons.
+  - 128 Hz vs 128->512 Hz compared on the SAME repetition (repeat 0), the only
+    repetition that has both conditions in the primary results.
 
 IMPORTANT LIMITATION of the permutation test implemented here: it permutes
 subject labels against FIXED saved predictions. It tests whether the final

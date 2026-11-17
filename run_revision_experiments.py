@@ -1,20 +1,21 @@
 """
-Revision experiments that need the RAW EEG (reviewer comments R2-4, R2-2/R3-3,
-R2-3). sklearn/scipy only -- no TensorFlow, CPU, minutes not hours.
+Experiments that need the RAW EEG: a classical band-power baseline, a leakage
+comparison on an identical pipeline, and a retrain-on-permuted-labels null.
+sklearn/scipy only -- no TensorFlow, CPU, minutes not hours.
 
   1. Classical feature baseline: log band power (delta/theta/alpha/beta/gamma
      per channel) + theta/beta ratio -> L2 logistic regression, with the
      regularisation strength chosen by an INNER subject-grouped CV.
   2. Leakage comparison on an otherwise IDENTICAL pipeline: the same features
      and classifier evaluated with (a) subject-grouped outer folds (as in the
-     paper) and (b) epoch-level random outer folds that let one child's epochs
+     primary analysis) and (b) epoch-level random outer folds that let one child's epochs
      appear in both train and test. Reported at epoch level (as leaky studies
      do) and at subject level.
   3. Retrain-on-permuted-labels null for the classical baseline (subject
      labels permuted, whole nested pipeline re-run) -> true chance distribution.
 
-The same split code can be reused for the deep models; running EEGNet under
-epoch-level splitting needs TensorFlow and a GPU (not done here).
+The same split idea is applied to the deep models in run_revision_deep.py
+(--task leakage), which needs TensorFlow and, ideally, a GPU.
 
 Usage (real data):  ADHD_EEG_DATA_ROOT=... python run_revision_experiments.py
        (self-test):  python run_revision_experiments.py --synthetic
