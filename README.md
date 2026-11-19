@@ -24,6 +24,54 @@ To reproduce real results, run `run_all_experiments.py` (without
 `--smoke-test`) with the dataset available and, preferably, a GPU, for
 example in the same Kaggle environment the original notebooks used.
 
+## Data and results in this repository
+
+- `results_final/predictions/all_predictions.csv` holds the epoch-level
+  out-of-fold predictions from the real-data run: 34,544 rows covering 12
+  model configurations (EEGNet, ShallowConvNet, DeepConvNet, the CNN, six
+  CNN + classical-classifier hybrids, and the CORAL / no-CORAL variants) over
+  5 repeats. Columns: `architecture, model, preprocessing, repeat,
+  outer_fold, seed, subject_id, y_true, y_pred, y_proba`.
+- Summary tables and figures are **derived** from these predictions (see
+  "Reproducing tables and figures" below). The `tables/` and `figures/`
+  folders in this repository are currently empty placeholders; regenerate
+  them rather than expecting committed copies.
+- `results/` contains only the `SYNTHETIC_*` self-test outputs. Nothing in
+  `results/` is a real result.
+
+## Revision analyses (`results_revision/`)
+
+Additional analyses added during manuscript revision. Scripts are in `src/`
+and the two `run_revision_*.py` drivers; outputs are in `results_revision/`.
+Each script's docstring states its inputs and limitations; the short version:
+
+| Analysis | Script | Needs |
+|----------|--------|-------|
+| Per-repetition results, all-pairs comparisons among leading models (Holm), label-permutation chance tests, 128 Hz vs 128->512 Hz on repetition 0 | `src/revision_analyses.py` | saved predictions only |
+| Subject-level paired model comparison (one paired observation per subject; replaces an earlier 25-observation Wilcoxon test that pseudo-replicated subjects) | `src/subject_level_paired_test.py` | saved predictions only |
+| Artefact proxies, group differences, relation to model outputs, band-power baseline sensitivity | `src/artefact_analysis.py` | raw EEG, CPU |
+| Classical band-power baseline; leakage comparison; retrain-on-permuted-labels null | `run_revision_experiments.py` | raw EEG, CPU |
+| Leakage-permitting vs subject-grouped evaluation for CNN + heads, EEGNet, ShallowConvNet, DeepConvNet; CORAL lambda sweep; resolution repetitions 1-4 | `run_revision_deep.py` (`--task leakage / coral / resolution`), summarised by `src/revision_deep_analysis.py` | raw EEG, TensorFlow, ideally GPU |
+| Matched-head control for the CNN+LR comparison | `src/models_matched.py` | raw EEG, TensorFlow |
+| 128 Hz vs 128->512 Hz over all five repetitions | `src/resolution_five_repetitions.py` | `results_revision/resolution_interp_predictions.csv` |
+| Manuscript figures at 300 dpi | `src/fig_manuscript_hires.py`, `src/fig_confusion_hires.py`, `src/fig_architecture.py` | saved predictions |
+
+Notes:
+
+- **The `leakage_epoch_level_predictions_*.csv` files are leakage-permitting by
+  design** (folds drawn at the epoch level, so one child can appear in both
+  training and test). They exist to show how much such a split changes the
+  numbers. They are not performance estimates and must not be reported as
+  results.
+- `versions_*.json` record the software environment of each run
+  (`*_kaggle*` files are Kaggle runs).
+- `notebooks/kaggle_revision_runs.ipynb` runs the TensorFlow experiments on
+  Kaggle.
+- `src/evaluation.py` gained two optional arguments: `only_outer_folds`
+  (resume a run fold by fold) and `coral_lambdas` (the lambda sweep). The
+  defaults reproduce the primary analysis, and early stopping still uses inner
+  folds from the outer-training subjects only.
+
 ## Dataset
 
 - Source: Kaggle dataset `abinayajone/adhd-eeg-dataset` (as used by the
@@ -130,6 +178,8 @@ src/
 run_all_experiments.py   main entrypoint (Phase 17)
 tests/test_synthetic_pipeline.py   synthetic self-test
 original_notebooks/  the two original source notebooks, verbatim
+results_final/predictions/   committed epoch-level out-of-fold predictions from the real-data run
+results_revision/            revision analyses (see "Revision analyses")
 results/ tables/ figures/   generated outputs (git-ignored contents except .gitkeep-style placeholders)
 ```
 
@@ -154,26 +204,20 @@ an older/GPU TensorFlow build, re-run `tests/test_synthetic_pipeline.py`
 first to confirm the pipeline still behaves identically in that environment
 before trusting real-data numbers from it.
 
-## Additional analyses
+## Limitations
 
-Scripts built on the saved predictions and on re-runs of the models
-(outputs in `results_revision/`; software versions are saved next to them):
+- Single public dataset (121 subjects, 508 thirty-second epochs, 19 channels);
+  no external validation on other cohorts, recording sites or headsets.
+- The 128 Hz sampling rate is an assumption: the released files carry no
+  sampling-rate metadata.
+- Metrics from the original notebooks are not comparable with this framework,
+  because those notebooks let the early-stopping rule see the outer test fold.
+- On GPU, run-to-run variation of up to about 1 percentage point / 0.014 AUC
+  has been observed; CPU runs are deterministic given the seeds.
+- Outputs prefixed `SYNTHETIC_` come from the synthetic self-test and are not
+  results.
 
-```
-run_revision_experiments.py   band-power + theta/beta baseline; subject-grouped vs epoch-level splits; retrain-on-permuted-labels null
-run_revision_deep.py          deep-model tasks: leakage (epoch-level splits), CORAL regularization sweep,
-                              128->512 Hz resolution repetitions, matched linear-head control
-src/revision_analyses.py      per-repetition results, chance-level tests, pairwise comparisons, recording-length check
-src/revision_deep_analysis.py summaries for the deep-model re-runs
-src/artefact_analysis.py      artefact-like signal proxies, group differences, relation to model outputs (needs the raw EEG)
-src/resolution_five_repetitions.py   128 Hz vs 128->512 Hz over five repetitions
-src/models_matched.py         CNN with a regularised linear head
-```
+## Dataset attribution
 
-Example (from the repository root, with `ADHD_EEG_DATA_ROOT` set):
-
-```bash
-python -m src.artefact_analysis
-python run_revision_deep.py --task matched_head --repeats 5
-python -m src.revision_deep_analysis --dir results_revision
-```
+EEG data: Nasrabadi et al. (2020), IEEE DataPort,
+doi:10.21227/rzfh-zn36. Please cite the original dataset if you use it.
