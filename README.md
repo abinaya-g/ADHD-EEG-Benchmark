@@ -24,6 +24,21 @@ To reproduce real results, run `run_all_experiments.py` (without
 `--smoke-test`) with the dataset available and, preferably, a GPU, for
 example in the same Kaggle environment the original notebooks used.
 
+## Data and results in this repository
+
+- `results_final/predictions/all_predictions.csv` holds the epoch-level
+  out-of-fold predictions from the real-data run: 34,544 rows covering 12
+  model configurations (EEGNet, ShallowConvNet, DeepConvNet, the CNN, six
+  CNN + classical-classifier hybrids, and the CORAL / no-CORAL variants) over
+  5 repeats. Columns: `architecture, model, preprocessing, repeat,
+  outer_fold, seed, subject_id, y_true, y_pred, y_proba`.
+- Summary tables and figures are **derived** from these predictions (see
+  "Reproducing tables and figures" below). The `tables/` and `figures/`
+  folders in this repository are currently empty placeholders; regenerate
+  them rather than expecting committed copies.
+- `results/` contains only the `SYNTHETIC_*` self-test outputs. Nothing in
+  `results/` is a real result.
+
 ## Dataset
 
 - Source: Kaggle dataset `abinayajone/adhd-eeg-dataset` (as used by the
@@ -130,6 +145,7 @@ src/
 run_all_experiments.py   main entrypoint (Phase 17)
 tests/test_synthetic_pipeline.py   synthetic self-test
 original_notebooks/  the two original source notebooks, verbatim
+results_final/predictions/   committed epoch-level out-of-fold predictions from the real-data run
 results/ tables/ figures/   generated outputs (git-ignored contents except .gitkeep-style placeholders)
 ```
 
@@ -153,3 +169,21 @@ saved outputs as TF using `Tesla T4` GPUs); if you reproduce on Kaggle with
 an older/GPU TensorFlow build, re-run `tests/test_synthetic_pipeline.py`
 first to confirm the pipeline still behaves identically in that environment
 before trusting real-data numbers from it.
+
+## Limitations
+
+- Single public dataset (121 subjects, 508 thirty-second epochs, 19 channels);
+  no external validation on other cohorts, recording sites or headsets.
+- The 128 Hz sampling rate is an assumption: the released files carry no
+  sampling-rate metadata.
+- Metrics from the original notebooks are not comparable with this framework,
+  because those notebooks let the early-stopping rule see the outer test fold.
+- On GPU, run-to-run variation of up to about 1 percentage point / 0.014 AUC
+  has been observed; CPU runs are deterministic given the seeds.
+- Outputs prefixed `SYNTHETIC_` come from the synthetic self-test and are not
+  results.
+
+## Dataset attribution
+
+EEG data: Nasrabadi et al. (2020), IEEE DataPort,
+doi:10.21227/rzfh-zn36. Please cite the original dataset if you use it.
