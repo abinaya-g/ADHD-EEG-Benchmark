@@ -123,7 +123,9 @@ def _one_comparison(y_true, pred_a, pred_b, n, n_boot, n_perm, seed):
     boot_diffs = ba_a_boot - ba_b_boot
     boot_diffs = boot_diffs[~np.isnan(boot_diffs)]
     ci_low, ci_high = np.percentile(boot_diffs, [2.5, 97.5])
-    boot_p = min(2 * min((boot_diffs <= 0).mean(), (boot_diffs >= 0).mean()), 1.0)
+    nb = len(boot_diffs)
+    boot_p = min(2 * min((1 + (boot_diffs <= 0).sum()) / (nb + 1),
+                         (1 + (boot_diffs >= 0).sum()) / (nb + 1)), 1.0)  # +1: a p-value is never exactly 0
     boot_sd = boot_diffs.std(ddof=1)
     effect_size_std = obs_diff / boot_sd if boot_sd > 0 else np.nan
 
@@ -135,7 +137,7 @@ def _one_comparison(y_true, pred_a, pred_b, n, n_boot, n_perm, seed):
     perm_a = np.where(swap, pred_b_tile, pred_a_tile)
     perm_b = np.where(swap, pred_a_tile, pred_b_tile)
     perm_diffs = balanced_accuracy_vec(y_true_tile, perm_a) - balanced_accuracy_vec(y_true_tile, perm_b)
-    perm_p = (np.abs(perm_diffs) >= abs(obs_diff)).mean()
+    perm_p = (1 + (np.abs(perm_diffs) >= abs(obs_diff) - 1e-12).sum()) / (n_perm + 1)  # +1 and float tolerance
 
     return {
         "n_subjects": n,

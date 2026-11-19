@@ -218,7 +218,7 @@ def run_nested_repeat(architecture_name, build_fn, X, y, groups, *,
                        preprocessing_label, fs, n_timesamples,
                        max_epochs, batch_size, patience, learning_rate,
                        run_classifiers=True, run_coral=False,
-                       n_channels=None):
+                       n_channels=None, coral_lambdas=(1e-3,), only_outer_folds=None):
     """
     Returns
     -------
@@ -246,6 +246,8 @@ def run_nested_repeat(architecture_name, build_fn, X, y, groups, *,
     run_t0 = time.time()
 
     for outer_fold_idx, (outer_train_idx, outer_test_idx) in enumerate(outer_splits):
+        if only_outer_folds is not None and outer_fold_idx not in only_outer_folds:
+            continue  # resume support: run a subset of outer folds (fold seeds depend only on the fold index)
         outer_train_subjects = set(groups[outer_train_idx])
         outer_test_subjects = set(groups[outer_test_idx])
         assert outer_train_subjects.isdisjoint(outer_test_subjects), (
@@ -322,30 +324,13 @@ def run_nested_repeat(architecture_name, build_fn, X, y, groups, *,
                     })
 
         if run_coral:
-            dist_before = coral_mod.covariance_distance(train_feats, test_feats)
-            train_feats_aligned = coral_mod.coral_transform(train_feats, test_feats)
-            dist_after = coral_mod.covariance_distance(train_feats_aligned, test_feats)
-
             from sklearn.linear_model import LogisticRegression
+            dist_before = coral_mod.covariance_distance(train_feats, test_feats)
             lr_no_coral = LogisticRegression(penalty="l2", max_iter=2000, class_weight="balanced")
             lr_no_coral.fit(train_feats, y_tr)
             pred_nc = lr_no_coral.predict(test_feats)
             proba_nc = lr_no_coral.predict_proba(test_feats)[:, 1]
-
-            lr_coral = LogisticRegression(penalty="l2", max_iter=2000, class_weight="balanced")
-            lr_coral.fit(train_feats_aligned, y_tr)
-            pred_c = lr_coral.predict(test_feats)
-            proba_c = lr_coral.predict_proba(test_feats)[:, 1]
-
             m_nc = compute_metrics(y_te, pred_nc, proba_nc)
-            m_c = compute_metrics(y_te, pred_c, proba_c)
-            coral_rows.append({
-                "repeat": repeat_id, "outer_fold": outer_fold_idx, "seed": fold_seed,
-                "cov_distance_before": dist_before, "cov_distance_after": dist_after,
-                "adaptation_type": "transductive_unsupervised (test features, no test labels, used to estimate target covariance)",
-                **{f"no_coral_{k}": v for k, v in m_nc.items()},
-                **{f"with_coral_{k}": v for k, v in m_c.items()},
-            })
             for subj, yt, yp, ypr in zip(groups[outer_test_idx], y_te, pred_nc, proba_nc):
                 prediction_rows.append({
                     "architecture": architecture_name, "model": "CNN+LR_noCORAL",
@@ -353,13 +338,34 @@ def run_nested_repeat(architecture_name, build_fn, X, y, groups, *,
                     "outer_fold": outer_fold_idx, "seed": fold_seed,
                     "subject_id": subj, "y_true": int(yt), "y_pred": int(yp), "y_proba": float(ypr),
                 })
-            for subj, yt, yp, ypr in zip(groups[outer_test_idx], y_te, pred_c, proba_c):
-                prediction_rows.append({
-                    "architecture": architecture_name, "model": "CNN+LR_withCORAL",
-                    "preprocessing": preprocessing_label, "repeat": repeat_id,
-                    "outer_fold": outer_fold_idx, "seed": fold_seed,
-                    "subject_id": subj, "y_true": int(yt), "y_pred": int(yp), "y_proba": float(ypr),
+
+            # One CORAL-aligned classifier per covariance-regularization value.
+            # The first (default, 1e-3) keeps the model name used in the paper;
+            # additional values get a "_lam<value>" suffix (sensitivity sweep).
+            for lam_i, lam in enumerate(coral_lambdas):
+                suffix = "" if lam_i == 0 else f"_lam{lam:g}"
+                train_feats_aligned = coral_mod.coral_transform(train_feats, test_feats, lambda_reg=lam)
+                dist_after = coral_mod.covariance_distance(train_feats_aligned, test_feats)
+                lr_coral = LogisticRegression(penalty="l2", max_iter=2000, class_weight="balanced")
+                lr_coral.fit(train_feats_aligned, y_tr)
+                pred_c = lr_coral.predict(test_feats)
+                proba_c = lr_coral.predict_proba(test_feats)[:, 1]
+                m_c = compute_metrics(y_te, pred_c, proba_c)
+                coral_rows.append({
+                    "repeat": repeat_id, "outer_fold": outer_fold_idx, "seed": fold_seed,
+                    "coral_lambda": lam,
+                    "cov_distance_before": dist_before, "cov_distance_after": dist_after,
+                    "adaptation_type": "transductive_unsupervised (test features, no test labels, used to estimate target covariance)",
+                    **{f"no_coral_{k}": v for k, v in m_nc.items()},
+                    **{f"with_coral_{k}": v for k, v in m_c.items()},
                 })
+                for subj, yt, yp, ypr in zip(groups[outer_test_idx], y_te, pred_c, proba_c):
+                    prediction_rows.append({
+                        "architecture": architecture_name, "model": f"CNN+LR_withCORAL{suffix}",
+                        "preprocessing": preprocessing_label, "repeat": repeat_id,
+                        "outer_fold": outer_fold_idx, "seed": fold_seed,
+                        "subject_id": subj, "y_true": int(yt), "y_pred": int(yp), "y_proba": float(ypr),
+                    })
 
     print(f"  [{run_label}] all {outer_folds} outer folds done "
           f"[{time.time() - run_t0:.1f}s total]", flush=True)

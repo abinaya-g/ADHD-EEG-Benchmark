@@ -39,6 +39,39 @@ example in the same Kaggle environment the original notebooks used.
 - `results/` contains only the `SYNTHETIC_*` self-test outputs. Nothing in
   `results/` is a real result.
 
+## Revision analyses (`results_revision/`)
+
+Additional analyses added during manuscript revision. Scripts are in `src/`
+and the two `run_revision_*.py` drivers; outputs are in `results_revision/`.
+Each script's docstring states its inputs and limitations; the short version:
+
+| Analysis | Script | Needs |
+|----------|--------|-------|
+| Per-repetition results, all-pairs comparisons among leading models (Holm), label-permutation chance tests, 128 Hz vs 128->512 Hz on repetition 0 | `src/revision_analyses.py` | saved predictions only |
+| Subject-level paired model comparison (one paired observation per subject; replaces an earlier 25-observation Wilcoxon test that pseudo-replicated subjects) | `src/subject_level_paired_test.py` | saved predictions only |
+| Artefact proxies, group differences, relation to model outputs, band-power baseline sensitivity | `src/artefact_analysis.py` | raw EEG, CPU |
+| Classical band-power baseline; leakage comparison; retrain-on-permuted-labels null | `run_revision_experiments.py` | raw EEG, CPU |
+| Leakage-permitting vs subject-grouped evaluation for CNN + heads, EEGNet, ShallowConvNet, DeepConvNet; CORAL lambda sweep; resolution repetitions 1-4 | `run_revision_deep.py` (`--task leakage / coral / resolution`), summarised by `src/revision_deep_analysis.py` | raw EEG, TensorFlow, ideally GPU |
+| Matched-head control for the CNN+LR comparison | `src/models_matched.py` | raw EEG, TensorFlow |
+| 128 Hz vs 128->512 Hz over all five repetitions | `src/resolution_five_repetitions.py` | `results_revision/resolution_interp_predictions.csv` |
+| Manuscript figures at 300 dpi | `src/fig_manuscript_hires.py`, `src/fig_confusion_hires.py`, `src/fig_architecture.py` | saved predictions |
+
+Notes:
+
+- **The `leakage_epoch_level_predictions_*.csv` files are leakage-permitting by
+  design** (folds drawn at the epoch level, so one child can appear in both
+  training and test). They exist to show how much such a split changes the
+  numbers. They are not performance estimates and must not be reported as
+  results.
+- `versions_*.json` record the software environment of each run
+  (`*_kaggle*` files are Kaggle runs).
+- `notebooks/kaggle_revision_runs.ipynb` runs the TensorFlow experiments on
+  Kaggle.
+- `src/evaluation.py` gained two optional arguments: `only_outer_folds`
+  (resume a run fold by fold) and `coral_lambdas` (the lambda sweep). The
+  defaults reproduce the primary analysis, and early stopping still uses inner
+  folds from the outer-training subjects only.
+
 ## Dataset
 
 - Source: Kaggle dataset `abinayajone/adhd-eeg-dataset` (as used by the
@@ -146,6 +179,7 @@ run_all_experiments.py   main entrypoint (Phase 17)
 tests/test_synthetic_pipeline.py   synthetic self-test
 original_notebooks/  the two original source notebooks, verbatim
 results_final/predictions/   committed epoch-level out-of-fold predictions from the real-data run
+results_revision/            revision analyses (see "Revision analyses")
 results/ tables/ figures/   generated outputs (git-ignored contents except .gitkeep-style placeholders)
 ```
 

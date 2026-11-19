@@ -1,0 +1,3 @@
+variant,epochs,subjects,adhd_epochs,control_epochs,removed_adhd,removed_control
+no rejection (as in the paper),508,121,288,220,0,0
+far-out epochs removed (p2p or kurtosis),470,121,269,201,19,19

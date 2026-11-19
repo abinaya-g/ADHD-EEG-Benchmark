@@ -1,0 +1,8 @@
+{
+ "python": "3.10.11",
+ "numpy": "2.2.6",
+ "scipy": "1.14.1",
+ "sklearn": "1.6.0",
+ "pandas": "2.2.3",
+ "fs_assumed_hz": 128
+}

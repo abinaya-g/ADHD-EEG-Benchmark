@@ -1,0 +1,9 @@
+{
+ "python": "3.13.18",
+ "tensorflow": "2.21.0",
+ "numpy": "2.5.3",
+ "scipy": "1.18.1",
+ "sklearn": "1.9.1",
+ "pandas": "3.0.5",
+ "gpus": []
+}
